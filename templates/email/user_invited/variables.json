@@ -1,0 +1,14 @@
+{
+  "template_key": "user_invited",
+  "subject": "Convite para {{CompanyName}} - Kubex PRM",
+  "description": "Convite para um novo usuário entrar na empresa",
+  "variables": {
+    "Email": "Email do convidado",
+    "CompanyName": "Nome da empresa",
+    "role_name": "Nome do perfil/cargo do usuário",
+    "invited_by_name": "Nome de quem enviou o convite",
+    "expires_at": "Data de expiração do convite (opcional)",
+    "invite_link": "URL para aceitar o convite",
+    "name": "Nome do convidado"
+  }
+}
