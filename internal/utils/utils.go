@@ -153,7 +153,7 @@ func GetDefaultConfigPath() (string, error) {
 		vprFile = filepath.Dir(vprFile)
 	}
 
-	configPath := GetEnvOrDefault("GOBE_CONFIG_PATH", vprFile)
+	configPath := GetEnvOrDefault("GNYX_CONFIG_PATH", vprFile)
 	if strings.TrimSpace(configPath) == "" || configPath == "." {
 		configPath, err = os.UserHomeDir()
 		if err != nil {
@@ -178,7 +178,7 @@ func GetDefaultConfigPath() (string, error) {
 
 func fallbackTempDir() (string, error) {
 	base := os.TempDir()
-	tmpDir, err := os.MkdirTemp(base, "kubex_gobe_")
+	tmpDir, err := os.MkdirTemp(base, "kubex_gnyx_")
 	if err != nil {
 		gl.Log("fatal", fmt.Sprintf("Failed to create temp dir for fallback: %v", err))
 		return "", err

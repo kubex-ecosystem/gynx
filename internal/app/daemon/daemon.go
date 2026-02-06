@@ -18,8 +18,8 @@ type AnalyzerDaemon struct {
 
 // DaemonConfig represents daemon configuration
 type DaemonConfig struct {
-	GNyxURL              string        `json:"gobe_url"`
-	GNyxAPIKey           string        `json:"gobe_api_key"`
+	GNyxURL              string        `json:"gnyx_url"`
+	GNyxAPIKey           string        `json:"gnyx_api_key"`
 	AutoScheduleEnabled  bool          `json:"auto_schedule_enabled"`
 	ScheduleCron         string        `json:"schedule_cron"`
 	NotificationChannels []string      `json:"notification_channels"`
@@ -119,7 +119,7 @@ func (d *AnalyzerDaemon) registerAsAgent() error {
 	// 	},
 	// }
 
-	// return d.gobeClient.RegisterAgent(d.ctx, agent)
+	// return d.gnyxClient.RegisterAgent(d.ctx, agent)
 
 	return nil // Placeholder
 }
@@ -147,7 +147,7 @@ func (d *AnalyzerDaemon) performHealthCheck() {
 	// - Check system resources
 	// - Report to GNyx via notification system
 
-	// status, err := d.gobeClient.GetSquadStatus(d.ctx)
+	// status, err := d.gnyxClient.GetSquadStatus(d.ctx)
 	// if err != nil {
 	// 	gl.Printf("⚠️  Failed to get squad status: %v", err)
 	// 	return
@@ -183,7 +183,7 @@ func (d *AnalyzerDaemon) scheduleAnalyses() {
 	// Example: Schedule analysis for active repositories
 	repos := []string{
 		"https://github.com/kubex-ecosystem/gnyx",
-		"https://github.com/kubex-ecosystem/gobe",
+		"https://github.com/kubex-ecosystem/gnyx",
 		"https://github.com/kubex-ecosystem/gdbase",
 	}
 
@@ -200,7 +200,7 @@ func (d *AnalyzerDaemon) scheduleAnalyses() {
 			},
 		}
 
-		// job, err := d.gobeClient.ScheduleAnalysis(d.ctx, req)
+		// job, err := d.gnyxClient.ScheduleAnalysis(d.ctx, req)
 		// if err != nil {
 		// 	gl.Printf("⚠️  Failed to schedule analysis for %s: %v", repoURL, err)
 		// 	continue
@@ -234,7 +234,7 @@ func (d *AnalyzerDaemon) ScheduleRepositoryAnalysis(repoURL, analysisType string
 		},
 	}
 
-	// job, err := d.gobeClient.ScheduleAnalysis(d.ctx, req)
+	// job, err := d.gnyxClient.ScheduleAnalysis(d.ctx, req)
 	// if err != nil {
 	// 	return err
 	// }
@@ -261,7 +261,7 @@ func (d *AnalyzerDaemon) ScheduleRepositoryAnalysis(repoURL, analysisType string
 		},
 	}
 
-	// return d.gobeClient.SendNotification(d.ctx, notification)
+	// return d.gnyxClient.SendNotification(d.ctx, notification)
 
 	return nil // Placeholder
 }

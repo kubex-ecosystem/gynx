@@ -176,13 +176,13 @@ func (h *Handler) HandleListExtractedProjects(w http.ResponseWriter, r *http.Req
 		},
 		{
 			"id":           "proj_002",
-			"name":         "gobe",
-			"repo_url":     "https://github.com/kubex-ecosystem/gobe",
+			"name":         "gnyx",
+			"repo_url":     "https://github.com/kubex-ecosystem/gnyx",
 			"extracted_at": "2025-09-14T15:45:00Z",
 			"files_count":  78,
 			"fragments":    289,
 			"languages":    []string{"Go", "TypeScript"},
-			"download_url": "/api/v1/lookatni/download/gobe_1726302300.zip",
+			"download_url": "/api/v1/lookatni/download/gnyx_1726302300.zip",
 		},
 	}
 

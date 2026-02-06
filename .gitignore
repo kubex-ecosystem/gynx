@@ -325,3 +325,4 @@ internal/bootstrap/services/install-service.ps1.template
 internal/bootstrap/services/install-wrapper.ps1.template
 internal/bootstrap/services/module-wrapper.unit.template
 internal/bootstrap/services/module.service.unit.template
+tests/apocalipse.sh
