@@ -3,26 +3,26 @@ package kbx
 
 // Default configuration constants
 const (
-	DefaultKubexConfigDir = "$HOME/.gnyx"
+	DefaultKubexConfigDir = "$HOME/.kubex/gnyx"
 
-	DefaultGNyxCAPath   = "$HOME/.gnyx/ca-cert.pem"
-	DefaultGNyxKeyPath  = "$HOME/.gnyx/gnyxgnyx"
-	DefaultGNyxCertPath = "$HOME/.gnyx/gnyxgnyxm"
+	DefaultGNyxCAPath   = "$HOME/.kubex/gnyx/ca-cert.pem"
+	DefaultGNyxKeyPath  = "$HOME/.kubex/gnyx/gnyx.key"
+	DefaultGNyxCertPath = "$HOME/.kubex/gnyx/gnyx.crt"
 
-	DefaultGNyxConfigPath = "$HOME/.gnyx/config/config.json"
-	DefaultGNyxEnvPath    = "$HOME/.gnyx/config/.env"
-	DefaultGNyxLogPath    = "$HOME/.gnyxs/github.com/kubex-ecosystem/gnyx_process.log.txt"
+	DefaultGNyxConfigPath = "$HOME/.kubex/gnyx/config/config.json"
+	DefaultGNyxEnvPath    = "$HOME/.kubex/gnyx/config/.env"
+	DefaultGNyxLogPath    = "$HOME/.kubex/gnyx/logs/gnyx_process.log.txt"
 
-	DefaultKubexDomusConfigPath = "$HOME/.domus/config/config.json"
+	DefaultKubexDomusConfigPath = "$HOME/.kubex/domus/config/config.json"
 
-	DefaultGoogleAuthClientPath = "$HOME/.gnyx/config/google_auth_client.json"
+	DefaultGoogleAuthClientPath = "$HOME/.kubex/gnyx/config/google_auth_client.json"
 
-	DefaultVaultDir = "$HOME/.gnyxrets"
+	DefaultVaultDir = "$HOME/.kubex/gnyx/secrets"
 
 	DefaultVaultKey = "kubex_kubex-jwt_secret.secret"
 )
 
-const DefaultProvidersConfig = "$HOME/.gnyx/config/providers.yaml"
+const DefaultProvidersConfig = "$HOME/.kubex/gnyx/config/providers.yaml"
 
 // Default General Rate Limiting Settings
 const (
@@ -88,9 +88,9 @@ type DBNameKey string
 
 const (
 	ContextDBNameKey      = DBNameKey("postgres")
-	DefaultVolumesDir     = "$HOME/.gnyxumes"
-	DefaultMongoVolume    = "$HOME/.gnyxumes/mongo"
-	DefaultRedisVolume    = "$HOME/.gnyxumes/redis"
-	DefaultPostgresVolume = "$HOME/.gnyxumes/postgresql"
-	DefaultRabbitMQVolume = "$HOME/.gnyxumes/rabbitmq"
+	DefaultVolumesDir     = "$HOME/.kubex/domus/volumes"
+	DefaultMongoVolume    = "$HOME/.kubex/domus/volumes/mongo"
+	DefaultRedisVolume    = "$HOME/.kubex/domus/volumes/redis"
+	DefaultPostgresVolume = "$HOME/.kubex/domus/volumes/postgresql"
+	DefaultRabbitMQVolume = "$HOME/.kubex/domus/volumes/rabbitmq"
 )

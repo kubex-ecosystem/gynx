@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/kubex-ecosystem/gnyx/templates"
+	kbxGet "github.com/kubex-ecosystem/kbx/get"
 	gl "github.com/kubex-ecosystem/logz"
 )
 
@@ -21,7 +22,7 @@ type TemplateMetadata struct {
 
 // TemplateLoader carrega templates do filesystem
 type TemplateLoader struct {
-	templatesFS  *templates.EmailTemplateFS   `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	templatesFS  *templates.EmailTemplateFSImpl   `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 	templatesDir string                       `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 	renderer     *TemplateRenderer            `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 	metadata     map[string]*TemplateMetadata `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
@@ -53,11 +54,14 @@ func (tl *TemplateLoader) LoadAll() error {
 // loadTemplate carrega um template específico
 func (tl *TemplateLoader) loadTemplate(name string, path string) error {
 	// Lê o arquivo content.html
+	gl.Debugf("Carregando template: %s", name)
 	contentBytes, err := tl.templatesFS.ReadFile(name)
 	if err != nil {
 		return gl.Errorf("erro ao ler conteúdo do template: %v", err)
 	}
+
 	// Registra o template no renderer
+	gl.Debugf("Registrando template: %s", name)
 	if err := tl.renderer.RegisterTemplate(name, string(contentBytes)); err != nil {
 		return gl.Errorf("erro ao registrar template: %v", err)
 	}
@@ -83,7 +87,7 @@ func (tl *TemplateLoader) loadTemplate(name string, path string) error {
 // Render renderiza um template pelo nome
 func (tl *TemplateLoader) Render(templateName string, data TemplateData) (string, string, error) {
 	// Obtém o subject do metadata
-	subject := "Notificação - Kubex PRM"
+	subject := "Notificação - Kubex Ecosystem"
 	if meta, exists := tl.metadata[templateName]; exists {
 		subject = meta.Subject
 		// Substitui variáveis no subject
@@ -139,7 +143,7 @@ func replaceSubjectVars(subject string, data TemplateData) string {
 
 // GetDefaultTemplateLoader retorna um loader com templates do diretório padrão
 func GetDefaultTemplateLoader() (*TemplateLoader, error) {
-	loader := NewTemplateLoader("templates/email")
+	loader := NewTemplateLoader(kbxGet.EnvOr("INVITE_TEMPLATES_DIR", "./templates"),)
 	if err := loader.LoadAll(); err != nil {
 		return nil, err
 	}

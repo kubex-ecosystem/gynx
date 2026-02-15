@@ -3,41 +3,61 @@ package templates
 
 import (
 	"embed"
+	"path/filepath"
 
+	"github.com/kubex-ecosystem/gnyx/templates/email"
+	kbxGet "github.com/kubex-ecosystem/kbx/get"
 	gl "github.com/kubex-ecosystem/logz"
 )
 
-//go:embed all:email/**/*
-var EmailTemplates embed.FS
+//go:embed all:email/*[.html,.json]
+var TemplatesVarFS embed.FS
 
 var (
-	emailTemplateFS *EmailTemplateFS
+	emailTemplateFS *EmailTemplateFSImpl
 )
 
-type EmailTemplateFS struct {
+type EmailTemplateFSImpl struct {
 	FS embed.FS
 }
 
 var EmailTemplateNames = []string{"deal_won", "lead_assigned", "user_invited"}
 
-func GetEmailTemplateFS() *EmailTemplateFS {
-	return &EmailTemplateFS{
-		FS: EmailTemplates,
+func GetEmailTemplateFS() *EmailTemplateFSImpl {
+	m := email.NewEmailHTMLRenderer()
+	m.EmailTemplateFSImpl()
+
+	return &EmailTemplateFSImpl{
+		FS: TemplatesVarFS,
 	}
 }
 
-func (e *EmailTemplateFS) ReadFile(name string) ([]byte, error) {
-	return e.FS.ReadFile("email/" + name + "/content.html")
+func (e *EmailTemplateFSImpl) ReadFile(name string) ([]byte, error) {
+	return e.FS.ReadFile(
+		filepath.Join(
+			kbxGet.EnvOr("INVITE_TEMPLATES_DIR", "templates"),
+			"email",
+			name,
+			"content.html",
+		),
+	)
 }
 
 // ListTemplates lista os nomes dos templates de email disponíveis.
-func (e *EmailTemplateFS) ListTemplates() []string {
+func (e *EmailTemplateFSImpl) ListTemplates() []string {
 	return EmailTemplateNames
 }
 
 // GetEmailTemplate retorna o conteúdo do template de email pelo nome.
 func GetEmailTemplate(name string) ([]byte, error) {
-	return EmailTemplates.ReadFile("email/" + name + ".html")
+	return TemplatesVarFS.ReadFile(
+		filepath.Join(
+			kbxGet.EnvOr("INVITE_TEMPLATES_DIR", "templates"),
+			"email",
+			name,
+			"content.html",
+		),
+	)
 }
 
 // ListEmailTemplates lista os nomes dos templates de email disponíveis.

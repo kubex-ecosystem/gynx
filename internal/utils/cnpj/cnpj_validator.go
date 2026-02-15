@@ -174,7 +174,7 @@ func ValidateWithReceitaWS(cnpj string) (*ReceitaWSResponse, error) {
 	}
 
 	// Headers recomendados
-	req.Header.Set("User-Agent", "Kubex-PRM/1.0")
+	req.Header.Set("User-Agent", "Kubex-Ecosystem/1.0")
 	req.Header.Set("Accept", "application/json")
 
 	resp, err := client.Do(req)

@@ -73,9 +73,9 @@ type DataServiceConfig struct {
 
 // LoadConfig carrega a configuração a partir das variáveis de ambiente.
 func LoadConfig() *Config {
-	ref := types.NewReference("github.com/kubex-ecosystem/gnyx").GetReference()
+	ref := types.NewReference("gnyx").GetReference()
 	// Base URL para links públicos (convites, etc.)
-	baseURL := kbxGet.EnvOr("GNYX_PUBLIC_URL", "")
+	baseURL := kbxGet.EnvOr("GNYX_PUBLIC_URL", "http://localhost:4000")
 	if baseURL == "" {
 		baseURL = kbxGet.EnvOr("INVITE_BASE_URL", "")
 	}
@@ -146,8 +146,8 @@ func LoadConfig() *Config {
 		Invite: &InviteConfig{
 			BaseURL:     baseURL,
 			SenderName:  kbxGet.EnvOr("INVITE_SENDER_NAME", "Equipe Kubex"),
-			SenderEmail: kbxGet.EnvOr("INVITE_SENDER_EMAIL", "convites@gnyx"),
-			CompanyName: kbxGet.EnvOr("INVITE_COMPANY_NAME", "Kubex PRM"),
+			SenderEmail: kbxGet.EnvOr("INVITE_SENDER_EMAIL", "convites@kubex.world"),
+			CompanyName: kbxGet.EnvOr("INVITE_COMPANY_NAME", "Kubex Ecosystem"),
 			DefaultTTL:  defaultTTL,
 		},
 	}

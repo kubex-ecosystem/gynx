@@ -521,7 +521,7 @@ func withCORS(h http.Handler) http.Handler {
 		origin := r.Header.Get("Origin")
 		allowLocalhost := origin != "" && (strings.HasPrefix(origin, "http://localhost") || strings.HasPrefix(origin, "http://127.0.0.1"))
 
-		// Allow any localhost/127.0.0.1 origin in dev so the PRM (5173/4173) can call the API with cookies/headers.
+		// Allow any localhost/127.0.0.1 origin in dev so the Ecosystem (5173/4173) can call the API with cookies/headers.
 		if allowLocalhost {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
