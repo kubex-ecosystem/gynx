@@ -5,7 +5,7 @@ development:
 
   # Server Configuration
   server:
-    addr: ":8080"
+    addr: ":5000"
     read_timeout_sec: 15
     write_timeout_sec: 15
     idle_timeout_sec: 60
@@ -213,7 +213,7 @@ monitoring:
 
   # Grafana configuration
   grafana:
-    url: http://localhost:3000
+    url: http://localhost:5000
     admin_user: admin
     admin_password: securepassword
 

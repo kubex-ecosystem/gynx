@@ -63,7 +63,7 @@ const (
 
 // Default Server Settings
 const (
-	DefaultServerPort = "3000"
+	DefaultServerPort = "5000"
 	DefaultServerHost = "0.0.0.0"
 )
 

@@ -88,7 +88,7 @@ echo "🔌 Testing backend gateway connectivity..."
 # Start a temporary local server to test the built frontend
 echo "Starting test server..."
 cd dist || exit
-python3 -m http.server 3000 > /dev/null 2>&1 &
+python3 -m http.server 5000 > /dev/null 2>&1 &
 SERVER_PID=$!
 cd ..
 
@@ -96,7 +96,7 @@ cd ..
 sleep 2
 
 # Test if frontend loads
-if curl -s http://localhost:3000 > /dev/null; then
+if curl -s http://localhost:5000 > /dev/null; then
     echo "✅ Frontend serves successfully"
 else
     echo "❌ Frontend server failed to start"

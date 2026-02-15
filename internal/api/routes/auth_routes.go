@@ -388,10 +388,10 @@ func defineRedirectURL(r *http.Request, redirectURIs []string, vList []string) (
 	var err error
 
 	origin, err = url.Parse(
-		kbxGet.ValueOrIf[string](
+		kbxGet.ValueOrIf(
 			len(r.Header.Get("Origin")) > 0,
 			r.Header.Get("Origin"),
-			"http://"+kbxGet.ValOrType(r.Host, "localhost:4000"),
+			"http://"+kbxGet.ValOrType(r.Host, "localhost:5000"),
 		),
 	)
 	if err != nil {
@@ -558,7 +558,7 @@ func resolveFrontendBaseURL() string {
 		base = strings.TrimSpace(kbxGet.EnvOr("KUBEX_BE_PUBLIC_URL", ""))
 	}
 	if base == "" {
-		base = kbxGet.ValueOrIf(env == "production", "https://app.gnyx.app", "http://localhost:3000")
+		base = kbxGet.ValueOrIf(env == "production", "https://app.gnyx.app", "http://localhost:5000")
 	}
 	return strings.TrimRight(base, "/")
 }

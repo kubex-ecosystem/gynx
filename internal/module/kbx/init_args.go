@@ -125,7 +125,7 @@ func NewInitArgs(
 	configFile = GetValueOrDefaultSimple(configFile, defaultConfigFile)
 	configDBFile = GetValueOrDefaultSimple(configDBFile, filepath.Base(os.ExpandEnv(DefaultKubexDomusConfigPath)))
 	envFile = GetValueOrDefaultSimple(envFile, os.ExpandEnv(filepath.Join("$PWD", ".env")))
-	port = GetValueOrDefaultSimple(port, "8088")
+	port = GetValueOrDefaultSimple(port, "5000")
 	bind = GetValueOrDefaultSimple(bind, "0.0.0.0")
 
 	// Create and return InitArgs instance

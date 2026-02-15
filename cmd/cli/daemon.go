@@ -8,8 +8,10 @@ import (
 	"time"
 
 	"github.com/kubex-ecosystem/gnyx/internal/app/daemon"
-	gl "github.com/kubex-ecosystem/logz"
 	"github.com/spf13/cobra"
+
+	gl "github.com/kubex-ecosystem/logz"
+	kbxGet "github.com/kubex-ecosystem/kbx/get"
 )
 
 var (
@@ -36,7 +38,7 @@ The daemon provides:
 • Meta-recursivity coordination with lookatni/grompt
 
 Examples:
-  kubexbe daemon --gnyx-url=http://localhost:3000 --gnyx-api-key=abc123
+  kubexbe daemon --gnyx-url=http://localhost:5000 --gnyx-api-key=abc123
   kubexbe daemon --auto-schedule --schedule-cron="0 2 * * *"
   kubexbe daemon --notify-channels=discord,email`,
 		RunE: runDaemon,
@@ -44,7 +46,7 @@ Examples:
 
 	// GNyx Integration flags
 	cmd.Flags().StringVar(&gnyxURL, "gnyx-url",
-		getEnvOrDefault("GNYX_URL", "http://localhost:3000"),
+		getEnvOrDefault("GNYX_URL", "http://localhost:"+kbxGet.EnvOr("GNYX_PORT", "5000")),
 		"GNyx backend URL")
 	cmd.Flags().StringVar(&gnyxAPIKey, "gnyx-api-key",
 		os.Getenv("GNYX_API_KEY"),
