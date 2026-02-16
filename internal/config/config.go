@@ -105,7 +105,7 @@ func LoadConfig() *Config {
 		kbxGet.EnvOrType("KUBEX_GNYX_DEBUG_MODE", false),
 		kbxGet.EnvOrType("KUBEX_GNYX_RELEASE_MODE", false),
 		kbxGet.EnvOrType("KUBEX_GNYX_CONFIDENCIAL_MODE", false),
-		kbxGet.EnvOrType("KUBEX_GNYX_PORT", "4000"),
+		kbxGet.EnvOrType("KUBEX_GNYX_PORT", "5000"),
 		kbxGet.EnvOrType("KUBEX_GNYX_HOST", "localhost"),
 		pubKeyPath,
 		privKeyPath,
