@@ -2,6 +2,8 @@
 package config
 
 import (
+	"net"
+	"net/url"
 	"os"
 	"path/filepath"
 	"time"
@@ -74,17 +76,16 @@ type DataServiceConfig struct {
 // LoadConfig carrega a configuração a partir das variáveis de ambiente.
 func LoadConfig() *Config {
 	ref := types.NewReference("gnyx").GetReference()
-	// Base URL para links públicos (convites, etc.)
-	baseURL := kbxGet.EnvOr("GNYX_PUBLIC_URL", "http://localhost:4000")
-	if baseURL == "" {
-		baseURL = kbxGet.EnvOr("INVITE_BASE_URL", "")
-	}
-	if baseURL == "" {
-		baseURL = kbxGet.ValueOrIf(kbxGet.EnvOr("KUBEX_ENV", "development") == "production",
-			"https://api.gnyx.app",
-			"http://localhost:4000",
-		)
-	}
+
+	scheme := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_BE_SCHEME", "http"))
+	host := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_BE_HOST", kbxMod.DefaultServerHost))
+	addr := net.JoinHostPort(host, kbxMod.GetEnvOrDefault("KUBEX_BE_PORT", "5000"))
+	url := url.URL{Scheme: scheme, Host: addr}
+	baseURL := kbxGet.ValueOrIf(kbxMod.GetEnvOrDefault("KUBEX_ENV", "development") == "production",
+		"https://api.kubex.world",
+		url.String(),
+	)
+
 	defaultTTL := kbxGet.EnvOrType("INVITE_EXPIRATION", 7*24*time.Hour)
 	configPath := os.ExpandEnv(kbxGet.EnvOr("GNYX_CONFIG_PATH", kbxMod.DefaultGNyxConfigPath))
 	dataServiceConfig := &DataServiceConfig{

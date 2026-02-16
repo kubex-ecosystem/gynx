@@ -147,7 +147,7 @@ func NewInitArgs(
 		LogFile:      logFile,
 		Port:         port,
 		Bind:         bind,
-		
-		TemplateDir:  templatesDir,
+
+		TemplateDir: templatesDir,
 	}
 }

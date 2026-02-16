@@ -650,21 +650,21 @@ func TestInviteURL(t *testing.T) {
 	}{
 		{
 			name:    "basic URL construction",
-			baseURL: "https://api.gnyx.app",
+			baseURL: "https://api.kubex.world",
 			token:   "abc123",
-			want:    "https://api.gnyx.app/invite/abc123",
+			want:    "https://api.kubex.world/invite/abc123",
 		},
 		{
 			name:    "removes trailing slash from baseURL",
-			baseURL: "https://api.gnyx.app/",
+			baseURL: "https://api.kubex.world/",
 			token:   "abc123",
-			want:    "https://api.gnyx.app/invite/abc123",
+			want:    "https://api.kubex.world/invite/abc123",
 		},
 		{
 			name:    "handles multiple trailing slashes",
-			baseURL: "https://api.gnyx.app///",
+			baseURL: "https://api.kubex.world///",
 			token:   "abc123",
-			want:    "https://api.gnyx.app/invite/abc123",
+			want:    "https://api.kubex.world/invite/abc123",
 		},
 	}
 

@@ -10,8 +10,8 @@ import (
 	"github.com/kubex-ecosystem/gnyx/internal/app/daemon"
 	"github.com/spf13/cobra"
 
-	gl "github.com/kubex-ecosystem/logz"
 	kbxGet "github.com/kubex-ecosystem/kbx/get"
+	gl "github.com/kubex-ecosystem/logz"
 )
 
 var (

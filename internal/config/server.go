@@ -28,9 +28,9 @@ func NewServerConfig() *ServerConfig {
 	scheme := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_BE_SCHEME", "http"))
 	host := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_BE_HOST", kbxMod.DefaultServerHost))
 	addr := net.JoinHostPort(host, kbxMod.GetEnvOrDefault("KUBEX_BE_PORT", "5000"))
-	url := url.URL{Scheme: scheme, Host:   addr}
+	url := url.URL{Scheme: scheme, Host: addr}
 	baseURL := kbxGet.ValueOrIf(kbxMod.GetEnvOrDefault("KUBEX_ENV", "development") == "production",
-		"https://api.gnyx.app",
+		"https://api.kubex.world",
 		url.String(),
 	)
 	defaultTTL := kbxMod.GetEnvOrDefaultWithType("INVITE_EXPIRATION", 7*24*time.Hour)

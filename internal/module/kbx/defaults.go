@@ -5,7 +5,7 @@ package kbx
 const (
 	DefaultKubexConfigDir = "$HOME/.kubex/gnyx"
 
-	DefaultGNyxCAPath   = "$HOME/.kubex/gnyx/ca-cert.pem" 
+	DefaultGNyxCAPath   = "$HOME/.kubex/gnyx/ca-cert.pem"
 	DefaultGNyxKeyPath  = "$HOME/.kubex/gnyx/gnyx.key" // Priv
 	DefaultGNyxCertPath = "$HOME/.kubex/gnyx/gnyx.crt"
 

@@ -5,7 +5,7 @@
 // @termsOfService  https://github.com/kubex-ecosystem/gnyx/terms
 // @contact.name   GNyx API Support
 // @contact.url    https://github.com/kubex-ecosystem/gnyx
-// @contact.email  ti@gnyx.app
+// @contact.email  ti@kubex.world
 // @host      localhost:8080
 // @BasePath  /
 // @securityDefinitions.apikey BearerAuth

@@ -82,13 +82,13 @@ func NewService(cfg Config) (*Service, error) {
 		cfg.DefaultTTL = 7 * 24 * time.Hour
 	}
 	if cfg.BaseURL == "" {
-		cfg.BaseURL = "https://api.gnyx.app"
+		cfg.BaseURL = "https://api.kubex.world"
 	}
 	if cfg.SenderName == "" {
 		cfg.SenderName = "Equipe Kubex"
 	}
 	if cfg.SenderEmail == "" {
-		cfg.SenderEmail = "convites@gnyx.app"
+		cfg.SenderEmail = "convites@kubex.world"
 	}
 	if cfg.CompanyName == "" {
 		cfg.CompanyName = "GNyxM"

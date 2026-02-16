@@ -80,7 +80,7 @@ Features:
 			var err error
 
 			// Hydrate config file path with default if not set
-			initArgs.ConfigFile = os.ExpandEnv(kbxGet.ValueOrIf(len(initArgs.ConfigFile) == 0, kbxGet.EnvOr("GNYX_CONFIG_PATH", initArgs.ConfigFile), initArgs.ConfigFile))
+			initArgs.ConfigFile = os.ExpandEnv(kbxGet.ValueOrIf(len(initArgs.ConfigFile) == 0, kbxGet.EnvOr("KUBEX_GNYX_CONFIG_PATH", initArgs.ConfigFile), initArgs.ConfigFile))
 
 			// Load or create config file with kbx method
 			kbxConfig, err = kbx.LoadConfigOrDefault[kbx.SrvConfig](initArgs.ConfigFile, true)
