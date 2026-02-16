@@ -163,8 +163,8 @@ func (s *Server) Shutdown() error {
 func setupJWTCertificates(container *Container) error {
 	cfg := container.GetConfig().ServerConfig.Runtime
 
-	cfg.PubCertKeyPath = os.ExpandEnv(kbxGet.ValOrType(cfg.PubCertKeyPath, kbx.GetEnvOrDefault("KUBEX_BE_PUBLIC_KEY_PATH", kbx.DefaultGNyxCertPath)))
-	cfg.PrivKeyPath = os.ExpandEnv(kbxGet.ValOrType(cfg.PrivKeyPath, kbx.GetEnvOrDefault("KUBEX_BE_PRIVATE_KEY_PATH", kbx.DefaultGNyxKeyPath)))
+	cfg.PubCertKeyPath = os.ExpandEnv(kbxGet.ValOrType(cfg.PubCertKeyPath, kbx.GetEnvOrDefault("KUBEX_GNYX_PUBLIC_KEY_PATH", kbx.DefaultGNyxCertPath)))
+	cfg.PrivKeyPath = os.ExpandEnv(kbxGet.ValOrType(cfg.PrivKeyPath, kbx.GetEnvOrDefault("KUBEX_GNYX_PRIVATE_KEY_PATH", kbx.DefaultGNyxKeyPath)))
 
 	return nil
 }

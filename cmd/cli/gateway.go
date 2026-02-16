@@ -139,7 +139,7 @@ Features:
 
 	serveCmd.Flags().BoolVarP(&CORSDisabled, "disableCors", "C", false, "Disable CORS headers")
 	serveCmd.Flags().StringVarP(&initArgs.Bind, "binding", "b", "0.0.0.0", "Server address")
-	serveCmd.Flags().StringVarP(&initArgs.Port, "port", "p", kbxGet.EnvOr("GNYX_PORT", "4000"), "Server port")
+	serveCmd.Flags().StringVarP(&initArgs.Port, "port", "p", kbxGet.EnvOr("KUBEX_GNYX_PORT", "4000"), "Server port")
 
 	// Add status subcommand
 	statusCmd := &cobra.Command{
@@ -181,8 +181,8 @@ func statusCommand(cmd *cobra.Command, args []string) error {
 
 	// Build target URL
 
-	initArgs.Bind = kbxGet.EnvOr("GNYX_BIND", "0.0.0.0")
-	initArgs.Port = kbxGet.EnvOr("GNYX_PORT", "4000")
+	initArgs.Bind = kbxGet.EnvOr("KUBEX_GNYX_BIND", "0.0.0.0")
+	initArgs.Port = kbxGet.EnvOr("KUBEX_GNYX_PORT", "4000")
 	initArgs.Host = net.JoinHostPort(initArgs.Bind, initArgs.Port)
 
 	var targetAddress string

@@ -14,5 +14,5 @@ func GenerateRefreshTokenFromPlain(plain string) (string, string, time.Time, err
 	h := sha256.Sum256([]byte(plain))
 	hash := encodeToBase64URL(h[:])
 	// A expiração aqui é irrelevante — vem da sessão no DB.
-	return plain, hash, kbx.GetEnvOrDefaultWithType("KUBEX_BE_REFRESH_TIMEOUT", time.Time{}), nil
+	return plain, hash, kbx.GetEnvOrDefaultWithType("KUBEX_GNYX_REFRESH_TIMEOUT", time.Time{}), nil
 }

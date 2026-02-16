@@ -555,7 +555,7 @@ func resolveFrontendBaseURL() string {
 		base = strings.TrimSpace(kbxGet.EnvOr("KUBEX_PUBLIC_URL", ""))
 	}
 	if base == "" {
-		base = strings.TrimSpace(kbxGet.EnvOr("KUBEX_BE_PUBLIC_URL", ""))
+		base = strings.TrimSpace(kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_URL", ""))
 	}
 	if base == "" {
 		base = kbxGet.ValueOrIf(env == "production", "https://app.kubex.world", "http://localhost:5000")

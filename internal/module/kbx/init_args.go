@@ -121,13 +121,13 @@ func NewInitArgs(
 	// Define default values, if not provided
 	ref := NewReference(name)
 
-	logFile = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_BE_LOG_FILE_PATH", logFile), DefaultGNyxLogPath))
-	configFile = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_BE_CONFIG_FILE_PATH", configFile), DefaultGNyxConfigPath))
-	configDBFile = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_BE_DOMUS_CONFIG_FILE_PATH", configDBFile), DefaultKubexDomusConfigPath))
-	envFile = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_BE_ENV_FILE_PATH", envFile), filepath.Join("$PWD", ".env")))
-	port = kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_BE_PORT", port), "5000")
-	bind = kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_BE_BIND", bind), DefaultServerBind)
-	templatesDir = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_BE_TEMPLATES_DIR", templatesDir), DefaultTemplatesDir))
+	logFile = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_GNYX_LOG_FILE_PATH", logFile), DefaultGNyxLogPath))
+	configFile = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_GNYX_CONFIG_FILE_PATH", configFile), DefaultGNyxConfigPath))
+	configDBFile = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_GNYX_DOMUS_CONFIG_FILE_PATH", configDBFile), DefaultKubexDomusConfigPath))
+	envFile = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_GNYX_ENV_FILE_PATH", envFile), filepath.Join("$PWD", ".env")))
+	port = kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_GNYX_PORT", port), "5000")
+	bind = kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_GNYX_BIND", bind), DefaultServerBind)
+	templatesDir = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_GNYX_TEMPLATES_DIR", templatesDir), DefaultTemplatesDir))
 
 	// Create and return InitArgs instance
 

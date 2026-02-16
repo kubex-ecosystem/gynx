@@ -46,10 +46,10 @@ Examples:
 
 	// GNyx Integration flags
 	cmd.Flags().StringVar(&gnyxURL, "gnyx-url",
-		getEnvOrDefault("GNYX_URL", "http://localhost:"+kbxGet.EnvOr("GNYX_PORT", "5000")),
+		getEnvOrDefault("KUBEX_GNYX_URL", "http://localhost:"+kbxGet.EnvOr("KUBEX_GNYX_PORT", "5000")),
 		"GNyx backend URL")
 	cmd.Flags().StringVar(&gnyxAPIKey, "gnyx-api-key",
-		os.Getenv("GNYX_API_KEY"),
+		os.Getenv("KUBEX_GNYX_API_KEY"),
 		"GNyx API key for authentication")
 
 	// Scheduling flags

@@ -77,9 +77,9 @@ type DataServiceConfig struct {
 func LoadConfig() *Config {
 	ref := types.NewReference("gnyx").GetReference()
 
-	scheme := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_BE_SCHEME", "http"))
-	host := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_BE_HOST", kbxMod.DefaultServerHost))
-	addr := net.JoinHostPort(host, kbxMod.GetEnvOrDefault("KUBEX_BE_PORT", "5000"))
+	scheme := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_GNYX_SCHEME", "http"))
+	host := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_GNYX_HOST", kbxMod.DefaultServerHost))
+	addr := net.JoinHostPort(host, kbxMod.GetEnvOrDefault("KUBEX_GNYX_PORT", "5000"))
 	url := url.URL{Scheme: scheme, Host: addr}
 	baseURL := kbxGet.ValueOrIf(kbxMod.GetEnvOrDefault("KUBEX_ENV", "development") == "production",
 		"https://api.kubex.world",
@@ -87,30 +87,30 @@ func LoadConfig() *Config {
 	)
 
 	defaultTTL := kbxGet.EnvOrType("INVITE_EXPIRATION", 7*24*time.Hour)
-	configPath := os.ExpandEnv(kbxGet.EnvOr("GNYX_CONFIG_PATH", kbxMod.DefaultGNyxConfigPath))
+	configPath := os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_CONFIG_PATH", kbxMod.DefaultGNyxConfigPath))
 	dataServiceConfig := &DataServiceConfig{
-		ConfigPath: os.ExpandEnv(kbxGet.EnvOr("KUBEX_DS_CONFIG_PATH", kbxMod.DefaultKubexDomusConfigPath)),
-		DBName:     kbxGet.EnvOr("KUBEX_DS_DB_NAME", "postgres"),
+		ConfigPath: os.ExpandEnv(kbxGet.EnvOr("KUBEX_DOMUS_CONFIG_PATH", kbxMod.DefaultKubexDomusConfigPath)),
+		DBName:     kbxGet.EnvOr("KUBEX_DOMUS_DB_NAME", "postgres"),
 	}
-	pubKeyPath := os.ExpandEnv(kbxGet.EnvOr("GNYX_PUBLIC_KEY_PATH", kbxMod.DefaultGNyxCertPath))
-	privKeyPath := os.ExpandEnv(kbxGet.EnvOr("GNYX_PRIVATE_KEY_PATH", kbxMod.DefaultGNyxKeyPath))
+	pubKeyPath := os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_KEY_PATH", kbxMod.DefaultGNyxCertPath))
+	privKeyPath := os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PRIVATE_KEY_PATH", kbxMod.DefaultGNyxKeyPath))
 	InitArgs := kbxMod.NewInitArgs(
 		os.ExpandEnv(configPath),
 		filepath.Ext(configPath)[1:],
 		os.ExpandEnv(dataServiceConfig.ConfigPath),
 		filepath.Ext(dataServiceConfig.ConfigPath)[1:],
-		os.ExpandEnv(kbxGet.EnvOr("GNYX_ENV_PATH", kbxMod.DefaultGNyxEnvPath)),
-		os.ExpandEnv(kbxGet.EnvOr("GNYX_LOG_FILE_PATH", kbxMod.DefaultGNyxLogPath)),
+		os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_ENV_PATH", kbxMod.DefaultGNyxEnvPath)),
+		os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_LOG_FILE_PATH", kbxMod.DefaultGNyxLogPath)),
 		ref.GetName(),
-		kbxGet.EnvOrType("GNYX_DEBUG_MODE", false),
-		kbxGet.EnvOrType("GNYX_RELEASE_MODE", false),
-		kbxGet.EnvOrType("GNYX_CONFIDENCIAL_MODE", false),
-		kbxGet.EnvOrType("GNYX_PORT", "4000"),
-		kbxGet.EnvOrType("GNYX_HOST", "localhost"),
+		kbxGet.EnvOrType("KUBEX_GNYX_DEBUG_MODE", false),
+		kbxGet.EnvOrType("KUBEX_GNYX_RELEASE_MODE", false),
+		kbxGet.EnvOrType("KUBEX_GNYX_CONFIDENCIAL_MODE", false),
+		kbxGet.EnvOrType("KUBEX_GNYX_PORT", "4000"),
+		kbxGet.EnvOrType("KUBEX_GNYX_HOST", "localhost"),
 		pubKeyPath,
 		privKeyPath,
-		kbxGet.EnvOr("GNYX_PRIVATE_KEY_PASSWORD", ""),
-		kbxGet.EnvOr("GNYX_TEMPLATES_DIR", kbxMod.DefaultTemplatesDir),
+		kbxGet.EnvOr("KUBEX_GNYX_PRIVATE_KEY_PASSWORD", ""),
+		kbxGet.EnvOr("KUBEX_GNYX_TEMPLATES_DIR", kbxMod.DefaultTemplatesDir),
 	)
 
 	glgAuthConfig := loadGoogleAuthConfig(InitArgs)
