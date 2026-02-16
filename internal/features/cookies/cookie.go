@@ -31,8 +31,8 @@ func ResolveCookieOptions() CookieOptions {
 	env := strings.ToLower(
 		kbxGet.ValueOrIf(
 			kbxGet.EnvOr("GIN_MODE", "debug") == "release", // Confere se está em modo release
-			kbxGet.EnvOr("KUBEX_GNYX_ENV", "production"),         // Se estiver em release, prioriza produção caso variável não esteja setada
-			kbxGet.EnvOr("KUBEX_GNYX_ENV", "development"),        // Senão, assume development como padrão, caso variável não esteja setada
+			kbxGet.EnvOr("KUBEX_GNYX_ENV", "production"),   // Se estiver em release, prioriza produção caso variável não esteja setada
+			kbxGet.EnvOr("KUBEX_GNYX_ENV", "development"),  // Senão, assume development como padrão, caso variável não esteja setada
 		),
 	)
 	publicDomain := strings.TrimSpace(
