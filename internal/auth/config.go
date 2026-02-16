@@ -8,6 +8,7 @@ import (
 	"github.com/kubex-ecosystem/gnyx/internal/config"
 	"github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 
+	kbxGet "github.com/kubex-ecosystem/kbx/get"
 	kbxLoad "github.com/kubex-ecosystem/kbx/load"
 )
 
@@ -28,17 +29,18 @@ func LoadConfig(initArgs *config.ServerConfig) *config.AuthConfig {
 		initArgs = &config.ServerConfig{}
 	}
 
-	accessTokenTTL = kbx.GetValueOrDefaultSimple(initArgs.Runtime.AccessTokenTTL, kbx.GetEnvOrDefaultWithType("KUBEX_AUTH_ACCESS_TTL", 15*time.Minute))
-	refreshTokenTTL = kbx.GetValueOrDefaultSimple(initArgs.Runtime.RefreshTokenTTL, kbx.GetEnvOrDefaultWithType("KUBEX_AUTH_REFRESH_TTL", 30*24*time.Hour))
-	accessTokenPrivateKey = kbx.GetValueOrDefaultSimple(initArgs.Runtime.PrivKeyPath, kbx.GetEnvOrDefault("KUBEX_AUTH_PRIVATE_KEY", "kubex_dev_rsa"))
-	accessTokenPublicKey = kbx.GetValueOrDefaultSimple(initArgs.Runtime.PubCertKeyPath, kbx.GetEnvOrDefault("KUBEX_AUTH_PUBLIC_KEY", kbx.GetValueOrDefaultSimple(os.ExpandEnv("$HOME/.gnyx/github.com/kubex-ecosystem/gnyx/certs/be_rsa.pub"), "")))
-	issuer = kbx.GetValueOrDefaultSimple(initArgs.Runtime.Issuer, kbx.GetEnvOrDefault("KUBEX_AUTH_ISSUER", "gnyx"))
+	accessTokenTTL = kbxGet.ValOrType(initArgs.Runtime.AccessTokenTTL, kbxGet.EnvOrType("KUBEX_AUTH_ACCESS_TTL", 15*time.Minute))
+	refreshTokenTTL = kbxGet.ValOrType(initArgs.Runtime.RefreshTokenTTL, kbxGet.EnvOrType("KUBEX_AUTH_REFRESH_TTL", 30*24*time.Hour))
+
+	accessTokenPrivateKey = os.ExpandEnv(kbxGet.ValOrType(initArgs.Runtime.PrivKeyPath, kbxGet.EnvOr("KUBEX_AUTH_PRIVATE_KEY", kbx.DefaultGNyxKeyPath)))
+	accessTokenPublicKey = os.ExpandEnv(kbxGet.ValOrType(initArgs.Runtime.PubCertKeyPath, kbxGet.EnvOr("KUBEX_AUTH_PUBLIC_KEY", kbx.DefaultGNyxCertPath)))
+	issuer = kbxGet.ValOrType(initArgs.Runtime.Issuer, kbxGet.EnvOr("KUBEX_AUTH_ISSUER", "gnyx"))
 
 	googleCfg := kbxLoad.NewVendorAuthConfig(initArgs.ProvidersConfig)
-	googleCfg.Web.ClientID = kbx.GetValueOrDefaultSimple(googleClientID, kbx.GetEnvOrDefault("GOOGLE_CLIENT_ID", ""))
-	googleCfg.Web.ClientSecret = kbx.GetValueOrDefaultSimple(googleClientSecret, kbx.GetEnvOrDefault("GOOGLE_CLIENT_SECRET", ""))
-	googleCfg.Web.RedirectURL = kbx.GetValueOrDefaultSimple(googleRedirectURL, kbx.GetEnvOrDefault("GOOGLE_REDIRECT_URL", ""))
-	googleCfg.Web.Scopes = kbx.GetEnvOrDefaultWithType("GOOGLE_OAUTH_SCOPES", []string{"openid", "email", "profile"})
+	googleCfg.Web.ClientID = kbxGet.ValOrType(googleClientID, kbxGet.EnvOr("GOOGLE_CLIENT_ID", ""))
+	googleCfg.Web.ClientSecret = kbxGet.ValOrType(googleClientSecret, kbxGet.EnvOr("GOOGLE_CLIENT_SECRET", ""))
+	googleCfg.Web.RedirectURL = kbxGet.ValOrType(googleRedirectURL, kbxGet.EnvOr("GOOGLE_REDIRECT_URL", ""))
+	googleCfg.Web.Scopes = kbxGet.EnvOrType("GOOGLE_OAUTH_SCOPES", []string{"openid", "email", "profile"})
 
 	return &config.AuthConfig{
 		AccessTokenTTL:        accessTokenTTL,

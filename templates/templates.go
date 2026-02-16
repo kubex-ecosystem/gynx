@@ -3,9 +3,10 @@ package templates
 
 import (
 	"embed"
+	"io/fs"
 	"path/filepath"
 
-	"github.com/kubex-ecosystem/gnyx/templates/email"
+	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 	kbxGet "github.com/kubex-ecosystem/kbx/get"
 	gl "github.com/kubex-ecosystem/logz"
 )
@@ -18,29 +19,36 @@ var (
 )
 
 type EmailTemplateFSImpl struct {
-	FS embed.FS
+	Path     string
+	FS       fs.FS
+	DEntries []fs.DirEntry
 }
 
 var EmailTemplateNames = []string{"deal_won", "lead_assigned", "user_invited"}
 
-func GetEmailTemplateFS() *EmailTemplateFSImpl {
-	m := email.NewEmailHTMLRenderer()
-	m.EmailTemplateFSImpl()
-
+func GetEmailTemplateFS(path string) *EmailTemplateFSImpl {
+	if path == "" {
+		path = kbxGet.EnvOr("INVITE_TEMPLATES_DIR", kbxMod.DefaultTemplatesDir)
+	}
+	drs, err := TemplatesVarFS.ReadDir("email")
+	if err != nil {
+		gl.Error("Failed to read email templates directory: %v", err)
+		return nil
+	}
 	return &EmailTemplateFSImpl{
-		FS: TemplatesVarFS,
+		Path:     path,
+		FS:       TemplatesVarFS,
+		DEntries: drs,
 	}
 }
 
 func (e *EmailTemplateFSImpl) ReadFile(name string) ([]byte, error) {
-	return e.FS.ReadFile(
-		filepath.Join(
-			kbxGet.EnvOr("INVITE_TEMPLATES_DIR", "templates"),
-			"email",
-			name,
-			"content.html",
-		),
-	)
+	for _, entry := range e.DEntries {
+		if entry.Name() == name {
+			return TemplatesVarFS.ReadFile(filepath.Join(e.Path, "email", name, "content.html"))
+		}
+	}
+	return nil, fs.ErrNotExist
 }
 
 // ListTemplates lista os nomes dos templates de email disponíveis.
@@ -65,9 +73,14 @@ func ListEmailTemplates() []string {
 	return EmailTemplateNames
 }
 
-func init() {
-	if emailTemplateFS == nil {
-		gl.Debug("Email templates loaded")
-		emailTemplateFS = GetEmailTemplateFS()
-	}
-}
+// func init() {
+// 	if emailTemplateFS == nil {
+// 		gl.Debug("Email templates loaded")
+// 		emailTemplateFS = GetEmailTemplateFS(".")
+// 		if emailTemplateFS == nil {
+// 			gl.Error("Failed to initialize email template filesystem")
+// 		}
+// 		return
+// 	}
+// 	gl.Warnf("Email templates already loaded")
+// }

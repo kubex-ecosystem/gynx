@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	kbxGet "github.com/kubex-ecosystem/kbx/get"
 )
 
 // Reference is the internal struct that holds the server startup unique identifier with name.
@@ -59,6 +61,7 @@ type InitArgs struct {
 	ConfigFile      string `yaml:"config_file,omitempty" json:"config_file,omitempty" mapstructure:"config_file,omitempty"`
 	DBConfigFile    string `yaml:"db_config_file,omitempty" json:"db_config_file,omitempty" mapstructure:"db_config_file,omitempty"`
 	ProvidersConfig string `yaml:"providers_config,omitempty" json:"providers_config,omitempty" mapstructure:"providers_config,omitempty"`
+	TemplateDir     string `yaml:"template_dir,omitempty" json:"template_dir,omitempty" mapstructure:"template_dir,omitempty"`
 
 	// Runtime options
 
@@ -112,33 +115,31 @@ func NewInitArgs(
 	pubCertKeyPath string,
 	pubKeyPath string,
 	pwd string,
+	templatesDir string,
 ) *InitArgs {
 	// Resiliency layer: use os.ExpandEnv to resolve environment variables in paths
 	// Define default values, if not provided
 	ref := NewReference(name)
 
-	defaultConfigFile := os.ExpandEnv(DefaultGNyxConfigPath)
-	logFile = GetValueOrDefaultSimple(
-		logFile,
-		filepath.Join(filepath.Dir(filepath.Dir(defaultConfigFile)), "logs", "gnyx.log"),
-	)
-	configFile = GetValueOrDefaultSimple(configFile, defaultConfigFile)
-	configDBFile = GetValueOrDefaultSimple(configDBFile, filepath.Base(os.ExpandEnv(DefaultKubexDomusConfigPath)))
-	envFile = GetValueOrDefaultSimple(envFile, os.ExpandEnv(filepath.Join("$PWD", ".env")))
-	port = GetValueOrDefaultSimple(port, "5000")
-	bind = GetValueOrDefaultSimple(bind, "0.0.0.0")
+	logFile = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_BE_LOG_FILE_PATH", logFile), DefaultGNyxLogPath))
+	configFile = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_BE_CONFIG_FILE_PATH", configFile), DefaultGNyxConfigPath))
+	configDBFile = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_BE_DOMUS_CONFIG_FILE_PATH", configDBFile), DefaultKubexDomusConfigPath))
+	envFile = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_BE_ENV_FILE_PATH", envFile), filepath.Join("$PWD", ".env")))
+	port = kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_BE_PORT", port), "5000")
+	bind = kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_BE_BIND", bind), DefaultServerBind)
+	templatesDir = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_BE_TEMPLATES_DIR", templatesDir), DefaultTemplatesDir))
 
 	// Create and return InitArgs instance
 
 	return &InitArgs{
 		Reference: ref.GetReference(),
 
-		Debug:          GetValueOrDefaultSimple(debug, false),
-		ReleaseMode:    BoolPtr(GetValueOrDefaultSimple(releaseMode, false)),
-		IsConfidential: GetValueOrDefaultSimple(isConfidential, false),
-		PubCertKeyPath: GetValueOrDefaultSimple(pubCertKeyPath, os.ExpandEnv(DefaultGNyxKeyPath)),
-		PubKeyPath:     GetValueOrDefaultSimple(pubKeyPath, os.ExpandEnv(DefaultGNyxCertPath)),
-		Cwd:            GetValueOrDefaultSimple(pwd, ""),
+		Debug:          kbxGet.ValOrType(debug, false),
+		ReleaseMode:    BoolPtr(kbxGet.ValOrType(releaseMode, false)),
+		IsConfidential: kbxGet.ValOrType(isConfidential, false),
+		PubCertKeyPath: os.ExpandEnv(kbxGet.ValOrType(pubCertKeyPath, DefaultGNyxKeyPath)),
+		PubKeyPath:     os.ExpandEnv(kbxGet.ValOrType(pubKeyPath, DefaultGNyxCertPath)),
+		Cwd:            os.ExpandEnv(kbxGet.ValOrType(pwd, "")),
 
 		ConfigFile:   configFile,
 		DBConfigFile: configDBFile,
@@ -146,5 +147,7 @@ func NewInitArgs(
 		LogFile:      logFile,
 		Port:         port,
 		Bind:         bind,
+		
+		TemplateDir:  templatesDir,
 	}
 }

@@ -16,6 +16,8 @@ import (
 	"github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 	"github.com/kubex-ecosystem/gnyx/internal/runtime/middlewares"
 	"github.com/kubex-ecosystem/gnyx/internal/runtime/wire"
+
+	kbxGet "github.com/kubex-ecosystem/kbx/get"
 	gl "github.com/kubex-ecosystem/logz"
 )
 
@@ -161,20 +163,8 @@ func (s *Server) Shutdown() error {
 func setupJWTCertificates(container *Container) error {
 	cfg := container.GetConfig().ServerConfig.Runtime
 
-	if cfg.PubCertKeyPath == "" || cfg.PrivKeyPath == "" {
-		cfg.PubCertKeyPath = os.ExpandEnv(kbx.GetEnvOrDefault(
-			"KUBEX_BE_PUBLIC_KEY_PATH",
-			"$HOME/.gnyx/github.com/kubex-ecosystem/gnyx/certs/github.com/kubex-ecosystem/gnyx.pub",
-		))
-		cfg.PrivKeyPath = os.ExpandEnv(kbx.GetEnvOrDefault(
-			"KUBEX_BE_PRIVATE_KEY_PATH",
-			"$HOME/.gnyx/github.com/kubex-ecosystem/gnyx/certs/github.com/kubex-ecosystem/gnyx.pem",
-		))
-	}
-
-	if cfg.PrivKeyPath == "" || cfg.PubCertKeyPath == "" {
-		return gl.Errorf("JWT certificate paths are not set in server config")
-	}
+	cfg.PubCertKeyPath = os.ExpandEnv(kbxGet.ValOrType(cfg.PubCertKeyPath, kbx.GetEnvOrDefault("KUBEX_BE_PUBLIC_KEY_PATH", kbx.DefaultGNyxCertPath)))
+	cfg.PrivKeyPath =os.ExpandEnv(kbxGet.ValOrType(cfg.PrivKeyPath, kbx.GetEnvOrDefault("KUBEX_BE_PRIVATE_KEY_PATH", kbx.DefaultGNyxKeyPath)))
 
 	return nil
 }

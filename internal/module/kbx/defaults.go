@@ -5,8 +5,8 @@ package kbx
 const (
 	DefaultKubexConfigDir = "$HOME/.kubex/gnyx"
 
-	DefaultGNyxCAPath   = "$HOME/.kubex/gnyx/ca-cert.pem"
-	DefaultGNyxKeyPath  = "$HOME/.kubex/gnyx/gnyx.key"
+	DefaultGNyxCAPath   = "$HOME/.kubex/gnyx/ca-cert.pem" 
+	DefaultGNyxKeyPath  = "$HOME/.kubex/gnyx/gnyx.key" // Priv
 	DefaultGNyxCertPath = "$HOME/.kubex/gnyx/gnyx.crt"
 
 	DefaultGNyxConfigPath = "$HOME/.kubex/gnyx/config/config.json"
@@ -20,6 +20,8 @@ const (
 	DefaultVaultDir = "$HOME/.kubex/gnyx/secrets"
 
 	DefaultVaultKey = "kubex_kubex-jwt_secret.secret"
+
+	DefaultTemplatesDir = "templates"
 )
 
 const DefaultProvidersConfig = "$HOME/.kubex/gnyx/config/providers.yaml"
@@ -64,7 +66,8 @@ const (
 // Default Server Settings
 const (
 	DefaultServerPort = "5000"
-	DefaultServerHost = "0.0.0.0"
+	DefaultServerBind = "0.0.0.0"
+	DefaultServerHost = "localhost"
 )
 
 // Default HTTP Basic Header Security Keys

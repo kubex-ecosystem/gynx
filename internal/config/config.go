@@ -109,6 +109,7 @@ func LoadConfig() *Config {
 		pubKeyPath,
 		privKeyPath,
 		kbxGet.EnvOr("GNYX_PRIVATE_KEY_PASSWORD", ""),
+		kbxGet.EnvOr("GNYX_TEMPLATES_DIR", kbxMod.DefaultTemplatesDir),
 	)
 
 	glgAuthConfig := loadGoogleAuthConfig(InitArgs)
@@ -142,7 +143,7 @@ func LoadConfig() *Config {
 		Database:             ConfigFromEnv(),
 		DataService:          dataServiceConfig,
 		MailerConfigFilePath: kbxGet.EnvOr("MAILER_CONFIG_PATH", ""),
-		TemplatesDir:         kbxGet.EnvOr("INVITE_TEMPLATES_DIR", "./templates"),
+		TemplatesDir:         kbxGet.EnvOr("INVITE_TEMPLATES_DIR", kbxMod.DefaultTemplatesDir),
 		Invite: &InviteConfig{
 			BaseURL:     baseURL,
 			SenderName:  kbxGet.EnvOr("INVITE_SENDER_NAME", "Equipe Kubex"),

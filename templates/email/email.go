@@ -44,9 +44,9 @@ type EmailHTMLRenderer struct {
 	*templates.EmailTemplateFSImpl
 }
 
-func NewEmailHTMLRenderer() *EmailHTMLRenderer {
+func NewEmailHTMLRenderer(path string) *EmailHTMLRenderer {
 	return &EmailHTMLRenderer{
-		EmailTemplateFSImpl: templates.GetEmailTemplateFS(),
+		EmailTemplateFSImpl: templates.GetEmailTemplateFS(path),
 	}
 }
 
@@ -73,18 +73,18 @@ func (r *EmailHTMLRenderer) ListTemplates() []string {
 	return r.EmailTemplateFSImpl.ListTemplates()
 }
 
-func GetEmailHTMLRenderer() *EmailHTMLRenderer {
-	return NewEmailHTMLRenderer()
+func GetEmailHTMLRenderer(path string) *EmailHTMLRenderer {
+	return NewEmailHTMLRenderer(path)
 }
 
 // GetEmailTemplate retorna o conteúdo do template de email pelo nome.
 func GetEmailTemplate(name string) ([]byte, error) {
-	templateFS := GetEmailHTMLRenderer()
+	templateFS := GetEmailHTMLRenderer("")
 	return templateFS.EmailTemplateFSImpl.ReadFile(name)
 }
 
 // ListEmailTemplates lista os nomes dos templates de email disponíveis.
 func ListEmailTemplates() []string {
-	templateFS := GetEmailHTMLRenderer()
+	templateFS := GetEmailHTMLRenderer("")
 	return templateFS.EmailTemplateFSImpl.ListTemplates()
 }

@@ -12,11 +12,13 @@ import (
 	api "github.com/kubex-ecosystem/gnyx/internal/api/invite"
 	ds "github.com/kubex-ecosystem/gnyx/internal/dsclient/datastore"
 	companystore "github.com/kubex-ecosystem/gnyx/internal/dsclient/datastore/company_store"
+	kbxGet "github.com/kubex-ecosystem/kbx/get"
 
 	userstore "github.com/kubex-ecosystem/gnyx/internal/dsclient/datastore/user_store"
+	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 	invitesvc "github.com/kubex-ecosystem/gnyx/internal/services/invite"
 	crt "github.com/kubex-ecosystem/gnyx/internal/services/security/certificates"
-	"github.com/kubex-ecosystem/kbx"
+	kbx "github.com/kubex-ecosystem/kbx"
 	gl "github.com/kubex-ecosystem/logz"
 
 	"github.com/kubex-ecosystem/gnyx/internal/config"
@@ -123,10 +125,12 @@ func (c *Container) Bootstrap(ctx context.Context) error {
 		if errOSPubKey != nil && !os.IsNotExist(errOSPubKey) {
 			return gl.Errorf("failed to access public certificate key: %v", errOSPubKey)
 		}
+
 		certService := crt.NewCertServiceType(
-			os.ExpandEnv(c.cfg.ServerConfig.Runtime.PrivKeyPath),
-			os.ExpandEnv(c.cfg.ServerConfig.Runtime.PubCertKeyPath),
+			os.ExpandEnv(kbxGet.ValOrType(c.cfg.ServerConfig.Runtime.PrivKeyPath, kbxGet.EnvOr("KUBEX_GNYX_PRIVATE_KEY_PATH", kbxMod.DefaultGNyxKeyPath))),
+			os.ExpandEnv(kbxGet.ValOrType(c.cfg.ServerConfig.Runtime.PubCertKeyPath, kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_KEY_PATH", kbxMod.DefaultGNyxCertPath))),
 		)
+
 		var rsaPrivKey *rsa.PrivateKey
 		if errOSPrivKey != nil || errOSPubKey != nil {
 			err := os.MkdirAll(filepath.Dir(c.cfg.ServerConfig.Runtime.PrivKeyPath), 0700)

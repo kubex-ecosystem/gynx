@@ -73,10 +73,8 @@ func NewServer(cfg *config.ServerConfig) (*Server, error) {
 		return nil, gl.Errorf("server config is nil in application container")
 	}
 
-	if container.GetConfig().ServerConfig.Runtime.PubCertKeyPath == "" || container.GetConfig().ServerConfig.Runtime.PrivKeyPath == "" {
-		container.GetConfig().ServerConfig.Runtime.PubCertKeyPath = os.ExpandEnv(kbx.GetEnvOrDefault("GNYX_PUBLIC_KEY_PATH", "$HOME/.gnyx/github.com/kubex-ecosystem/gnyx/certs/github.com/kubex-ecosystem/gnyx.pub"))
-		container.GetConfig().ServerConfig.Runtime.PrivKeyPath = os.ExpandEnv(kbx.GetEnvOrDefault("GNYX_PRIVATE_KEY_PATH", "$HOME/.gnyx/github.com/kubex-ecosystem/gnyx/certs/github.com/kubex-ecosystem/gnyx.pem"))
-	}
+	container.GetConfig().ServerConfig.Runtime.PubCertKeyPath = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_KEY_PATH", kbx.DefaultGNyxCertPath))
+	container.GetConfig().ServerConfig.Runtime.PrivKeyPath = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PRIVATE_KEY_PATH", kbx.DefaultGNyxKeyPath))
 
 	if container.GetConfig().ServerConfig.Runtime.PrivKeyPath == "" || container.GetConfig().ServerConfig.Runtime.PubCertKeyPath == "" {
 		return nil, gl.Errorf("JWT certificate paths are not set in server config")
@@ -113,8 +111,8 @@ func (s *Server) Start() error {
 		os.Exit(0)
 	}()
 
-	serverCfg.Runtime.Bind = kbxGet.ValueOrIf(len(serverCfg.Runtime.Bind) == 0, kbxGet.EnvOr("GNYX_BIND", "0.0.0.0"), serverCfg.Runtime.Bind)
-	serverCfg.Runtime.Port = kbxGet.ValueOrIf(len(serverCfg.Runtime.Port) == 0, kbxGet.EnvOr("GNYX_PORT", "4000"), serverCfg.Runtime.Port)
+	serverCfg.Runtime.Bind = kbxGet.ValueOrIf(len(serverCfg.Runtime.Bind) == 0, kbxGet.EnvOr("KUBEX_GNYX_BIND", kbx.DefaultServerBind), serverCfg.Runtime.Bind)
+	serverCfg.Runtime.Port = kbxGet.ValueOrIf(len(serverCfg.Runtime.Port) == 0, kbxGet.EnvOr("KUBEX_GNYX_PORT", kbx.DefaultServerPort), serverCfg.Runtime.Port)
 
 	gl.Debugf("binding address: %s", serverCfg.Runtime.Bind)
 	gl.Debugf("binding port: %s", serverCfg.Runtime.Port)
@@ -127,9 +125,9 @@ func (s *Server) Start() error {
 	s.Use(gin.Recovery())
 
 	// Enable logging middleware in release mode
-	s.Use(swm.Logger(gl.GetLoggerZ("github.com/kubex-ecosystem/gnyx"))) //  Por ora, tudo igual
+	s.Use(swm.Logger(gl.GetLoggerZ("gnyx"))) //  Por ora, tudo igual
 
-	if kbxGet.ValOrType[bool](serverCfg.Basic.CORSEnabled, kbxGet.EnvOrType("GNYX_ENABLE_CORS", true)) {
+	if kbxGet.ValOrType[bool](serverCfg.Basic.CORSEnabled, kbxGet.EnvOrType("KUBEX_GNYX_ENABLE_CORS", true)) {
 		if err := swm.SecureServerInit(s.Engine, srvAddr); err != nil {
 			return gl.Errorf("failed to initialize security middleware: %v", err)
 		}
