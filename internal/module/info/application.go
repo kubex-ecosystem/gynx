@@ -56,8 +56,8 @@ func GetDescriptions(descriptionArg []string, _ bool) map[string]string {
 	if err != nil {
 		description += ""
 	} else {
-		if manifest.GetDescription() != "" {
-			description += manifest.GetDescription()
+		if manifest.GetDescription() != "" && description == "" {
+			description = manifest.GetDescription()
 		}
 	}
 

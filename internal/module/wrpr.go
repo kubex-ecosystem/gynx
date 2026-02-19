@@ -1,17 +1,11 @@
 package module
 
 import (
-	"os"
-	"strings"
+	kbxGet "github.com/kubex-ecosystem/kbx/get"
 )
 
 func RegX() *GNyx {
-	var printBannerV = os.Getenv("GROMPT_PRINT_BANNER")
-	if printBannerV == "" {
-		printBannerV = "true"
-	}
-
 	return &GNyx{
-		PrintBanner: strings.ToLower(printBannerV) == "true",
+		PrintBanner: kbxGet.EnvOrType("KUBEX_PRINT_BANNER", kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", false)),
 	}
 }

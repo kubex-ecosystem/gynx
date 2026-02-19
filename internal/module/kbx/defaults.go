@@ -15,6 +15,7 @@ const (
 
 	DefaultKubexDomusConfigPath = "$HOME/.kubex/domus/config/config.json"
 
+	DefaultMailConfigPath       = "$HOME/.kubex/gnyx/config/mail_config.json"
 	DefaultGoogleAuthClientPath = "$HOME/.kubex/gnyx/config/google_auth_client.json"
 
 	DefaultVaultDir = "$HOME/.kubex/gnyx/secrets"
