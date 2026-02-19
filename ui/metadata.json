@@ -1,0 +1,5 @@
+{
+  "name": "GemX Analyzer",
+  "description": "Uma aplicação web que utiliza a API Gemini para analisar a documentação de um projeto de software e fornecer sugestões sobre sua continuidade e viabilidade. O usuário pode colar a documentação, e a IA gera uma análise estruturada.",
+  "requestFramePermissions": []
+}
