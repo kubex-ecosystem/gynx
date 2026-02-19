@@ -1,4 +1,4 @@
-// Package services provides background service orchestration for the kubexbe.
+// Package services provides background service orchestration for the gnyx.
 // This enables autonomous operation independent of web interface.
 package services
 

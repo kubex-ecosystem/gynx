@@ -17,14 +17,14 @@ type KubexAPI struct {
 	// engine *scorecard.Engine
 }
 
-// NewKubexAPI creates a new kubexbe API handler
+// NewKubexAPI creates a new gnyx API handler
 func NewKubexAPI( /* engine *scorecard.Engine */ ) *KubexAPI {
 	return &KubexAPI{
 		// engine: engine,
 	}
 }
 
-// RegisterRoutes registers all kubexbe API routes
+// RegisterRoutes registers all gnyx API routes
 func (a *KubexAPI) RegisterRoutes(mux *http.ServeMux) {
 	// Core scorecard endpoints
 	mux.HandleFunc("/api/v1/scorecard", a.handleScorecard)

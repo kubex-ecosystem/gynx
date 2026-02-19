@@ -1,4 +1,4 @@
-// Package daemon provides background service capabilities for the kubexbe
+// Package daemon provides background service capabilities for the gnyx
 package daemon
 
 import (
@@ -26,7 +26,7 @@ type DaemonConfig struct {
 	HealthCheckInterval  time.Duration `json:"health_check_interval"`
 }
 
-// NewAnalyzerDaemon creates a new kubexbe daemon
+// NewAnalyzerDaemon creates a new gnyx daemon
 func NewAnalyzerDaemon(config DaemonConfig) *AnalyzerDaemon {
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -67,13 +67,13 @@ func (d *AnalyzerDaemon) Stop() {
 	d.cancel()
 }
 
-// registerAsAgent registers kubexbe in GNyx AI Squad system
+// registerAsAgent registers gnyx in GNyx AI Squad system
 func (d *AnalyzerDaemon) registerAsAgent() error {
 	// hostname, _ := os.Hostname()
 
 	// agent := integration.AgentRegistration{
-	// 	Name: fmt.Sprintf("kubexbe-%s", hostname),
-	// 	Type: "kubexbe",
+	// 	Name: fmt.Sprintf("gnyx-%s", hostname),
+	// 	Type: "gnyx",
 	// 	Capabilities: []string{
 	// 		"repository-intelligence",
 	// 		"dora-metrics",
@@ -142,7 +142,7 @@ func (d *AnalyzerDaemon) healthMonitor() {
 // performHealthCheck checks system health and updates GNyx
 func (d *AnalyzerDaemon) performHealthCheck() {
 	// TODO: Implement actual health checks
-	// - Check if kubexbe server is running
+	// - Check if gnyx server is running
 	// - Check if all required services are available
 	// - Check system resources
 	// - Report to GNyx via notification system

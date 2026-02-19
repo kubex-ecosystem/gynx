@@ -1,15 +1,15 @@
 #!/bin/bash
 # Frontend Multi-Provider Validation
-# Tests if the client-side kubexbe works with different AI providers
+# Tests if the client-side gnyx works with different AI providers
 
 echo "🚀 FRONTEND MULTI-PROVIDER VALIDATION"
 echo "====================================="
-echo "Testing client-side kubexbe with multiple AI providers"
+echo "Testing client-side gnyx with multiple AI providers"
 echo
 
 # Check if we're in the right directory
 if [ ! -f "frontend/package.json" ]; then
-    echo "❌ Please run this script from the kubexbe root directory"
+    echo "❌ Please run this script from the gnyx root directory"
     exit 1
 fi
 
@@ -122,7 +122,7 @@ echo "   🔹 OpenAI via Gateway (ready)"
 echo "   🔹 Anthropic via Gateway (ready)"
 echo
 echo "🚀 Frontend is READY for multi-provider support!"
-echo "🌐 Deploy to kubexbe.kubex.world to test with real providers"
+echo "🌐 Deploy to gnyx.kubex.world to test with real providers"
 
 echo
 echo "💡 Next steps:"

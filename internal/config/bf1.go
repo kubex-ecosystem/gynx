@@ -1,4 +1,4 @@
-// Package config provides configuration management for the kubexbe
+// Package config provides configuration management for the gnyx
 package config
 
 import (

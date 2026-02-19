@@ -166,7 +166,7 @@ func (h *Handler) HandleListExtractedProjects(w http.ResponseWriter, r *http.Req
 	projects := []map[string]interface{}{
 		{
 			"id":           "proj_001",
-			"name":         "kubexbe",
+			"name":         "gnyx",
 			"repo_url":     "https://github.com/kubex-ecosystem/gnyx",
 			"extracted_at": "2025-09-15T10:30:00Z",
 			"files_count":  45,

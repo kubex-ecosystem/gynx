@@ -1,4 +1,4 @@
-// Package gateway provides the gateway server functionality for the kubexbe.
+// Package gateway provides the gateway server functionality for the gnyx.
 package gateway
 
 import (

@@ -34,7 +34,7 @@ type EventMetadata struct {
 // Handler processes webhook events and triggers meta-analysis
 type Handler struct {
 	eventQueue  EventQueue
-	kubexbe     AnalyzerActor
+	gnyx        AnalyzerActor
 	recommender RecommenderActor
 	executor    ExecutorActor
 }
@@ -166,10 +166,10 @@ type ExecutionMetadata struct {
 }
 
 // NewHandler creates a new webhook handler with meta-recursive capabilities
-func NewHandler(queue EventQueue, kubexbe AnalyzerActor, recommender RecommenderActor, executor ExecutorActor) *Handler {
+func NewHandler(queue EventQueue, gnyx AnalyzerActor, recommender RecommenderActor, executor ExecutorActor) *Handler {
 	return &Handler{
 		eventQueue:  queue,
-		kubexbe:     kubexbe,
+		gnyx:        gnyx,
 		recommender: recommender,
 		executor:    executor,
 	}
@@ -191,7 +191,7 @@ func (h *Handler) HandleEvent(ctx context.Context, event Event) error {
 // ProcessEvent executes the meta-recursive analysis loop
 func (h *Handler) ProcessEvent(ctx context.Context, event Event) error {
 	// Step 1: Trigger Analysis
-	analysisResult, err := h.kubexbe.TriggerAnalysis(ctx, event)
+	analysisResult, err := h.gnyx.TriggerAnalysis(ctx, event)
 	if err != nil {
 		return gl.Errorf("analysis failed: %v", err)
 	}

@@ -27,8 +27,8 @@ var (
 func NewDaemonCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "daemon",
-		Short: "Start kubexbe as background daemon with GNyx integration",
-		Long: `Start the kubexbe as a background daemon service that integrates with GNyx backend.
+		Short: "Start gnyx as background daemon service",
+		Long: `Start the gnyx as a background daemon service.
 
 The daemon provides:
 • Automatic repository analysis scheduling
@@ -38,9 +38,9 @@ The daemon provides:
 • Meta-recursivity coordination with lookatni/grompt
 
 Examples:
-  kubexbe daemon --gnyx-url=http://localhost:5000 --gnyx-api-key=abc123
-  kubexbe daemon --auto-schedule --schedule-cron="0 2 * * *"
-  kubexbe daemon --notify-channels=discord,email`,
+  gnyx daemon --gnyx-url=http://localhost:5000 --gnyx-api-key=abc123
+  gnyx daemon --auto-schedule --schedule-cron="0 2 * * *"
+  gnyx daemon --notify-channels=discord,email`,
 		RunE: runDaemon,
 	}
 

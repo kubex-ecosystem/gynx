@@ -1,14 +1,15 @@
-// Package web provides web interface for the kubexbe.
+// Package web provides web interface for the gnyx.
 package web
 
 import (
-	gl "github.com/kubex-ecosystem/logz"
 	"io"
 	"io/fs"
 	"net/http"
 	"os"
 	"path"
 	"strings"
+
+	gl "github.com/kubex-ecosystem/logz"
 )
 
 // Handler provides HTTP handlers for the web interface

@@ -5,13 +5,15 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 
 	"github.com/joho/godotenv"
 	"github.com/kubex-ecosystem/gnyx/internal/config"
-	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 	"github.com/kubex-ecosystem/gnyx/internal/runtime/gateway"
 	"github.com/spf13/cobra"
 
+	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
+	vs "github.com/kubex-ecosystem/gnyx/internal/module/version"
 	kbx "github.com/kubex-ecosystem/kbx"
 	kbxGet "github.com/kubex-ecosystem/kbx/get"
 	gl "github.com/kubex-ecosystem/logz"
@@ -33,10 +35,9 @@ func GatewayCmds() *cobra.Command {
 	// var cfgFileExtensions = []string{"yaml", "yml", "jsonc", "json", "xml"}
 	var initArgs = &kbxMod.InitArgs{}
 
-	rootCmd := &cobra.Command{
-		Use:   "gateway",
-		Short: "GNyx Gateway - AI Provider Gateway with Repository Intelligence",
-		Long: `GNyx Gateway provides a unified API for AI providers with enterprise features.
+	printBanner := kbxGet.EnvOrType("KUBEX_PRINT_BANNER", kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", false))
+	short := "GNyx Gateway - AI Provider Gateway with Repository Intelligence"
+	long := `GNyx Gateway provides a unified API for AI providers with enterprise features.
 
 Features:
   • Multi-provider AI gateway (OpenAI, Anthropic, Gemini, Groq, etc.)
@@ -44,41 +45,50 @@ Features:
   • Enterprise production features (rate limiting, circuit breaker, health checks)
   • Real-time streaming with Server-Sent Events (SSE)
   • BYOK (Bring Your Own Key) support
-  • Tenant and user isolation`,
-		Example: `  # Start gateway with default settings
-  kubexbe gateway serve
+  • Tenant and user isolation`
+
+	rootCmd := &cobra.Command{
+		Use:         "gateway",
+		Aliases:     []string{"gw", "srv", "server"},
+		Annotations: GetDescriptions([]string{short, long}, printBanner),
+		Example: `# Start gateway with default settings
+  gnyx gateway up
 
   # Start with custom config and address
-  kubexbe gateway serve -b '0.0.0.0' -p '5000' --config-file './config/config.example.yml'
+  gnyx gateway up -b '0.0.0.0' -p '5000' --config-file './config/config.example.yml'
 
   # Start with debug mode and CORS disable
-  kubexbe gateway serve -b '0.0.0.0' -p '5000' --debug --disableCors`,
+  gnyx gateway up -b '0.0.0.0' -p '5000' --debug --disableCors
+	`,
 	}
 
 	// Add subcommands
-	rootCmd.AddCommand(cmdServe(initArgs))
+	rootCmd.AddCommand(cmdUp(initArgs))
+	rootCmd.AddCommand(cmdDown(initArgs))
 	rootCmd.AddCommand(cmdStatus(initArgs))
 	rootCmd.AddCommand(cmdAdvise(initArgs))
 
 	return rootCmd
 }
 
-// cmdServe starts the gateway server
-func cmdServe(initArgs *kbxMod.InitArgs) *cobra.Command {
+// cmdUp starts the gateway server
+func cmdUp(initArgs *kbxMod.InitArgs) *cobra.Command {
 	printBanner := kbxGet.EnvOrType("KUBEX_PRINT_BANNER", kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", false))
 	short := "Start the gateway server (GUI Enabled)"
 	long := "Start the GNyx Gateway server with enterprise features (GUI Enabled)"
 	examples := []string{
-		"kubexbe gateway serve -b '0.0.0.0' -p '5000' --config-file './config/config.example.yml'",
-		"kubexbe gateway serve -b '0.0.0.0' -p '5000' --debug --disableCors",
+		"gnyx gateway up -b '0.0.0.0' -p '5000' --config-file './config/config.example.yml'",
+		"gnyx gateway up -b '0.0.0.0' -p '5000' --debug --disableCors",
 	}
-	// Serve subcommand
-	serveCmd := &cobra.Command{
-		Use:         "serve",
-		Aliases:     []string{"start", "run"},
+	// Up subcommand
+	upCmd := &cobra.Command{
+		Use:         "up",
+		Aliases:     []string{"run", "start", "serve"},
 		Example:     ConcatenateExamples(examples),
 		Annotations: GetDescriptions([]string{short, long}, printBanner),
+		Version:     kbxGet.ValOrType(vs.GetVersion(), "unknown"),
 		Run: func(cmd *cobra.Command, args []string) {
+			var err error
 			gl.SetDebugMode(initArgs.Debug)
 
 			// Check and load .env file if exists in args and file system
@@ -93,12 +103,9 @@ func cmdServe(initArgs *kbxMod.InitArgs) *cobra.Command {
 			if initArgs.Reference == nil {
 				initArgs.Reference = kbxMod.NewReference(Name)
 			}
-
-			// Variable to hold server config
-			var err error
-
-			// Hydrate config file path with default if not set
-			initArgs.ConfigFile = os.ExpandEnv(kbxGet.ValueOrIf(len(initArgs.ConfigFile) == 0, kbxGet.EnvOr("KUBEX_GNYX_CONFIG_PATH", initArgs.ConfigFile), initArgs.ConfigFile))
+			if len(initArgs.ConfigFile) == 0 {
+				initArgs.ConfigFile = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_CONFIG_PATH", kbxMod.DefaultGNyxConfigPath))
+			}
 
 			// Load or create config file with kbx method
 			kbxConfig, err = kbx.LoadConfigOrDefault[kbx.SrvConfig](initArgs.ConfigFile, true)
@@ -117,18 +124,24 @@ func cmdServe(initArgs *kbxMod.InitArgs) *cobra.Command {
 			if _, err := net.LookupPort("tcp", initArgs.Port); err != nil {
 				gl.Fatalf("Invalid port '%s': %v", initArgs.Port, err)
 			}
-
+			// Apply initArgs to server SrvConfig
 			initArgs.CORSEnabled = kbxGet.BlPtr(!CORSDisabled)
 			cfg.Basic.CORSEnabled = !CORSDisabled
-
-			// Apply initArgs to server SrvConfig
 			cfg.Basic.ReleaseMode = *kbxGet.ValOrType(initArgs.ReleaseMode, &ReleaseMode)
-			cfg.Basic.Debug = initArgs.Debug
+			cfg.Basic.Debug = kbxGet.ValOrType(cfg.Basic.Debug, initArgs.Debug)
+			cfg.Runtime.Bind = kbxGet.ValOrType(cfg.Runtime.Bind, initArgs.Bind)
+			cfg.Runtime.Port = kbxGet.ValOrType(cfg.Runtime.Port, initArgs.Port)
+			cfg.Files.ConfigFile = kbxGet.ValOrType(cfg.Files.ConfigFile, initArgs.ConfigFile)
+			cfg.Files.DBConfigFile = kbxGet.ValOrType(cfg.Files.DBConfigFile, initArgs.DBConfigFile)
+			cfg.Files.MailerConfigFile = kbxGet.ValOrType(cfg.Files.MailerConfigFile, initArgs.MailerConfigFile)
+			cfg.Files.ProvidersConfig = kbxGet.ValOrType(cfg.Files.ProvidersConfig, initArgs.ProvidersConfig)
+			cfg.Files.TemplatesDir = kbxGet.ValOrType(cfg.Files.TemplatesDir, initArgs.TemplatesDir)
+			cfg.Runtime.PubKeyPath = kbxGet.ValOrType(cfg.Runtime.PubKeyPath, initArgs.PubKeyPath)
+			cfg.Runtime.PubCertKeyPath = kbxGet.ValOrType(cfg.Runtime.PubCertKeyPath, initArgs.PubCertKeyPath)
+			cfg.Runtime.PrivKeyPath = kbxGet.ValOrType(cfg.Runtime.PrivKeyPath, initArgs.PrivKeyPath)
+			cfg.InitArgs = initArgs
 
-			cfg.Runtime.Bind = initArgs.Bind
-			cfg.Runtime.Port = initArgs.Port
 			// Start the gateway server
-
 			if cfg.Basic.ReleaseMode {
 				gl.Info("Starting GNyx Gateway in RELEASE mode")
 			} else if cfg.Basic.Debug {
@@ -137,39 +150,65 @@ func cmdServe(initArgs *kbxMod.InitArgs) *cobra.Command {
 				gl.Info("Starting GNyx Gateway in STANDARD mode")
 			}
 
-			cfg.InitArgs = initArgs
-
 			if err := startGateway(cfg); err != nil {
 				gl.Fatalf("Failed to start gateway: %v", err)
 			}
 
-			gl.Success("Gateway stopped successfully")
+			gl.Success("GNyx Gateway stopped successfully")
 		},
 	}
 
 	// Add flags to serve command
-	serveCmd.Flags().BoolVarP(&initArgs.Debug, "debug", "D", false, "Enable debug features (also sets log level to debug. Default: false)")
-	serveCmd.Flags().StringVarP(&Name, "name", "n", "", "Set the server process application name")
-	serveCmd.Flags().BoolVarP(&ReleaseMode, "release", "r", false, "Enable release mode performance optimizations (default: false)")
+	upCmd.Flags().StringVarP(&Name, "name", "n", "", "Set the server process application name")
+	upCmd.Flags().BoolVarP(&initArgs.Debug, "debug", "D", false, "Enable debug features (also sets log level to debug. Default: false)")
+	upCmd.Flags().BoolVarP(&ReleaseMode, "production", "r", false, "Enable release mode performance optimizations (default: false)")
 
-	serveCmd.Flags().StringVarP(&initArgs.LogFile, "log-file", "l", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_LOG_PATH", kbxMod.DefaultGNyxLogPath)), "Path to log file")
-	serveCmd.Flags().StringVarP(&initArgs.EnvFile, "env-file", "e", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_ENV_PATH", kbxMod.DefaultGNyxEnvPath)), "Path to .env file for environment variables")
-	serveCmd.Flags().StringVarP(&initArgs.ConfigFile, "config-file", "f", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_CONFIG_PATH", kbxMod.DefaultGNyxConfigPath)), "Path to gateway configuration file")
-	serveCmd.Flags().StringVarP(&initArgs.DBConfigFile, "db-config", "d", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_DB_CONFIG_PATH", kbxMod.DefaultKubexDomusConfigPath)), "Path to database configuration file")
-	serveCmd.Flags().StringVarP(&initArgs.MailConfigFile, "mail-config", "m", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_MAIL_CONFIG_PATH", kbxMod.DefaultMailConfigPath)), "Path to mail configuration file")
-	serveCmd.Flags().StringVarP(&initArgs.ProvidersConfig, "providers-config", "a", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PROVIDERS_CONFIG_PATH", kbxMod.DefaultProvidersConfig)), "Path to AI providers configuration file")
-	serveCmd.Flags().StringVarP(&initArgs.TemplateDir, "template-dir", "t", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_TEMPLATE_DIR", kbxMod.DefaultTemplatesDir)), "Path to templates directory")
-	serveCmd.Flags().StringVarP(&initArgs.PubKeyPath, "pub-key-path", "P", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PUB_KEY_PATH", kbxMod.DefaultGNyxCAPath)), "Path to public key for JWT signing")
-	serveCmd.Flags().StringVarP(&initArgs.PubCertKeyPath, "pub-cert-key-path", "C", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PUB_CERT_KEY_PATH", kbxMod.DefaultGNyxCertPath)), "Path to public certificate for TLS")
-	serveCmd.Flags().StringVarP(&initArgs.PrivKeyPath, "priv-key-path", "K", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PRIV_KEY_PATH", kbxMod.DefaultGNyxKeyPath)), "Path to private key for JWT signing and TLS")
+	upCmd.Flags().StringVarP(&initArgs.LogFile, "log-file", "l", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_LOG_PATH", kbxMod.DefaultGNyxLogPath)), "Path to log file")
+	upCmd.Flags().StringVarP(&initArgs.EnvFile, "env-file", "e", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_ENV_PATH", kbxMod.DefaultGNyxEnvPath)), "Path to .env file for environment variables")
+	upCmd.Flags().StringVarP(&initArgs.ConfigFile, "config-file", "f", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_CONFIG_PATH", kbxMod.DefaultGNyxConfigPath)), "Path to gateway configuration file")
+	upCmd.Flags().StringVarP(&initArgs.DBConfigFile, "db-config", "d", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_DB_CONFIG_PATH", kbxMod.DefaultKubexDomusConfigPath)), "Path to database configuration file")
+	upCmd.Flags().StringVarP(&initArgs.MailerConfigFile, "mail-config", "m", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_MAIL_CONFIG_PATH", kbxMod.DefaultMailConfigPath)), "Path to mail configuration file")
+	upCmd.Flags().StringVarP(&initArgs.ProvidersConfig, "providers-config", "a", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PROVIDERS_CONFIG_PATH", kbxMod.DefaultProvidersConfig)), "Path to AI providers configuration file")
+	upCmd.Flags().StringVarP(&initArgs.TemplatesDir, "template-dir", "t", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_TEMPLATE_DIR", kbxMod.DefaultTemplatesDir)), "Path to templates directory")
+	upCmd.Flags().StringVarP(&initArgs.PubKeyPath, "pub-key-path", "P", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PUB_KEY_PATH", kbxMod.DefaultGNyxCAPath)), "Path to public key for JWT signing")
+	upCmd.Flags().StringVarP(&initArgs.PubCertKeyPath, "pub-cert-key-path", "C", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PUB_CERT_KEY_PATH", kbxMod.DefaultGNyxCertPath)), "Path to public certificate for TLS")
+	upCmd.Flags().StringVarP(&initArgs.PrivKeyPath, "priv-key-path", "K", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PRIV_KEY_PATH", kbxMod.DefaultGNyxKeyPath)), "Path to private key for JWT signing and TLS")
 
-	serveCmd.Flags().BoolVarP(&CORSDisabled, "disableCors", "c", false, "Disable CORS headers in responses (CORS enabled by default)")
-	serveCmd.Flags().StringVarP(&initArgs.Bind, "binding", "b", kbxGet.EnvOr("KUBEX_GNYX_BIND", "0.0.0.0"), "Server bind address (default: "+kbxGet.EnvOr("KUBEX_GNYX_BIND", "0.0.0.0")+")")
-	serveCmd.Flags().StringVarP(&initArgs.Port, "port", "p", kbxGet.EnvOr("KUBEX_GNYX_PORT", "5000"), "Server port (default: "+kbxGet.EnvOr("KUBEX_GNYX_PORT", "5000")+")")
+	upCmd.Flags().BoolVarP(&CORSDisabled, "disableCors", "c", false, "Disable CORS headers in responses (CORS enabled by default)")
+	upCmd.Flags().StringVarP(&initArgs.Bind, "binding", "b", kbxGet.EnvOr("KUBEX_GNYX_BIND", "0.0.0.0"), "Server bind address (default: "+kbxGet.EnvOr("KUBEX_GNYX_BIND", "0.0.0.0")+")")
+	upCmd.Flags().StringVarP(&initArgs.Port, "port", "p", kbxGet.EnvOr("KUBEX_GNYX_PORT", "5000"), "Server port (default: "+kbxGet.EnvOr("KUBEX_GNYX_PORT", "5000")+")")
 
-	serveCmd.Flags().StringSliceVarP(&initArgs.TrustedProxies, "trusted-proxies", "T", []string{}, "List of trusted proxies client IP resolution")
+	upCmd.Flags().StringSliceVarP(&initArgs.TrustedProxies, "trusted-proxies", "T", []string{}, "List of trusted proxies client IP resolution")
 
-	return serveCmd
+	return upCmd
+}
+
+// cmdDown stops the gateway server
+func cmdDown(initArgs *kbxMod.InitArgs) *cobra.Command {
+	printBanner := kbxGet.EnvOrType("KUBEX_PRINT_BANNER", kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", false))
+	short := "Stop the gateway server"
+	long := "Stop the GNyx Gateway server gracefully"
+	examples := []string{
+		"gnyx gateway down",
+	}
+	downCmd := &cobra.Command{
+		Use:         "down",
+		Aliases:     []string{"stop"},
+		Example:     ConcatenateExamples(examples),
+		Annotations: GetDescriptions([]string{short, long}, printBanner),
+		Run: func(cmd *cobra.Command, args []string) {
+			gl.SetDebugMode(initArgs.Debug)
+			gl.Info("Stopping GNyx Gateway...")
+
+			if err := stopGateway(initArgs); err != nil {
+				gl.Errorf("Failed to stop gateway: %v", err)
+			} else {
+				gl.Success("GNyx Gateway stopped successfully")
+			}
+		},
+	}
+
+	return downCmd
 }
 
 // cmdStatus checks the health status of the gateway server
@@ -216,6 +255,25 @@ func startGateway(config *config.ServerConfig) error {
 	}
 
 	return server.Start()
+}
+
+// stopGateway stops the gateway server gracefully
+func stopGateway(initArgs *kbxMod.InitArgs) error {
+	// For simplicity, this example assumes the gateway can be stopped by sending a shutdown signal to the server process.
+	// In a real implementation, you would need to track the server process and send an appropriate signal or API request to trigger a graceful shutdown.
+
+	gl.Info("Stopping GNyx Gateway...")
+
+	stopGwCommand := "pkill -f 'gnyx gateway up'"
+	if initArgs != nil && initArgs.ConfigFile != "" {
+		stopGwCommand = "pkill -f 'gnyx gateway up -f " + initArgs.ConfigFile + "'"
+	}
+
+	if err := executeCommand(stopGwCommand); err != nil {
+		return gl.Errorf("failed to stop gateway: %v", err)
+	}
+
+	return nil
 }
 
 // executeStatus checks the gateway status
@@ -271,13 +329,24 @@ func adviseCommand(cmd *cobra.Command, args []string) error {
 	gl.Infof("This command provides repository advice using scorecard data and AI providers.")
 	gl.Infof("")
 	gl.Infof("Usage:")
-	gl.Infof("  kubexbe gateway advise --mode exec --provider openai --model gpt-4o-mini --scorecard ./scorecard.json")
+	gl.Infof("  gnyx gateway advise --mode exec --provider openai --model gpt-4o-mini --scorecard ./scorecard.json")
 	gl.Infof("")
 	gl.Infof("Available modes: exec, code, ops, community")
 	gl.Infof("Available providers: openai, anthropic, gemini, groq")
 
 	// TODO: Implement full advise functionality using cmdAdvise
 	return gl.Errorf("advise command not fully implemented yet")
+}
+
+// executeCommand executes a shell command and returns the output or error
+func executeCommand(command string) error {
+	cmd := exec.Command("sh", "-c", command)
+	output, err := cmd.Output()
+	if err != nil {
+		return gl.Errorf("command execution failed: %v", err)
+	}
+	gl.Infof("Command output: %s", string(output))
+	return nil
 }
 
 // loadEnv loads environment variables from a specified .env file

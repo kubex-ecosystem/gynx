@@ -184,7 +184,7 @@ func WireHTTP(mux *gin.Engine, reg *registry.Registry, prodMiddleware *middlewar
 func (h *httpHandlers) healthCheckGin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "healthy",
-		"service": "kubexbe-gw",
+		"service": "gnyx-gw",
 	})
 }
 
@@ -376,7 +376,7 @@ func (h *httpHandlers) productionStatus(w http.ResponseWriter, r *http.Request) 
 	}
 
 	status := map[string]interface{}{
-		"service":   "kubexbe-gw",
+		"service":   "gnyx-gw",
 		"status":    "healthy",
 		"providers": h.registry.ListProviders(),
 	}
@@ -530,7 +530,7 @@ func (h *httpHandlers) handleRepositoryScorecard(w http.ResponseWriter, r *http.
 	// TODO: Implement with real scorecard engine
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("X-Schema-Version", "scorecard@1.0.0")
-	w.Header().Set("X-Server-Version", "kubexbe-v1.0.0")
+	w.Header().Set("X-Server-Version", "gnyx-v1.0.0")
 
 	// Placeholder response
 	placeholder := map[string]interface{}{
@@ -594,7 +594,7 @@ func (h *httpHandlers) handleRepositoryHealth(w http.ResponseWriter, r *http.Req
 			"chi_calculator":   "not_initialized",
 			"ai_metrics":       "not_initialized",
 		},
-		"version": "kubexbe-v1.0.0",
+		"version": "gnyx-v1.0.0",
 	}
 	json.NewEncoder(w).Encode(health)
 }

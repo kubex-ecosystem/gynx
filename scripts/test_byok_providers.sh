@@ -4,11 +4,11 @@
 
 echo "🔑 BYOK MULTI-PROVIDER VALIDATION"
 echo "================================="
-echo "Testing client-side kubexbe with different API providers"
+echo "Testing client-side gnyx with different API providers"
 echo
 
 # Test the deployed frontend
-FRONTEND_URL="https://kubexbe.kubex.world"
+FRONTEND_URL="https://gnyx.kubex.world"
 echo "🌐 Testing deployed frontend: $FRONTEND_URL"
 
 if curl -s "$FRONTEND_URL" > /dev/null; then

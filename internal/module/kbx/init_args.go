@@ -55,15 +55,15 @@ type InitArgs struct {
 
 	// Paths and files
 
-	Cwd             string `yaml:"cwd,omitempty" json:"cwd,omitempty" mapstructure:"cwd,omitempty"`
-	LogFile         string `yaml:"log_file,omitempty" json:"log_file,omitempty" mapstructure:"log_file,omitempty"`
-	EnvFile         string `yaml:"env_file,omitempty" json:"env_file,omitempty" mapstructure:"env_file,omitempty"`
-	ConfigFile      string `yaml:"config_file,omitempty" json:"config_file,omitempty" mapstructure:"config_file,omitempty"`
-	DBConfigFile    string `yaml:"db_config_file,omitempty" json:"db_config_file,omitempty" mapstructure:"db_config_file,omitempty"`
-	MailConfigFile  string `yaml:"mail_config_file,omitempty" json:"mail_config_file,omitempty" mapstructure:"mail_config_file,omitempty"`
-	ProvidersConfig string `yaml:"providers_config,omitempty" json:"providers_config,omitempty" mapstructure:"providers_config,omitempty"`
-	ScorecardPath   string `yaml:"scorecard_path,omitempty" json:"scorecard_path,omitempty" mapstructure:"scorecard_path,omitempty"`
-	TemplateDir     string `yaml:"template_dir,omitempty" json:"template_dir,omitempty" mapstructure:"template_dir,omitempty"`
+	Cwd              string `yaml:"cwd,omitempty" json:"cwd,omitempty" mapstructure:"cwd,omitempty"`
+	LogFile          string `yaml:"log_file,omitempty" json:"log_file,omitempty" mapstructure:"log_file,omitempty"`
+	EnvFile          string `yaml:"env_file,omitempty" json:"env_file,omitempty" mapstructure:"env_file,omitempty"`
+	ConfigFile       string `yaml:"config_file,omitempty" json:"config_file,omitempty" mapstructure:"config_file,omitempty"`
+	DBConfigFile     string `yaml:"db_config_file,omitempty" json:"db_config_file,omitempty" mapstructure:"db_config_file,omitempty"`
+	MailerConfigFile string `yaml:"mail_config_file,omitempty" json:"mail_config_file,omitempty" mapstructure:"mail_config_file,omitempty"`
+	ProvidersConfig  string `yaml:"providers_config,omitempty" json:"providers_config,omitempty" mapstructure:"providers_config,omitempty"`
+	ScorecardPath    string `yaml:"scorecard_path,omitempty" json:"scorecard_path,omitempty" mapstructure:"scorecard_path,omitempty"`
+	TemplatesDir     string `yaml:"template_dir,omitempty" json:"template_dir,omitempty" mapstructure:"template_dir,omitempty"`
 
 	// Runtime options
 
@@ -150,6 +150,6 @@ func NewInitArgs(
 		Port:         port,
 		Bind:         bind,
 
-		TemplateDir: templatesDir,
+		TemplatesDir: templatesDir,
 	}
 }

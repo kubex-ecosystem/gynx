@@ -20,10 +20,20 @@ func (m *GNyx) Alias() string {
 	return ""
 }
 func (m *GNyx) ShortDescription() string {
-	return "AI tools help in the editor, but they stop antes do PR, lacking governance."
+	return "A powerful AI powered application which provides a full suite of tools with Backend, CLI, GUI interfaces, and much more."
 }
 func (m *GNyx) LongDescription() string {
-	return `GNyx: An AI-powered tool that enhances code quality and governance by providing intelligent suggestions and reviews before pull requests. It integrates seamlessly into your development workflow, ensuring that your code meets the highest standards of quality and compliance.`
+	return `GNyx is a powerful AI powered application which provides a full suite of tools with Backend, CLI, GUI interfaces, and much more.
+It is designed to be a versatile and comprehensive solution for developers, DevOps teams, and AI practitioners. It offers a wide range of features including:
+
+- Repository analysis and insights
+- AI-driven code review and recommendations
+- Integration with popular AI providers like OpenAI, Anthropic, Gemini, and Groq
+- A user-friendly CLI for seamless interaction
+- A robust backend for handling complex operations
+- A GUI for visualizing data and managing configurations
+
+Whether you're looking to optimize your codebase, gain insights into your repositories, or leverage AI for enhanced development workflows, GNyx has you covered.`
 }
 func (m *GNyx) Usage() string {
 	return "gnyx [command] [args]"

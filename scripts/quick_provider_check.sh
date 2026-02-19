@@ -4,10 +4,10 @@
 echo "🎯 QUICK FRONTEND PROVIDER TEST"
 echo "==============================="
 
-# Check if kubexbe.kubex.world is accessible
+# Check if gnyx.kubex.world is accessible
 echo "1️⃣ Testing deployed frontend..."
-if curl -s https://kubexbe.kubex.world/ > /dev/null; then
-    echo "✅ Frontend is accessible at kubexbe.kubex.world"
+if curl -s https://gnyx.kubex.world/ > /dev/null; then
+    echo "✅ Frontend is accessible at gnyx.kubex.world"
 else
     echo "❌ Frontend not accessible"
     exit 1
@@ -105,7 +105,7 @@ echo
 echo "🚀 READY FOR MULTI-PROVIDER TESTING!"
 echo
 echo "💡 Manual test steps:"
-echo "   1. Open https://kubexbe.kubex.world/"
+echo "   1. Open https://gnyx.kubex.world/"
 echo "   2. Look for provider selector in UI"
 echo "   3. Try switching between providers"
 echo "   4. Test analysis with different providers"
