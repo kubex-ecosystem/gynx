@@ -20,7 +20,7 @@ type PGConfig struct {
 }
 
 const (
-	envDSN             = "KUBEX_DATABASE_DSN"
+	envDSN             = "KUBEX_DOMUS_DSN"
 	envFallbackDSN     = "postgres_URL"
 	envMaxIdle         = "postgres_MAX_IDLE_CONNS"
 	envMaxOpen         = "postgres_MAX_OPEN_CONNS"

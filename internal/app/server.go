@@ -72,11 +72,6 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	if providerRegistry == nil {
 		return nil, gl.Errorf("provider registry is nil after loading")
 	}
-	if len(providerRegistry.ListProviders()) == 0 {
-		gl.Warn("No providers found in registry - check your providers config file")
-	} else {
-		gl.Infof("Loaded %d providers into registry", len(providerRegistry.ListProviders()))
-	}
 
 	// Create route registrar function
 	routeRegistrar := func(r *gin.RouterGroup, cont any) gin.IRoutes {
@@ -149,6 +144,11 @@ func (s *Server) Start() error {
 
 	swm := middlewares.NewProductionMiddleware(middlewares.DefaultProductionConfig())
 
+	// Register all providers with production middleware
+	for _, providerName := range s.registry.ListProviders() {
+		swm.RegisterProvider(providerName)
+	}
+
 	// Recover middleware
 	s.Use(gin.Recovery())
 
@@ -182,6 +182,20 @@ func setupJWTCertificates(container *Container) error {
 	cfg.PrivKeyPath = os.ExpandEnv(kbxGet.ValOrType(cfg.PrivKeyPath, kbx.GetEnvOrDefault("KUBEX_GNYX_PRIVATE_KEY_PATH", kbx.DefaultGNyxKeyPath)))
 
 	return nil
+}
+
+func (s *Server) logProviderRegistry() {
+	if s.registry == nil {
+		gl.Warn("Provider registry is nil - this may cause issues with provider resolution")
+	} else if len(s.registry.ListProviders()) == 0 {
+		gl.Warn("Provider registry is empty - no providers available for resolution")
+	} else {
+		gl.Noticef("Provider registry contains %d providers", len(s.registry.ListProviders()))
+		for _, p := range s.registry.ListProviders() {
+			r := s.registry.Resolve(p)
+			gl.Debugf(" - Provider: %s, Available: %v", r.Name(), r.Available() == nil)
+		}
+	}
 }
 
 // Helper functions

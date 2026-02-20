@@ -91,6 +91,8 @@ func cmdUp(initArgs *kbxMod.InitArgs) *cobra.Command {
 			var err error
 			gl.SetDebugMode(initArgs.Debug)
 
+			initArgs.EnvFile = os.ExpandEnv(kbxGet.ValOrType(initArgs.EnvFile, kbxGet.EnvOr("KUBEX_GNYX_ENV_PATH", kbxMod.DefaultGNyxEnvPath)))
+
 			// Check and load .env file if exists in args and file system
 			if len(initArgs.EnvFile) > 0 {
 				// Load specified env file, if exists
@@ -98,6 +100,7 @@ func cmdUp(initArgs *kbxMod.InitArgs) *cobra.Command {
 					loadEnv(initArgs.EnvFile)
 				} else {
 					gl.Warnf(".env file specified but not found at %s, proceeding with existing environment variables", initArgs.EnvFile)
+					gl.Debugf("Env file load error: %v", err)
 				}
 			}
 			if initArgs.Reference == nil {
