@@ -57,6 +57,8 @@ func SwaggerMain(dbService services.Service[any], _ error) {
 				Debug:          kbxGet.EnvOr("KUBEX_DEBUG_MODE", "false") == "true",
 				ReleaseMode:    kbxGet.EnvOr("KUBEX_RELEASE_MODE", "false") == "true",
 				IsConfidential: kbxGet.EnvOr("KUBEX_CONFIDENTIAL_MODE", "false") == "true",
+				CORSEnabled:    kbxGet.EnvOr("KUBEX_ENABLE_CORS", "true") == "true",
+				UIDisabled:     kbxGet.EnvOr("KUBEX_ENABLE_UI", "true") == "true",
 			},
 		},
 	}

@@ -52,6 +52,7 @@ type InitArgs struct {
 	IsConfidential bool     `yaml:"is_confidential" json:"is_confidential" mapstructure:"is_confidential"`
 	CORSEnabled    *bool    `yaml:"enable_cors" json:"enable_cors" mapstructure:"enable_cors"`
 	TrustedProxies []string `yaml:"trusted_proxies" json:"trusted_proxies" mapstructure:"trusted_proxies"`
+	UIEnabled      bool     `yaml:"ui_enabled" json:"ui_enabled" mapstructure:"ui_enabled"`
 
 	// Paths and files
 
@@ -118,6 +119,7 @@ func NewInitArgs(
 	pubKeyPath string,
 	pwd string,
 	templatesDir string,
+	uiEnabled bool,
 ) *InitArgs {
 	// Resiliency layer: use os.ExpandEnv to resolve environment variables in paths
 	// Define default values, if not provided

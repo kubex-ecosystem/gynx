@@ -12,6 +12,7 @@ import (
 	api "github.com/kubex-ecosystem/gnyx/internal/api/invite"
 	ds "github.com/kubex-ecosystem/gnyx/internal/dsclient/datastore"
 	companystore "github.com/kubex-ecosystem/gnyx/internal/dsclient/datastore/company_store"
+	ui "github.com/kubex-ecosystem/gnyx/internal/features/ui"
 	kbxGet "github.com/kubex-ecosystem/kbx/get"
 
 	userstore "github.com/kubex-ecosystem/gnyx/internal/dsclient/datastore/user_store"
@@ -37,6 +38,7 @@ type Container struct {
 	factory    *dsclient.AdapterFactory      `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 	stores     map[string]dsclient.StoreType `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 	imapSvc    *mailer.IMAPService           `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	uiSvc      *ui.UIService                 `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 
 	// Controllers genéricos CRUD usando stores do DS
 	UserController    *genericapi.Controller[dsclient.User]    `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
@@ -88,11 +90,14 @@ func NewContainer(ctx context.Context, cfg *config.Config) (*Container, error) {
 	stores["user"] = usrStore
 	stores["invite"] = invStore
 
+	uiSvc := ui.NewUIService()
+
 	return &Container{
 		templates:  templateLoader,
 		smtpSender: mailSender,
 		imapSvc:    imapSvc,
 		inviteSvc:  inviteSvc,
+		uiSvc:      uiSvc,
 
 		stores: stores,
 
@@ -277,6 +282,10 @@ func (c *Container) GetDSClient(ctx context.Context) any {
 // IMAPService retorna o serviço IMAP opcional.
 func (c *Container) IMAPService() any {
 	return c.imapSvc
+}
+
+func (c *Container) UIService() any {
+	return kbxGet.ValueOrIf(!c.cfg.ServerConfig.Basic.UIDisabled, kbxGet.ValOrType(c.uiSvc, ui.NewUIService()), nil)
 }
 
 func loadTemplates(dir string) (*mailer.TemplateLoader, error) {

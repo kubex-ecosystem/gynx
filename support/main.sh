@@ -560,7 +560,7 @@ main() {
     log fatal "Failed to display process information." true
   }
 
-  if [[ "${_RUN_PRE_SCRIPTS:-false}" != "false" ]]; then
+  if [[ "${_RUN_PRE_SCRIPTS:-true}" != "false" ]]; then
     __run_custom_scripts "pre" "${_main_args[@]}" || {
       log error "pre-installation scripts: $?"
       log fatal "Failed to execute pre-installation scripts." true
@@ -571,7 +571,7 @@ main() {
     log fatal "Script execution failed." true
   }
 
-  if [[ "${_RUN_POST_SCRIPTS:-false}" != "false" ]]; then
+  if [[ "${_RUN_POST_SCRIPTS:-true}" != "false" ]]; then
     __run_custom_scripts "post" "${_main_args[@]}" || {
       log error "post-installation scripts: $?"
       log fatal "Failed to execute post-installation scripts." true

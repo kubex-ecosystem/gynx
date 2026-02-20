@@ -111,6 +111,7 @@ func LoadConfig() *Config {
 		privKeyPath,
 		kbxGet.EnvOr("KUBEX_GNYX_PRIVATE_KEY_PASSWORD", ""),
 		kbxGet.EnvOr("KUBEX_GNYX_TEMPLATES_DIR", kbxMod.DefaultTemplatesDir),
+		kbxGet.EnvOrType("KUBEX_GNYX_DISABLE_UI", false),
 	)
 
 	glgAuthConfig := loadGoogleAuthConfig(InitArgs)

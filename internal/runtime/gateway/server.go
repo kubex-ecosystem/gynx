@@ -15,7 +15,9 @@ import (
 	"github.com/kubex-ecosystem/gnyx/internal/app"
 	"github.com/kubex-ecosystem/gnyx/internal/config"
 	"github.com/kubex-ecosystem/gnyx/internal/features/providers/registry"
+	"github.com/kubex-ecosystem/gnyx/internal/features/ui"
 	"github.com/kubex-ecosystem/gnyx/internal/runtime/middlewares"
+	"github.com/kubex-ecosystem/gnyx/internal/web"
 
 	"github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 
@@ -141,7 +143,7 @@ func (s *Server) Start() error {
 			c.Header("Access-Control-Allow-Credentials", "true")
 			c.Header("Access-Control-Allow-Methods", "*")
 			c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-			c.Header("Content-Security-Policy", "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;")
+			// c.Header("Content-Security-Policy", "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;")
 			c.Header("Referrer-Policy", "no-referrer")
 
 			if c.Request.Method == "OPTIONS" {
@@ -169,6 +171,15 @@ func (s *Server) Start() error {
 		c.Redirect(http.StatusTemporaryRedirect, redirectTo)
 	})
 	routes.RegisterRoutes(s.Group("/api/v1"), s.container)
+
+	if uiroutes, err := web.NewHandler(ui.NewUIService().GetWebFS()); err != nil {
+		gl.Log("warn", "Failed to initialize web handler for UI routes: %v", err)
+	} else {
+		s.NoRoute(func(c *gin.Context) {
+			uiroutes.ServeHTTP(c.Writer, c.Request)
+		})
+		gl.Info("UI routes registered successfully")
+	}
 
 	// Start server
 	gl.Successf("GNyx listening on %s (Enterprise features enabled)", srvAddr)

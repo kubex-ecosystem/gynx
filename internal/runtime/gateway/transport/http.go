@@ -18,6 +18,7 @@ import (
 	"github.com/kubex-ecosystem/gnyx/internal/features/health"
 	"github.com/kubex-ecosystem/gnyx/internal/features/lookatni"
 	"github.com/kubex-ecosystem/gnyx/internal/features/providers/registry"
+	"github.com/kubex-ecosystem/gnyx/internal/features/ui"
 	"github.com/kubex-ecosystem/gnyx/internal/runtime/middlewares"
 
 	// providers "github.com/kubex-ecosystem/gnyx/internal/types"
@@ -158,15 +159,14 @@ func WireHTTP(mux *gin.Engine, reg *registry.Registry, prodMiddleware *middlewar
 
 	routes.RegisterRoutes(mux.Group("/api/v1"), container)
 
-	// Auth endpoints (BE-native, sem Supabase)
-	// if err := routes.RegisterAuthHTTP(mux, dsClient, initData); err != nil {
-	// 	gl.Warnf("failed to register auth routes: %v", err)
-	// } else {
-	// 	gl.Info("Auth endpoints enabled at /api/v1/auth/* and /api/v1/me")
-	// }
+	// Web Interface - Frontend embarcado! (registrado por último para não capturar /invite) - Se habilitado
+	uiSvc, ok := container.UIService().(*ui.UIService)
+	if !ok || uiSvc == nil {
+		gl.Log("warn", "UIService is not available. Web interface will be disabled.")
+		return
+	}
 
-	// Web Interface - Frontend embarcado! 🚀 (registrado por último para não capturar /invite)
-	webHandler, err := web.NewHandler()
+	webHandler, err := web.NewHandler(uiSvc.GetWebFS())
 	if err != nil {
 		gl.Log("warn", "Failed to initialize web interface: %v", err)
 	} else {

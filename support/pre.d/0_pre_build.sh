@@ -50,7 +50,7 @@ build_frontend() {
           echo "Failed to install frontend dependencies."
       })"
 
-      _frontend_build_output="$(pnpm run build > /dev/null 2>&1 || {
+      _frontend_build_output="$(pnpm build > /dev/null 2>&1 || {
           echo "Failed to build frontend assets."
       })"
 
@@ -67,20 +67,20 @@ build_frontend() {
           exit 1
       fi
 
-      if [[ -d "${_ROOT_DIR}/internal/analyzer/embedded/guiweb" ]]; then
+      if [[ -d "${_ROOT_DIR}/internal/features/ui/web" ]]; then
           log notice "Removing old build directory..."
-          rm -rf "${_ROOT_DIR}/internal/analyzer/embedded/guiweb" || {
+          rm -rf "${_ROOT_DIR}/internal/features/ui/web" || {
               log fatal "Failed to remove old build directory." true
               exit 1
           }
       fi
 
-      mv './dist' "${_ROOT_DIR}/internal/analyzer/embedded/guiweb" || {
-          log fatal "Failed to move build directory to embedded/guiweb." true
+      mv -f './dist' "${_ROOT_DIR}/internal/features/ui/web" || {
+          log fatal "Failed to move build directory to internal/features/ui/web." true
           exit 1
       }
 
-      log success "Frontend build moved to embedded/guiweb directory successfully." true
+      log success "Frontend build moved to internal/features/ui/web directory successfully." true
   else
       log fatal "npm is not installed. Please install Node.js and npm to continue." true
       exit 1

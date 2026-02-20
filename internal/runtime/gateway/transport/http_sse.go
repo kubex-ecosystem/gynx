@@ -23,6 +23,7 @@ type httpHandlersSSE struct {
 // 	mux.HandleFunc("/v1/providers", h.listProviders)
 // }
 
+// WireHTTPSSE sets up HTTP routes with SSE support for streaming responses
 func WireHTTPSSE(mux *http.ServeMux, reg *registry.Registry) {
 	hh := &httpHandlersSSE{reg: reg /* engine: nil */} // TODO: Initialize engine when ready
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusNoContent) })

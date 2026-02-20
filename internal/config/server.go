@@ -58,6 +58,7 @@ func NewServerConfig() *ServerConfig {
 		privKeyPath,
 		kbxMod.GetEnvOrDefault("KUBEX_GNYX_PRIVATE_KEY_PASSWORD", ""),
 		kbxMod.GetEnvOrDefault("KUBEX_GNYX_TEMPLATES_DIR", kbxMod.DefaultTemplatesDir),
+		kbxGet.EnvOrType("KUBEX_GNYX_DISABLE_UI", false),
 	)
 	cfg := &ServerConfig{
 		SrvConfig: kbx.NewSrvArgs(),
