@@ -33,7 +33,7 @@ yarn-error.log*
 # React
 !build/index.html
 frontend/build/
-frontend/
+frontend/dist/
 !ui/**/*.md
 
 # IDEs
@@ -78,6 +78,6 @@ tasks/
 .venv-*
 .venv-hooks
 cmd/*_bin*
-frontend
+frontend/node_modules/
 internal/**/*.template
 tests/apocalipse.sh
