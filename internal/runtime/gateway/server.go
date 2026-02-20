@@ -21,6 +21,8 @@ import (
 
 	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 	kbxGet "github.com/kubex-ecosystem/kbx/get"
+	kbxTReg "github.com/kubex-ecosystem/kbx/tools/providers"
+	kbxTypes "github.com/kubex-ecosystem/kbx/types"
 
 	gl "github.com/kubex-ecosystem/logz"
 )
@@ -30,7 +32,7 @@ type Server struct {
 	*gin.Engine
 
 	cfg        *config.ServerConfig
-	registry   *registry.Registry
+	registry   *kbxTReg.Registry
 	middleware *middlewares.ProductionMiddleware
 	handler    http.Handler
 	once       sync.Once
@@ -40,38 +42,37 @@ type Server struct {
 // NewServer creates a new gateway server instance
 func NewServer(cfg *config.ServerConfig) (*Server, error) {
 	engine := gin.New()
-
-	var reg *registry.Registry
 	var err error
-	if len(cfg.ProvidersConfig) > 0 {
-		// Load providers registry for gateway, if specified
-		reg, err = registry.Load(cfg.ProvidersConfig)
-		if err != nil {
-			return nil, gl.Errorf("failed to load gateway providers registry: %v", err)
-		}
-	} else {
-		// Create an empty registry if no config is provided
-		reg = &registry.Registry{}
-	}
 
 	// Initialize production middleware
 	prodConfig := middlewares.DefaultProductionConfig()
 	prodMiddleware := middlewares.NewProductionMiddleware(prodConfig)
 
-	// Register all providers with production middleware
-	for _, providerName := range reg.ListProviders() {
-		prodMiddleware.RegisterProvider(providerName)
+	// Load providers registry for gateway, if specified
+	reg, err := kbxTReg.Load(
+		cfg.Files.ProvidersConfig,
+	)
+	if err != nil {
+		return nil, gl.Errorf("failed to load gateway providers registry: %v", err)
+	}
+	if reg == nil {
+		gl.Warn("Provider registry is nil after loading - this may cause issues with provider resolution in the gateway")
+	} else {
+		for _, providerName := range reg.ListProviders() {
+			prodMiddleware.RegisterProvider(providerName)
+		}
 	}
 
-	// config.Config
-
+	// Bootstrap application container
 	container, err := app.NewContainer(context.Background(), config.LoadConfig())
 	if err != nil {
 		return nil, gl.Errorf("failed to bootstrap application container: %v", err)
 	}
-
 	if container.GetConfig().ServerConfig == nil {
-		return nil, gl.Errorf("server config is nil in application container")
+		sCfg := container.GetConfig()
+		sCfg.ServerConfig = config.NewServerConfig()
+		sCfg.ServerConfig.SrvConfig = kbxTypes.NewSrvConfig()
+		container, err = app.NewContainer(context.Background(), sCfg)
 	}
 
 	container.GetConfig().ServerConfig.Runtime.PubCertKeyPath = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_KEY_PATH", kbxMod.DefaultGNyxCertPath))
@@ -211,7 +212,7 @@ func (s *Server) logProviderRegistry() {
 	} else {
 		gl.Noticef("Provider registry contains %d providers", len(s.registry.ListProviders()))
 		for _, p := range s.registry.ListProviders() {
-			r := s.registry.Resolve(p)
+			r := s.registry.ResolveProvider(p)
 			gl.Debugf(" - Provider: %s, Available: %v", r.Name(), r.Available() == nil)
 		}
 	}

@@ -57,8 +57,18 @@ func NewContainer(ctx context.Context, cfg *config.Config) (*Container, error) {
 		return nil, gl.Errorf("failed to load templates: %v", err)
 	}
 
-	mailSender := buildMailer(cfg.MailerConfigFilePath)
-	imapSvc := buildIMAPService(cfg.MailerConfigFilePath)
+	mlCfgFile := os.ExpandEnv(
+		kbxGet.ValOrType(
+			cfg.MailerConfigFilePath,
+			kbxGet.ValOrType(
+				cfg.ServerConfig.SrvConfig.Files.MailerConfigFile,
+				kbxGet.EnvOr("KUBEX_GNYX_MAILER_CONFIG_PATH", kbxMod.DefaultMailConfigPath),
+			),
+		),
+	)
+	mailSender := buildMailer(mlCfgFile)
+
+	imapSvc := buildIMAPService(mlCfgFile)
 	invStore, err := ds.GetInviteStore(ctx)
 	if err != nil {
 		return nil, gl.Errorf("failed to create invite store: %v", err)
@@ -147,23 +157,21 @@ func (c *Container) Bootstrap(ctx context.Context) error {
 				return gl.Errorf("failed to create directory for JWT certificates: %v", err)
 			}
 
-			gl.Notice("🔐 Generating new JWT certificates...")
+			// gl.Notice("🔐 Generating new JWT certificates...")
 			if _, _, _, err = certService.GenSelfCert(nil); err != nil {
 				return gl.Errorf("failed to generate JWT certificates: %v", err)
 			}
-			gl.Notice("🔐 JWT certificates generated successfully.")
+			gl.Debug("JWT certificates generated successfully.")
 		} else {
-			gl.Debug("🔐 Loading JWT certificates...")
+			// gl.Debug("🔐 Loading JWT certificates...")
 			var err error
 			if rsaPrivKey, err = certService.DecryptPrivateKey(nil); err != nil {
 				return gl.Errorf("failed to decrypt JWT private key: %v", err)
 			}
 		}
-		gl.Debugf("🔐 JWT certificates loaded successfully. PrivKey Decrypted: %v", rsaPrivKey != nil)
+		gl.Noticef("🔐 JWT certificates loaded successfully. PrivKey Decrypted: %v", (rsaPrivKey != nil))
 	}
 
-	// DSClient initialization
-	gl.Debug("Initializing DSClient...")
 	db := dsclient.NewDSClient(ctx, c.cfg, gl.GetLoggerZ("gateway.routes"))
 	if db == nil {
 		return gl.Errorf("failed to create dsclient")
@@ -172,20 +180,18 @@ func (c *Container) Bootstrap(ctx context.Context) error {
 		return gl.Errorf("failed to init dsclient: %v", err)
 	}
 	c.db = db
-	gl.Debug("DSClient initialized successfully.")
-	// GORM DB initialization (temporário, para fallback ORM)
-	gl.Debug("Initializing GORM DB...")
+	// gl.Debug("DSClient initialized successfully.")
 	gormDB, err := c.initGORM(ctx)
 	if err != nil {
-		gl.Debugf("GORM DB initialization failed: %v. Stores will use DS only.", err)
+		gl.Noticef("GORM initialization failed: %v. Stores will use DS only.", err)
 		c.gormDB = nil
 	} else {
 		c.gormDB = gormDB
-		gl.Debug("GORM DB initialized successfully.")
+		gl.Debug("GORM initialized successfully.")
 	}
 
 	// AdapterFactory creation
-	gl.Debug("Creating AdapterFactory...")
+	// gl.Debug("Creating AdapterFactory...")
 	factory, err := db.NewAdapterFactory(ctx, "domus", c.gormDB, nil)
 	if err != nil {
 		return gl.Errorf("failed to create adapter factory: %v", err)

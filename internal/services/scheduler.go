@@ -1,11 +1,14 @@
 package services
 
-import "github.com/kubex-ecosystem/gnyx/internal/types"
+import "github.com/kubex-ecosystem/kbx/types"
 
 type SchedulerService struct {
-	// Placeholder for scheduler service fields
+	cfg *types.SrvConfig
+	// Add fields for managing scheduled tasks, e.g., a task queue, worker pool, etc.
 }
 
-func NewSchedulerService(config *types.Config) *SchedulerService {
-	return &SchedulerService{}
+func NewSchedulerService(cfg *types.SrvConfig) *SchedulerService {
+	return &SchedulerService{
+		cfg: cfg,
+	}
 }

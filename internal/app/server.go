@@ -215,7 +215,7 @@ func (s *Server) logProviderRegistry() {
 	} else {
 		gl.Noticef("Provider registry contains %d providers", len(s.registry.ListProviders()))
 		for _, p := range s.registry.ListProviders() {
-			r := s.registry.Resolve(p)
+			r := s.registry.ResolveProvider(p)
 			gl.Debugf(" - Provider: %s, Available: %v", r.Name(), r.Available() == nil)
 		}
 	}

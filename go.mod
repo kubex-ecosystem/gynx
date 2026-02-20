@@ -11,7 +11,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/kubex-ecosystem/kbx v1.0.3
 	github.com/swaggo/swag v1.16.6
-	google.golang.org/genai v1.40.0
+	google.golang.org/genai v1.47.0 // indirect
 )
 
 require github.com/google/go-cmp v0.7.0 // indirect

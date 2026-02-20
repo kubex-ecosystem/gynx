@@ -264,7 +264,7 @@ func (h *httpHandlers) listProvidersGin(c *gin.Context) {
 // 		return
 // 	}
 
-// 	provider := h.registry.Resolve(req.Provider)
+// 	provider := h.registry.ResolveProvider(req.Provider)
 // 	if provider == nil {
 // 		http.Error(w, fmt.Sprintf("Provider '%s' not found", req.Provider), http.StatusBadRequest)
 // 		return

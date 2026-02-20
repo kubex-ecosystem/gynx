@@ -18,6 +18,7 @@ type ServerConfig struct {
 	InitArgs *kbxMod.InitArgs
 	// Addr            string
 	ProvidersConfig string
+	LLMConfig       *kbx.LLMConfig
 	// EnableCORS      bool
 	DefaultTTL        time.Duration
 	DataServiceConfig DataServiceConfig
@@ -79,5 +80,11 @@ func NewServerConfig() *ServerConfig {
 	cfg.DefaultTTL = defaultTTL
 	cfg.DataServiceConfig = dataServiceConfig
 	// cfg.Mapper = types.NewMapperType(&cfg, cfg.ConfigFile)
+
+	cfg.LLMConfig = &kbx.LLMConfig{
+		Providers:   make(map[string]*kbx.LLMProviderConfig),
+		Development: kbx.LLMDevelopmentConfig{},
+	}
+
 	return cfg
 }
