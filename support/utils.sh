@@ -34,24 +34,24 @@ log() {
       ;;
     notice|_NOTICE|-n|-N)
       if [[ "${_debug:-false}" == "true" ]]; then
-        printf '%b[NOTICE]%b 📝  %s\n' "${_NOTICE:-\033[0;35m}" "${_NC:-\033[0m}" "$_message"
+        printf '%b[NOTICE]%b  %s\n' "${_NOTICE:-\033[0;35m}" "${_NC:-\033[0m}" "$_message"
       fi
       ;;
     info|_INFO|-i|-I)
       if [[ "${_debug:-false}" == "true" ]]; then
-        printf '%b[INFO]%b ℹ️  %s\n' "${_INFO:-\033[0;36m}" "${_NC:-\033[0m}" "$_message"
+        printf '%b[INFO]%b  %s\n' "${_INFO:-\033[0;36m}" "${_NC:-\033[0m}" "$_message"
       fi
       ;;
     warn|_WARN|-w|-W)
       if [[ "${_debug:-false}" == "true" ]]; then
-        printf '%b[WARN]%b ⚠️  %s\n' "${_WARN:-\033[0;33m}" "${_NC:-\033[0m}" "$_message"
+        printf '%b[WARN]%b  %s\n' "${_WARN:-\033[0;33m}" "${_NC:-\033[0m}" "$_message"
       fi
       ;;
     error|_ERROR|-e|-E)
-      printf '%b[ERROR]%b ❌  %s\n' "${_ERROR:-\033[0;31m}" "${_NC:-\033[0m}" "$_message" >&2
+      printf '%b[ERROR]%b  %s\n' "${_ERROR:-\033[0;31m}" "${_NC:-\033[0m}" "$_message" >&2
       ;;
     success|_SUCCESS|-s|-S)
-      printf '%b[SUCCESS]%b ✅  %s\n' "${_SUCCESS:-\033[0;32m}" "${_NC:-\033[0m}" "$_message"
+      printf '%b[SUCCESS]%b  %s\n' "${_SUCCESS:-\033[0;32m}" "${_NC:-\033[0m}" "$_message"
       ;;
     fatal|_FATAL|-f|-F)
       printf '%b[FATAL]%b 💀  %s\n' "${_FATAL:-\033[0;41m}" "${_NC:-\033[0m}" "Exiting due to fatal error: $_message" >&2
@@ -120,9 +120,9 @@ clear_script_cache() {
   if [[ -d "${_TEMP_DIR:-}" ]] && sudo -v 2>/dev/null; then
     sudo rm -rf "${_TEMP_DIR:-}"
     if [[ -d "${_TEMP_DIR:-}" ]]; then
-      printf '%b[ERROR]%b ❌  %s\n' "${_ERROR:-\033[0;31m}" "${_NC:-\033[0m}" "Failed to remove the temporary directory: ${_TEMP_DIR:-}"
+      printf '%b[ERROR]%b  %s\n' "${_ERROR:-\033[0;31m}" "${_NC:-\033[0m}" "Failed to remove the temporary directory: ${_TEMP_DIR:-}"
     else
-      printf '%b[SUCCESS]%b ✅  %s\n' "${_SUCCESS:-\033[0;32m}" "${_NC:-\033[0m}" "Temporary directory removed: ${_TEMP_DIR:-}"
+      printf '%b[SUCCESS]%b  %s\n' "${_SUCCESS:-\033[0;32m}" "${_NC:-\033[0m}" "Temporary directory removed: ${_TEMP_DIR:-}"
     fi
   fi
   return 0

@@ -3,7 +3,7 @@
 # Test script for the gnyx gateway
 # This script demonstrates the gateway functionality
 
-echo "🚀 Testing GNyx Gateway"
+echo "Testing GNyx Gateway"
 echo "=========================="
 
 # Set OpenAI API key (replace with your key)
@@ -43,4 +43,4 @@ curl -X POST http://localhost:8080/v1/chat \
 echo "Stopping gateway..."
 kill $GATEWAY_PID
 
-echo "✅ Test completed!"
+echo "Test completed!"

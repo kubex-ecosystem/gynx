@@ -58,7 +58,7 @@ func (d *DaemonService) Start() error {
 		return gl.Errorf("daemon service already running")
 	}
 
-	gl.Log("info", "🚀 Starting GNyx Daemon Service...")
+	gl.Log("info", "Starting GNyx Daemon Service...")
 
 	// Initialize sub-services
 	if err := d.initializeServices(); err != nil {
@@ -69,7 +69,7 @@ func (d *DaemonService) Start() error {
 	d.startWorkers()
 
 	d.running = true
-	gl.Log("info", "✅ GNyx Daemon Service started successfully")
+	gl.Log("info", "GNyx Daemon Service started successfully")
 
 	return nil
 }
@@ -97,13 +97,13 @@ func (d *DaemonService) Stop() error {
 
 	select {
 	case <-done:
-		gl.Log("info", "✅ All workers stopped gracefully")
+		gl.Log("info", "All workers stopped gracefully")
 	case <-time.After(30 * time.Second):
-		gl.Log("warn", "⚠️ Timeout waiting for workers to stop")
+		gl.Log("warn", "Timeout waiting for workers to stop")
 	}
 
 	d.running = false
-	gl.Log("info", "✅ GNyx Daemon Service stopped")
+	gl.Log("info", "GNyx Daemon Service stopped")
 
 	return nil
 }
@@ -306,7 +306,7 @@ func (d *DaemonService) processAnalysisRequest(req types.AnalysisRequest) {
 		Priority: "medium",
 	})
 
-	gl.Log("info", fmt.Sprintf("✅ Analysis completed: %s", req.ID))
+	gl.Log("info", fmt.Sprintf("Analysis completed: %s", req.ID))
 }
 
 // processNotificationEvent handles individual notification events
@@ -316,17 +316,17 @@ func (d *DaemonService) processNotificationEvent(event types.NotificationEvent) 
 	// TODO: Implement actual notification sending
 	// This will use the notification service to send via Discord/WhatsApp/Email
 
-	gl.Log("info", fmt.Sprintf("✅ Notification sent: %s", event.Type))
+	gl.Log("info", fmt.Sprintf("Notification sent: %s", event.Type))
 }
 
 // processOrchestrationTask handles individual orchestration tasks
 func (d *DaemonService) processOrchestrationTask(task types.OrchestrationTask) {
-	gl.Log("info", fmt.Sprintf("🚀 Orchestrating: %s -> %s", task.Tool, task.Action))
+	gl.Log("info", fmt.Sprintf("Orchestrating: %s -> %s", task.Tool, task.Action))
 
 	// TODO: Implement actual orchestration logic
 	// This will coordinate with lookatni, grompt, and other agents
 
-	gl.Log("info", fmt.Sprintf("✅ Orchestration completed: %s", task.ID))
+	gl.Log("info", fmt.Sprintf("Orchestration completed: %s", task.ID))
 }
 
 // performHealthCheck performs system health checks
@@ -336,7 +336,7 @@ func (d *DaemonService) performHealthCheck() {
 	// TODO: Implement health check logic
 	// Check system resources, external service connectivity, etc.
 
-	gl.Log("info", "✅ Health check completed")
+	gl.Log("info", "Health check completed")
 }
 
 // checkScheduledTasks checks for and executes scheduled tasks

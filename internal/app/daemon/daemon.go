@@ -39,7 +39,7 @@ func NewAnalyzerDaemon(config DaemonConfig) *AnalyzerDaemon {
 
 // Start begins the daemon operations
 func (d *AnalyzerDaemon) Start() error {
-	gl.Println("🚀 Starting GNyx Daemon with GNyx integration...")
+	gl.Println("Starting GNyx Daemon with GNyx integration...")
 
 	// 1. Register as AI Agent in GNyx Squad
 	if err := d.registerAsAgent(); err != nil {
@@ -57,7 +57,7 @@ func (d *AnalyzerDaemon) Start() error {
 	// 4. Start notification system
 	go d.notificationHandler()
 
-	gl.Println("✅ GNyx Daemon started successfully")
+	gl.Println("GNyx Daemon started successfully")
 	return nil
 }
 
@@ -149,7 +149,7 @@ func (d *AnalyzerDaemon) performHealthCheck() {
 
 	// status, err := d.gnyxClient.GetSquadStatus(d.ctx)
 	// if err != nil {
-	// 	gl.Printf("⚠️  Failed to get squad status: %v", err)
+	// 	gl.Printf(" Failed to get squad status: %v", err)
 	// 	return
 	// }
 
@@ -202,7 +202,7 @@ func (d *AnalyzerDaemon) scheduleAnalyses() {
 
 		// job, err := d.gnyxClient.ScheduleAnalysis(d.ctx, req)
 		// if err != nil {
-		// 	gl.Printf("⚠️  Failed to schedule analysis for %s: %v", repoURL, err)
+		// 	gl.Printf(" Failed to schedule analysis for %s: %v", repoURL, err)
 		// 	continue
 		// }
 

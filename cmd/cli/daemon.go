@@ -115,9 +115,9 @@ func runDaemon(cmd *cobra.Command, args []string) error {
 
 func printDaemonInfo(config daemon.DaemonConfig) {
 	gl.Log("info", "")
-	gl.Log("info", "🚀 ========================== Daemon Startup ============================")
+	gl.Log("info", "========================== Daemon Startup ============================")
 	gl.Log("info", "🤖   GNYX DAEMON - Repository Intelligence Platform")
-	gl.Log("info", "🚀 ============================================================")
+	gl.Log("info", "============================================================")
 	gl.Log("info", "")
 	gl.Infof("🏗️  GNyx Integration: %s", config.GNyxURL)
 	gl.Infof("📅 Auto Schedule: %v", config.AutoScheduleEnabled)
@@ -149,7 +149,7 @@ func printDaemonInfo(config daemon.DaemonConfig) {
 	gl.Log("info", "   • Coordinates with lookatni (analysis)")
 	gl.Log("info", "   • Orchestrates grompt (improvement)")
 	gl.Log("info", "   • Manages continuous optimization")
-	gl.Log("info", "✅ Daemon running... Press Ctrl+C to stop")
+	gl.Log("info", "Daemon running... Press Ctrl+C to stop")
 	gl.Log("info", "")
 }
 

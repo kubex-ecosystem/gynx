@@ -5,7 +5,7 @@ echo "====================================="
 
 # Start gateway se não estiver rodando
 if ! curl -s http://localhost:8080/healthz > /dev/null; then
-    echo "🚀 Iniciando gateway..."
+    echo "Iniciando gateway..."
     cd /srv/apps/LIFE/KUBEX/gnyx || exit
     ./dist/gnyx-gw &
     sleep 2

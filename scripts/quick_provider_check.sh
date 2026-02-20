@@ -7,9 +7,9 @@ echo "==============================="
 # Check if gnyx.kubex.world is accessible
 echo "1️⃣ Testing deployed frontend..."
 if curl -s https://gnyx.kubex.world/ > /dev/null; then
-    echo "✅ Frontend is accessible at gnyx.kubex.world"
+    echo "Frontend is accessible at gnyx.kubex.world"
 else
-    echo "❌ Frontend not accessible"
+    echo "Frontend not accessible"
     exit 1
 fi
 
@@ -23,9 +23,9 @@ console.log("Testing provider availability...");
 
 // Check if unified AI service is loaded
 if (typeof window !== 'undefined' && window.React) {
-    console.log("✅ React is loaded");
+    console.log("React is loaded");
 } else {
-    console.log("❌ React not found in window");
+    console.log("React not found in window");
 }
 
 // Simulate provider selection test
@@ -45,62 +45,62 @@ echo
 echo "3️⃣ Checking if frontend build includes all providers..."
 
 if [ -d "frontend/dist" ]; then
-    echo "✅ Frontend dist directory found"
+    echo "Frontend dist directory found"
 
     # Check if the built JavaScript includes provider references
     if find frontend/dist -name "*.js" -exec grep -l "gateway-openai" {} \; | head -1; then
-        echo "✅ OpenAI provider found in build"
+        echo "OpenAI provider found in build"
     else
-        echo "⚠️  OpenAI provider may not be in build"
+        echo " OpenAI provider may not be in build"
     fi
 
     if find frontend/dist -name "*.js" -exec grep -l "gateway-anthropic" {} \; | head -1; then
-        echo "✅ Anthropic provider found in build"
+        echo "Anthropic provider found in build"
     else
-        echo "⚠️  Anthropic provider may not be in build"
+        echo " Anthropic provider may not be in build"
     fi
 
     if find frontend/dist -name "*.js" -exec grep -l "gateway-gemini" {} \; | head -1; then
-        echo "✅ Gateway Gemini provider found in build"
+        echo "Gateway Gemini provider found in build"
     else
-        echo "⚠️  Gateway Gemini provider may not be in build"
+        echo " Gateway Gemini provider may not be in build"
     fi
 else
-    echo "⚠️  Frontend not built yet"
+    echo " Frontend not built yet"
 fi
 
 echo
 echo "4️⃣ Testing configuration files..."
 
 if [ -f "config/production.yml" ]; then
-    echo "✅ Production config found"
+    echo "Production config found"
 
     # Check if multiple providers are configured
     PROVIDER_COUNT=$(grep -c "type:" config/production.yml)
     echo "📊 Found $PROVIDER_COUNT provider configs"
 
     if grep -q "openai" config/production.yml; then
-        echo "✅ OpenAI configured"
+        echo "OpenAI configured"
     fi
 
     if grep -q "anthropic" config/production.yml; then
-        echo "✅ Anthropic configured"
+        echo "Anthropic configured"
     fi
 
     if grep -q "gemini" config/production.yml; then
-        echo "✅ Gemini configured"
+        echo "Gemini configured"
     fi
 else
-    echo "⚠️  Production config not found"
+    echo " Production config not found"
 fi
 
 echo
 echo "🎯 VALIDATION SUMMARY"
 echo "===================="
-echo "✅ Frontend deployed and accessible"
-echo "✅ Multi-provider architecture implemented"
-echo "✅ Provider selection UI components ready"
-echo "✅ Backend gateway supports multiple providers"
+echo "Frontend deployed and accessible"
+echo "Multi-provider architecture implemented"
+echo "Provider selection UI components ready"
+echo "Backend gateway supports multiple providers"
 echo
 echo "🚀 READY FOR MULTI-PROVIDER TESTING!"
 echo

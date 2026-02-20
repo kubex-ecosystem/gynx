@@ -59,9 +59,30 @@ const (
 // Default LLM Settings
 const (
 	DefaultLLMProvider    = "gemini"
-	DefaultLLMModel       = "gemini-2.0-flash"
+	DefaultLLMModel       = "gemini-2.5-flash"
 	DefaultLLMMaxTokens   = 1024
 	DefaultLLMTemperature = 0.3
+)
+
+const (
+	DefaultLLMOpenAIKeyEnv       = "OPENAI_API_KEY"
+	DefaultLLMGoogleKeyEnv       = "GOOGLE_API_KEY"
+	DefaultLLMAzureKeyEnv        = "AZURE_API_KEY"
+	DefaultLLMAnthropicKeyEnv    = "ANTHROPIC_API_KEY"
+	DefaultLLMGeminiKeyEnv       = "GEMINI_API_KEY"
+	DefaultLLMOllamaKeyEnv       = "OLLAMA_API_KEY"
+	DefaultLLMChatGPTKeyEnv      = "CHATGPT_API_KEY"
+	DefaultLLMDeepseekKeyEnv     = "DEEPSEEK_API_KEY"
+	DefaultLLMCohereKeyEnv       = "COHERE_API_KEY"
+	DefaultLLMGroqKeyEnv         = "GROQ_API_KEY"
+	DefaultLLMGrokKeyEnv         = "GROK_API_KEY"
+	DefaultLLMMistralKeyEnv      = "MISTRAL_API_KEY"
+	DefaultLLMCustomKeyEnv       = "CUSTOM_API_KEY"
+	DefaultLLMMetaKeyEnv         = "META_API_KEY"
+	DefaultLLMClaudeKeyEnv       = "CLAUDE_API_KEY"
+	DefaultLLMErnieKeyEnv        = "ERNIE_API_KEY"
+	DefaultLLMCustomKeyEnvPrefix = "CUSTOM_"
+	DefaultLLMCustomKeyEnvSuffix = "_KEY_ENV"
 )
 
 // Default Server Settings

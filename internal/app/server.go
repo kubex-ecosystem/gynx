@@ -41,7 +41,7 @@ type Server struct {
 // NewServer creates a new application server instance.
 // This is the main entry point for starting the Kubex BE application.
 func NewServer(cfg *config.Config) (*Server, error) {
-	gl.Info("🚀 Initializing Kubex BE Server...")
+	gl.Info("Initializing Kubex BE Server...")
 
 	// Create and bootstrap container
 	container, err := NewContainer(context.Background(), cfg)
@@ -62,6 +62,20 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	// Bootstrap the container
 	if err := container.Bootstrap(context.Background()); err != nil {
 		return nil, gl.Errorf("failed to bootstrap application: %v", err)
+	}
+
+	// Load provider registry
+	providerRegistry, err := registry.Load(container.GetConfig().ServerConfig.Files.ProvidersConfig)
+	if err != nil {
+		return nil, gl.Errorf("failed to load provider registry: %v", err)
+	}
+	if providerRegistry == nil {
+		return nil, gl.Errorf("provider registry is nil after loading")
+	}
+	if len(providerRegistry.ListProviders()) == 0 {
+		gl.Warn("No providers found in registry - check your providers config file")
+	} else {
+		gl.Infof("Loaded %d providers into registry", len(providerRegistry.ListProviders()))
 	}
 
 	// Create route registrar function
@@ -86,12 +100,13 @@ func NewServer(cfg *config.Config) (*Server, error) {
 		return nil, gl.Errorf("failed to wire HTTP: %v", err)
 	}
 
-	gl.Info("✅ Kubex BE Server initialized successfully")
+	gl.Info("Kubex BE Server initialized successfully")
 
 	return &Server{
 		container: container,
 		httpWire:  httpWire,
 		engine:    engine,
+		registry:  providerRegistry,
 		config:    cfg,
 	}, nil
 }

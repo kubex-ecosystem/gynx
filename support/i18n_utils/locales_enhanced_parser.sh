@@ -104,18 +104,18 @@ done
 # Sort and deduplicate
 if [[ -f i18n_avail_en.txt ]]; then
   sort -u -o i18n_avail_en.txt i18n_avail_en.txt
-  echo "✅ EN keys found: $(wc -l < i18n_avail_en.txt)"
+  echo "EN keys found: $(wc -l < i18n_avail_en.txt)"
 else
   touch i18n_avail_en.txt
-  echo "⚠️  No EN keys found"
+  echo " No EN keys found"
 fi
 
 if [[ -f i18n_avail_ptBR.txt ]]; then
   sort -u -o i18n_avail_ptBR.txt i18n_avail_ptBR.txt
-  echo "✅ PT-BR keys found: $(wc -l < i18n_avail_ptBR.txt)"
+  echo "PT-BR keys found: $(wc -l < i18n_avail_ptBR.txt)"
 else
   touch i18n_avail_ptBR.txt
-  echo "⚠️  No PT-BR keys found"
+  echo " No PT-BR keys found"
 fi
 
 echo "🎯 Ready for debt analysis!"

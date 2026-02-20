@@ -69,7 +69,7 @@ func SwaggerMain(dbService services.Service[any], _ error) {
 	)
 
 	if err != nil {
-		gl.Log("fatal", "❌ Failed to initialize router:", err)
+		gl.Log("fatal", "Failed to initialize router:", err)
 		return
 	}
 
@@ -104,12 +104,12 @@ func SwaggerMain(dbService services.Service[any], _ error) {
 	// Set up CORS
 	// err = router.SecureServerInit(rtr.GetEngine(), net.JoinHostPort("localhost", "8080"))
 	// if err != nil {
-	// 	gl.Log("fatal", "❌ Failed to initialize CORS:", err)
+	// 	gl.Log("fatal", "Failed to initialize CORS:", err)
 	// 	return
 	// }
 
 	// Start server
-	gl.Log("info", "🚀 GNyx API Server starting...")
+	gl.Log("info", "GNyx API Server starting...")
 	gl.Log("info", "📚 Swagger docs available at: http://localhost:8080/swagger/index.html")
 	gl.Log("info", "🔍 API endpoints at: http://localhost:8080/api/v1")
 
@@ -117,7 +117,7 @@ func SwaggerMain(dbService services.Service[any], _ error) {
 	docs.SwaggerInfo.Title = "GNyx API"
 
 	if err := rtr.Start(); err != nil {
-		gl.Log("fatal", "❌ Failed to start server:", err)
+		gl.Log("fatal", "Failed to start server:", err)
 	}
 }
 

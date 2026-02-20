@@ -33,11 +33,11 @@ for dir in "$API_DIR"/*/; do
   controller_file="$dir${entity}_controller.go"
 
   if [ -f "$controller_file" ]; then
-    echo "✅ Movendo: $entity_controller.go"
+    echo "Movendo: $entity_controller.go"
     mv "$controller_file" "$CONTROLLERS_DIR/"
     ((moved_count++))
   else
-    echo "⚠️  Não encontrado: $controller_file"
+    echo " Não encontrado: $controller_file"
     ((skipped_count++))
   fi
 done
@@ -47,4 +47,4 @@ echo "📊 Resumo:"
 echo "   Movidos: $moved_count controllers"
 echo "   Ignorados/Não encontrados: $skipped_count"
 echo ""
-echo "✅ Migração concluída!"
+echo "Migração concluída!"

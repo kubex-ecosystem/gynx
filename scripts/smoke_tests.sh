@@ -137,7 +137,7 @@ main() {
         echo -e "${GREEN}🎉 All tests passed! Golden path is working.${NC}"
         exit 0
     else
-        echo -e "${RED}❌ Some tests failed. Check the output above.${NC}"
+        echo -e "${RED}Some tests failed. Check the output above.${NC}"
         exit 1
     fi
 }

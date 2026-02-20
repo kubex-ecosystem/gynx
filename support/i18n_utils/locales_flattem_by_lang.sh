@@ -14,7 +14,7 @@ for f in frontend/locales/en-US/*.ts; do
 done
 if [[ -f i18n_avail_en.txt ]]; then
   sort -u -o i18n_avail_en.txt i18n_avail_en.txt
-  echo "✅ EN keys: $(wc -l < i18n_avail_en.txt)"
+  echo "EN keys: $(wc -l < i18n_avail_en.txt)"
 fi
 
 # PT-BR (TypeScript files, not JSON)
@@ -28,5 +28,5 @@ for f in frontend/locales/pt-BR/*.ts; do
 done
 if [[ -f i18n_avail_ptBR.txt ]]; then
   sort -u -o i18n_avail_ptBR.txt i18n_avail_ptBR.txt
-  echo "✅ PT-BR keys: $(wc -l < i18n_avail_ptBR.txt)"
+  echo "PT-BR keys: $(wc -l < i18n_avail_ptBR.txt)"
 fi
