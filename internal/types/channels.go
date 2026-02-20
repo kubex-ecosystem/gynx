@@ -50,7 +50,7 @@ type ChannelCtl[T any] struct {
 // NewChannelCtl creates a new ChannelCtl instance with the provided name.
 func NewChannelCtl[T any](name string, logger *gl.LoggerZ) ci.IChannelCtl[T] {
 	if logger == nil {
-		logger = gl.GetLoggerZ("Canalize_BE")
+		logger = gl.GetLoggerZ("GNyx")
 	}
 	ref := NewReference(name)
 	mu := NewMutexesType()
@@ -70,7 +70,7 @@ func NewChannelCtl[T any](name string, logger *gl.LoggerZ) ci.IChannelCtl[T] {
 // NewChannelCtlWithProperty creates a new ChannelCtl instance with the provided name and type.
 func NewChannelCtlWithProperty[T any, P ci.IProperty[T]](name string, buffers *int, property P, withMetrics bool, logger *gl.LoggerZ) ci.IChannelCtl[T] {
 	if logger == nil {
-		logger = gl.GetLoggerZ("Canalize_BE")
+		logger = gl.GetLoggerZ("GNyx")
 	}
 	ref := NewReference(name)
 	mu := NewMutexesType()
