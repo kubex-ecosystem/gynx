@@ -34,7 +34,7 @@ yarn-error.log*
 !build/index.html
 frontend/build/
 frontend/
-ui/
+!ui/**/*.md
 
 # IDEs
 .vscode/
@@ -78,7 +78,6 @@ tasks/
 .venv-*
 .venv-hooks
 cmd/*_bin*
-ui/
 frontend
 internal/**/*.template
 tests/apocalipse.sh
