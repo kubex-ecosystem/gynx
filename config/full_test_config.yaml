@@ -1,49 +1,11 @@
 # Development Features Configuration
-
-providers:
-  groq:
-    type: groq
-    base_url: https://api.groq.com
-    key_env: GROQ_API_KEY
-    default_model: llama-3.1-8b-instant
-
-  gemini:
-    type: gemini
-    base_url: https://generativelanguage.googleapis.com
-    key_env: GEMINI_API_KEY
-    default_model: gemini-2.0-flash
-
-  openai:
-    type: openai
-    base_url: https://api.openai.com
-    key_env: OPENAI_API_KEY
-    default_model: gpt-4o-mini
-
-  # anthropic:
-  #   type: anthropic
-  #   base_url: https://api.anthropic.com
-  #   key_env: ANTHROPIC_API_KEY
-  #   default_model: claude-3-5-sonnet-latest
-
-  # openrouter:
-  #   type: openrouter
-  #   base_url: https://openrouter.ai/api
-  #   key_env: OPENROUTER_API_KEY
-  #   default_model: google/gemini-flash-1.5
-
-  # ollama:
-  #   type: ollama
-  #   base_url: http://localhost:11434
-  #   key_env: ""
-  #   default_model: llama3.1
-
 development:
   # General Settings
   logging_level: DEBUG
 
   # Server Configuration
   server:
-    addr: ':8080'
+    addr: ':5000'
     read_timeout_sec: 15
     write_timeout_sec: 15
     idle_timeout_sec: 60
@@ -251,7 +213,7 @@ monitoring:
 
   # Grafana configuration
   grafana:
-    url: http://localhost:3000
+    url: http://localhost:5000
     admin_user: admin
     admin_password: securepassword
 
@@ -571,7 +533,7 @@ license: 'MIT'
 #
 # Thanks for using Kubex GemX GNyx!
 #
-# 🚀 We hope it brings value to your projects and workflows. 🚀
+# We hope it brings value to your projects and workflows. 🚀
 #
 # ❤️ Open Source software born out of passion and community effort. ❤️
 #

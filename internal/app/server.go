@@ -17,6 +17,7 @@ import (
 	"github.com/kubex-ecosystem/gnyx/internal/runtime/middlewares"
 	"github.com/kubex-ecosystem/gnyx/internal/runtime/wire"
 
+	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 	kbxGet "github.com/kubex-ecosystem/kbx/get"
 	gl "github.com/kubex-ecosystem/logz"
 )
@@ -142,12 +143,34 @@ func (s *Server) Start() error {
 	)
 	srvAddr := net.JoinHostPort(srvRightHost, s.config.ServerConfig.Runtime.Port)
 
+	rg := s.registry
+	var err error
+	if rg == nil {
+		rg, err = registry.Load(os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PROVIDERS_CONFIG_PATH", kbxMod.DefaultProvidersConfig)))
+		if err != nil {
+			gl.Errorf("Failed to load provider registry: %v", err)
+		}
+		if rg == nil {
+			gl.Warn("Provider registry is nil after loading - this may cause issues with provider resolution")
+		}
+		s.registry = rg
+	}
+
+	// Initialize production middleware
+	prodConfig := middlewares.DefaultProductionConfig()
+	prodMiddleware := middlewares.NewProductionMiddleware(prodConfig)
+
+	// Register all providers with production middleware
+	for _, providerName := range s.registry.ListProviders() {
+		prodMiddleware.RegisterProvider(providerName)
+	}
 	swm := middlewares.NewProductionMiddleware(middlewares.DefaultProductionConfig())
 
 	// Register all providers with production middleware
 	for _, providerName := range s.registry.ListProviders() {
 		swm.RegisterProvider(providerName)
 	}
+	s.logProviderRegistry()
 
 	// Recover middleware
 	s.Use(gin.Recovery())

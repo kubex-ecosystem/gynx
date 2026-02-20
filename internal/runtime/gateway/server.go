@@ -19,8 +19,7 @@ import (
 	"github.com/kubex-ecosystem/gnyx/internal/runtime/middlewares"
 	"github.com/kubex-ecosystem/gnyx/internal/web"
 
-	"github.com/kubex-ecosystem/gnyx/internal/module/kbx"
-
+	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 	kbxGet "github.com/kubex-ecosystem/kbx/get"
 
 	gl "github.com/kubex-ecosystem/logz"
@@ -75,8 +74,8 @@ func NewServer(cfg *config.ServerConfig) (*Server, error) {
 		return nil, gl.Errorf("server config is nil in application container")
 	}
 
-	container.GetConfig().ServerConfig.Runtime.PubCertKeyPath = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_KEY_PATH", kbx.DefaultGNyxCertPath))
-	container.GetConfig().ServerConfig.Runtime.PrivKeyPath = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PRIVATE_KEY_PATH", kbx.DefaultGNyxKeyPath))
+	container.GetConfig().ServerConfig.Runtime.PubCertKeyPath = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_KEY_PATH", kbxMod.DefaultGNyxCertPath))
+	container.GetConfig().ServerConfig.Runtime.PrivKeyPath = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PRIVATE_KEY_PATH", kbxMod.DefaultGNyxKeyPath))
 
 	if container.GetConfig().ServerConfig.Runtime.PrivKeyPath == "" || container.GetConfig().ServerConfig.Runtime.PubCertKeyPath == "" {
 		return nil, gl.Errorf("JWT certificate paths are not set in server config")
@@ -113,8 +112,8 @@ func (s *Server) Start() error {
 		os.Exit(0)
 	}()
 
-	serverCfg.Runtime.Bind = kbxGet.ValueOrIf(len(serverCfg.Runtime.Bind) == 0, kbxGet.EnvOr("KUBEX_GNYX_BIND", kbx.DefaultServerBind), serverCfg.Runtime.Bind)
-	serverCfg.Runtime.Port = kbxGet.ValueOrIf(len(serverCfg.Runtime.Port) == 0, kbxGet.EnvOr("KUBEX_GNYX_PORT", kbx.DefaultServerPort), serverCfg.Runtime.Port)
+	serverCfg.Runtime.Bind = kbxGet.ValueOrIf(len(serverCfg.Runtime.Bind) == 0, kbxGet.EnvOr("KUBEX_GNYX_BIND", kbxMod.DefaultServerBind), serverCfg.Runtime.Bind)
+	serverCfg.Runtime.Port = kbxGet.ValueOrIf(len(serverCfg.Runtime.Port) == 0, kbxGet.EnvOr("KUBEX_GNYX_PORT", kbxMod.DefaultServerPort), serverCfg.Runtime.Port)
 
 	gl.Debugf("binding address: %s", serverCfg.Runtime.Bind)
 	gl.Debugf("binding port: %s", serverCfg.Runtime.Port)
@@ -123,6 +122,24 @@ func (s *Server) Start() error {
 		serverCfg.Runtime.Bind, serverCfg.Runtime.Port,
 	)
 	swm := middlewares.NewProductionMiddleware(middlewares.DefaultProductionConfig())
+
+	reg, err := registry.Load(kbxGet.ValOrType(
+		serverCfg.ProvidersConfig,
+		kbxGet.EnvOr("KUBEX_GNYX_PROVIDERS_CONFIG_PATH", kbxMod.DefaultProvidersConfig),
+	))
+	if err != nil {
+		gl.Errorf("Failed to load provider registry: %v", err)
+	}
+	if reg == nil {
+		gl.Warn("Provider registry is nil after loading - this may cause issues with provider resolution")
+	}
+
+	// Register all providers with production middleware
+	for _, providerName := range reg.ListProviders() {
+		swm.RegisterProvider(providerName)
+	}
+	s.logProviderRegistry()
+
 	// Recover middleware
 	s.Use(gin.Recovery())
 
@@ -184,4 +201,18 @@ func (s *Server) Start() error {
 	// Start server
 	gl.Successf("GNyx listening on %s (Enterprise features enabled)", srvAddr)
 	return s.Run(srvAddr)
+}
+
+func (s *Server) logProviderRegistry() {
+	if s.registry == nil {
+		gl.Warn("Provider registry is nil - this may cause issues with provider resolution")
+	} else if len(s.registry.ListProviders()) == 0 {
+		gl.Warn("Provider registry is empty - no providers available for resolution")
+	} else {
+		gl.Noticef("Provider registry contains %d providers", len(s.registry.ListProviders()))
+		for _, p := range s.registry.ListProviders() {
+			r := s.registry.Resolve(p)
+			gl.Debugf(" - Provider: %s, Available: %v", r.Name(), r.Available() == nil)
+		}
+	}
 }

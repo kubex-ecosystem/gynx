@@ -20,6 +20,7 @@ package swagger
 
 import (
 	"net"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kubex-ecosystem/gnyx/internal/config"
@@ -49,16 +50,16 @@ func SwaggerMain(dbService services.Service[any], _ error) {
 				Bind: net.JoinHostPort("localhost", "8080"),
 			},
 			Files: kbxTypes.SrvFilesParams{
-				EnvFile:         kbxGet.EnvOr("KUBEX_ENV_FILE", "./.env"),
-				DBConfigFile:    kbxGet.EnvOr("KUBEX_DB_CONFIG_FILE", "./config/db_config.yaml"),
-				ProvidersConfig: kbxGet.EnvOr("KUBEX_PROVIDERS_CONFIG", kbxMod.DefaultProvidersConfig),
+				EnvFile:         os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_ENV_FILE", "./.env")),
+				DBConfigFile:    os.ExpandEnv(kbxGet.EnvOr("KUBEX_DOMUS_CONFIG_FILE", "./config/db_config.yaml")),
+				ProvidersConfig: os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PROVIDERS_CONFIG_PATH", kbxMod.DefaultProvidersConfig)),
 			},
 			Basic: kbxTypes.SrvBasicParams{
-				Debug:          kbxGet.EnvOr("KUBEX_DEBUG_MODE", "false") == "true",
-				ReleaseMode:    kbxGet.EnvOr("KUBEX_RELEASE_MODE", "false") == "true",
-				IsConfidential: kbxGet.EnvOr("KUBEX_CONFIDENTIAL_MODE", "false") == "true",
-				CORSEnabled:    kbxGet.EnvOr("KUBEX_ENABLE_CORS", "true") == "true",
-				UIDisabled:     kbxGet.EnvOr("KUBEX_ENABLE_UI", "true") == "true",
+				Debug:          kbxGet.EnvOrType("KUBEX_GNYX_DEBUG_MODE", false),
+				ReleaseMode:    kbxGet.EnvOrType("KUBEX_GNYX_RELEASE_MODE", false),
+				IsConfidential: kbxGet.EnvOrType("KUBEX_GNYX_CONFIDENTIAL_MODE", false),
+				CORSEnabled:    kbxGet.EnvOrType("KUBEX_GNYX_ENABLE_CORS", true),
+				UIDisabled:     kbxGet.EnvOrType("KUBEX_GNYX_DISABLE_UI", false),
 			},
 		},
 	}

@@ -35,7 +35,7 @@ func GatewayCmds() *cobra.Command {
 	// var cfgFileExtensions = []string{"yaml", "yml", "jsonc", "json", "xml"}
 	var initArgs = &kbxMod.InitArgs{}
 
-	printBanner := kbxGet.EnvOrType("KUBEX_PRINT_BANNER", kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", false))
+	printBanner := kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", false))
 	short := "GNyx Gateway - AI Provider Gateway with Repository Intelligence"
 	long := `GNyx Gateway provides a unified API for AI providers with enterprise features.
 
@@ -73,7 +73,7 @@ Features:
 
 // cmdUp starts the gateway server
 func cmdUp(initArgs *kbxMod.InitArgs) *cobra.Command {
-	printBanner := kbxGet.EnvOrType("KUBEX_PRINT_BANNER", kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", false))
+	printBanner := kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", false))
 	short := "Start the gateway server (GUI Enabled)"
 	long := "Start the GNyx Gateway server with enterprise features (GUI Enabled)"
 	examples := []string{
@@ -188,7 +188,7 @@ func cmdUp(initArgs *kbxMod.InitArgs) *cobra.Command {
 
 // cmdDown stops the gateway server
 func cmdDown(initArgs *kbxMod.InitArgs) *cobra.Command {
-	printBanner := kbxGet.EnvOrType("KUBEX_PRINT_BANNER", kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", false))
+	printBanner := kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", false))
 	short := "Stop the gateway server"
 	long := "Stop the GNyx Gateway server gracefully"
 	examples := []string{
@@ -216,7 +216,7 @@ func cmdDown(initArgs *kbxMod.InitArgs) *cobra.Command {
 
 // cmdStatus checks the health status of the gateway server
 func cmdStatus(initArgs *kbxMod.InitArgs) *cobra.Command {
-	printBanner := kbxGet.EnvOrType("KUBEX_PRINT_BANNER", kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", false))
+	printBanner := kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", false))
 	short := "Check gateway status"
 	long := "Check the health and status of the running gateway"
 
@@ -234,7 +234,7 @@ func cmdStatus(initArgs *kbxMod.InitArgs) *cobra.Command {
 
 // cmdAdvise provides repository advice using AI providers and scorecard data
 func cmdAdvise(initArgs *kbxMod.InitArgs) *cobra.Command {
-	printBanner := kbxGet.EnvOrType("KUBEX_PRINT_BANNER", kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", false))
+	printBanner := kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", kbxGet.EnvOrType("KUBEX_GNYX_PRINT_BANNER", false))
 	short := "Generate repository advice using AI"
 	long := "Generate repository advice using AI providers with scorecard data"
 

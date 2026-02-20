@@ -52,7 +52,7 @@ func NewContainer(ctx context.Context, cfg *config.Config) (*Container, error) {
 		return nil, gl.Errorf("failed to init datastore: %v", err)
 	}
 
-	templateLoader, err := loadTemplates(cfg.TemplatesDir)
+	templateLoader, err := loadTemplates(cfg.ServerConfig.Files.TemplatesDir)
 	if err != nil {
 		return nil, gl.Errorf("failed to load templates: %v", err)
 	}
