@@ -12,8 +12,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	d "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
-
 	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 	kbxTReg "github.com/kubex-ecosystem/kbx/tools/providers"
 	kbxTypes "github.com/kubex-ecosystem/kbx/types"
@@ -22,12 +20,12 @@ import (
 )
 
 var (
-	initArgs *d.InitArgs
+	initArgs *kbxMod.InitArgs
 )
 
 func init() {
 	if initArgs == nil {
-		initArgs = &d.InitArgs{}
+		initArgs = &kbxMod.InitArgs{}
 	}
 }
 
@@ -188,7 +186,7 @@ Examples:
 				return gl.Errorf("error getting response from %s: %v", provider, err)
 			}
 
-			fmt.Printf("\n🎯 **%s Response (%s):**\n\n%s\n\n",
+			fmt.Printf("\n🎯 **%s Response (%s):**\n\n%v\n\n",
 				strings.ToUpper(provider), model, response)
 
 			return nil
@@ -311,7 +309,7 @@ Examples:
 				return gl.Errorf("error generating prompt: %v", err)
 			}
 
-			result := fmt.Sprintf("# Generated Prompt (%s - %s)\n\n%s", provider, model, response)
+			result := fmt.Sprintf("# Generated Prompt (%s - %s)\n\n%v", provider, model, response)
 
 			// Output to file or stdout
 			if output != "" {
@@ -570,37 +568,37 @@ func truncateString(s string, maxLen int) string {
 	return s[:maxLen-3] + "..."
 }
 
-// func getDefaultConfig(initArgs *d.InitArgs) *kbxTypes.SrvConfig {
+// func getDefaultConfig(initArgs *kbxMod.InitArgs) *kbxTypes.SrvConfig {
 // 	var err error
 // 	var defaultTemperature float32
 // 	var defaultHistoryLimit int
 // 	var defaultTimeout int
 
 // 	if initArgs == nil {
-// 		initArgs = &d.InitArgs{}
+// 		initArgs = &kbxMod.InitArgs{}
 // 	}
 
 // 	if initArgs.Debug {
 // 		gl.GetLoggerZ("ai").SetDebugMode(true)
 // 	}
-// 	defaultTemperatureStr := kbxGet.EnvOr("GROMPT_DEFAULT_TEMPERATURE", fmt.Sprintf("%f", d.DefaultLLMTemperature))
+// 	defaultTemperatureStr := kbxGet.EnvOr("GROMPT_DEFAULT_TEMPERATURE", fmt.Sprintf("%f", kbxMod.DefaultLLMTemperature))
 // 	defaultTemperatureFloat, err := strconv.ParseFloat(defaultTemperatureStr, 32)
 // 	if err != nil {
-// 		defaultTemperature = d.DefaultLLMTemperature
+// 		defaultTemperature = kbxMod.DefaultLLMTemperature
 // 	} else {
 // 		defaultTemperature = float32(defaultTemperatureFloat)
 // 	}
-// 	defaultHistoryLimitStr := kbxGet.EnvOr("GROMPT_DEFAULT_HISTORY_LIMIT", fmt.Sprintf("%d", d.DefaultLLMHistoryLimit))
+// 	defaultHistoryLimitStr := kbxGet.EnvOr("GROMPT_DEFAULT_HISTORY_LIMIT", fmt.Sprintf("%d", kbxMod.DefaultLLMHistoryLimit))
 // 	defaultHistoryLimitInt, err := strconv.Atoi(defaultHistoryLimitStr)
 // 	if err != nil {
-// 		defaultHistoryLimit = d.DefaultLLMHistoryLimit
+// 		defaultHistoryLimit = kbxMod.DefaultLLMHistoryLimit
 // 	} else {
 // 		defaultHistoryLimit = defaultHistoryLimitInt
 // 	}
-// 	defaultTimeoutStr := kbxGet.EnvOr("GROMPT_DEFAULT_TIMEOUT", fmt.Sprintf("%d", d.DefaultTimeout))
+// 	defaultTimeoutStr := kbxGet.EnvOr("GROMPT_DEFAULT_TIMEOUT", fmt.Sprintf("%d", kbxMod.DefaultTimeout))
 // 	defaultTimeoutInt, err := strconv.Atoi(defaultTimeoutStr)
 // 	if err != nil {
-// 		defaultTimeout = d.DefaultTimeout
+// 		defaultTimeout = kbxMod.DefaultTimeout
 // 	} else {
 // 		defaultTimeout = defaultTimeoutInt
 // 	}
@@ -615,7 +613,7 @@ func truncateString(s string, maxLen int) string {
 // 	}
 // 	cfg := kbxTypes.NewConfig(
 // 		kbxGet.EnvOr("GROMPT_SERVER_NAME", initArgs.Name),
-// 		d.GetValueOrDefaultSimple(kbxGet.EnvOr("GROMPT_DEBUG", fmt.Sprintf("%t", initArgs.Debug)), "false") == "true",
+// 		kbxMod.GetValueOrDefaultSimple(kbxGet.EnvOr("GROMPT_DEBUG", fmt.Sprintf("%t", initArgs.Debug)), "false") == "true",
 // 		gl.GetLoggerZ("ai"),
 // 		kbxGet.EnvOr("GROMPT_BIND_ADDR", initArgs.Bind),
 // 		kbxGet.EnvOr("GROMPT_PORT", initArgs.Port),
@@ -623,17 +621,17 @@ func truncateString(s string, maxLen int) string {
 // 		kbxGet.EnvOr("GROMPT_ENV_FILE", initArgs.EnvFile),
 // 		kbxGet.EnvOr("GROMPT_CONFIG_FILE", initArgs.ConfigFile),
 // 		kbxGet.EnvOr("GROMPT_PWD", cwd),
-// 		kbxGet.EnvOr("OPENAI_API_KEY", getProviderAPIKey("openai", d.DefaultLLMProvider, kbxGet.EnvOr("GROMPT_API_KEY", initArgs.OpenAIKey))),
-// 		kbxGet.EnvOr("CLAUDE_API_KEY", getProviderAPIKey("claude", d.DefaultLLMProvider, kbxGet.EnvOr("GROMPT_API_KEY", initArgs.ClaudeKey))),
-// 		kbxGet.EnvOr("GEMINI_API_KEY", getProviderAPIKey("gemini", d.DefaultLLMProvider, kbxGet.EnvOr("GROMPT_API_KEY", initArgs.GeminiKey))),
-// 		kbxGet.EnvOr("DEEPSEEK_API_KEY", getProviderAPIKey("deepseek", d.DefaultLLMProvider, kbxGet.EnvOr("GROMPT_API_KEY", initArgs.DeepSeekKey))),
-// 		kbxGet.EnvOr("CHATGPT_API_KEY", getProviderAPIKey("chatgpt", d.DefaultLLMProvider, kbxGet.EnvOr("GROMPT_API_KEY", initArgs.ChatGPTKey))),
+// 		kbxGet.EnvOr("OPENAI_API_KEY", getProviderAPIKey("openai", kbxMod.DefaultLLMProvider, kbxGet.EnvOr("GROMPT_API_KEY", initArgs.OpenAIKey))),
+// 		kbxGet.EnvOr("CLAUDE_API_KEY", getProviderAPIKey("claude", kbxMod.DefaultLLMProvider, kbxGet.EnvOr("GROMPT_API_KEY", initArgs.ClaudeKey))),
+// 		kbxGet.EnvOr("GEMINI_API_KEY", getProviderAPIKey("gemini", kbxMod.DefaultLLMProvider, kbxGet.EnvOr("GROMPT_API_KEY", initArgs.GeminiKey))),
+// 		kbxGet.EnvOr("DEEPSEEK_API_KEY", getProviderAPIKey("deepseek", kbxMod.DefaultLLMProvider, kbxGet.EnvOr("GROMPT_API_KEY", initArgs.DeepSeekKey))),
+// 		kbxGet.EnvOr("CHATGPT_API_KEY", getProviderAPIKey("chatgpt", kbxMod.DefaultLLMProvider, kbxGet.EnvOr("GROMPT_API_KEY", initArgs.ChatGPTKey))),
 // 		kbxGet.EnvOr("OLLAMA_ENDPOINT", "http://localhost:11434"),
 // 		make(map[string]string),
 // 		make(map[string]string),
 // 		make(map[string]string),
 // 		make(map[string]string),
-// 		kbxGet.EnvOr("DEFAULT_PROVIDER", d.DefaultLLMProvider),
+// 		kbxGet.EnvOr("DEFAULT_PROVIDER", kbxMod.DefaultLLMProvider),
 // 		float32(defaultTemperature),
 // 		defaultHistoryLimit,
 // 		time.Duration(defaultTimeout*int(time.Millisecond)),
