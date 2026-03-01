@@ -191,7 +191,7 @@ func (h *httpHandlers) healthCheckGin(c *gin.Context) {
 // listProviders returns available providers with health status
 func (h *httpHandlers) listProvidersGin(c *gin.Context) {
 	providerNames := h.registry.ListProviders()
-	config := h.registry.GetConfig()
+	config := h.registry.Config()
 
 	healthStatuses := make(map[string]interface{})
 	if h.productionMiddleware != nil {

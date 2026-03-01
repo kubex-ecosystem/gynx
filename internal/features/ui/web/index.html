@@ -1,54 +1,154 @@
 <!doctype html>
-<html lang="pt-BR" class="dark">
+<html lang="en" class="light">
 
 <head>
   <meta charset="UTF-8" />
 
   <!-- Basic PWA Meta Tags -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#a855f7" />
+  <meta name="theme-color" content="#9333ea" />
   <meta name="background-color" content="#030712" />
-  <meta name="description" content="GNyx UI - Ecossistema de Governança, Criação e Entrega Kubex." />
+  <meta name="description"
+    content="Transforme suas ideias em prompts eficazes para modelos de IA. Funciona offline com templates inteligentes." />
 
   <!-- PWA Meta Tags -->
-  <meta name="application-name" content="GNyx" />
+  <meta name="application-name" content="Grompt" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="GNyx" />
+  <meta name="apple-mobile-web-app-title" content="Grompt" />
   <meta name="format-detection" content="telephone=no" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="msapplication-config" content="/browserconfig.xml" />
-  <meta name="msapplication-TileColor" content="#a855f7" />
+  <meta name="msapplication-config" content="./browserconfig.xml" />
+  <meta name="msapplication-TileColor" content="#9333ea" />
   <meta name="msapplication-tap-highlight" content="no" />
 
   <!-- Favicon and Icons -->
   <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
   <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
 
   <!-- PWA Manifest -->
-  <link rel="manifest" href="/manifest.json" />
+  <link rel="manifest" href="./manifest.json" />
 
   <!-- Open Graph / Social Media -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="GNyx UI - Kubex Ecosystem" />
+  <meta property="og:title" content="Grompt - AI Prompt Engineering Tool" />
   <meta property="og:description"
-    content="Plataforma agnóstica para engenharia de software e inteligência assistida." />
-  <meta property="og:site_name" content="GNyx" />
+    content="Transforme suas ideias em prompts eficazes para modelos de IA. Funciona offline com templates inteligentes." />
+  <meta property="og:site_name" content="Grompt" />
+  <meta property="og:url" content="https://grompt.kubex.dev/" />
+  <meta property="og:image" content="/images/og-image.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Grompt - AI Prompt Engineering Tool" />
+  <meta name="twitter:description"
+    content="Transforme suas ideias em prompts eficazes para modelos de IA. Funciona offline com templates inteligentes." />
+  <meta name="twitter:image" content="/images/twitter-card.png" />
 
   <!-- Title -->
-  <title>GNyx UI - Kubex Ecosystem</title>
+  <title>Grompt - AI Prompt Engineering Tool</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Space+Mono:wght@400;700&display=swap"
     rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script type="module" crossorigin src="/assets/main-DISMXUeR.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/vendor-ChtzOUez.js">
-  <link rel="stylesheet" crossorigin href="/assets/main-lN91Jvmk.css">
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: #010409;
+      background-image:
+        linear-gradient(rgba(11, 23, 45, 0.6) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(11, 23, 45, 0.6) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    .font-orbitron {
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .font-space-mono {
+      font-family: 'Space Mono', monospace;
+    }
+
+    .glow-border {
+      box-shadow: 0 0 18px -6px rgba(0, 136, 255, 0.18), 0 0 28px -8px rgba(168, 85, 247, 0.16);
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Orbitron', 'Inter', 'sans-serif'],
+            mono: ['"IBM Plex Mono"', 'monospace'],
+          },
+          colors: {
+            background: '#f9fafb',
+            surface: '#ffffff',
+            border: '#e2e8f0',
+            text: {
+              head: '#111827',
+              body: '#334155',
+            },
+            primary: {
+              DEFAULT: '#06b6d4',
+              hover: '#0891b2',
+              subtle: '#ecfeff',
+              foreground: '#024251',
+            },
+            accent: {
+              DEFAULT: '#a855f7',
+              hover: '#9333ea',
+              secondary: '#d946ef',
+              subtle: '#f5f3ff',
+              foreground: '#3b0764',
+            },
+            success: '#16a34a',
+            warning: '#f59e0b',
+            danger: '#ef4444',
+            glow: {
+              cyan: 'rgba(0, 136, 255, 0.08)',
+              lilac: 'rgba(124, 77, 255, 0.08)',
+            },
+          },
+          boxShadow: {
+            'neon-cyan': '0 0 5px #00e5ff, 0 0 10px #00e5ff, 0 0 20px #00e5ff',
+            'neon-green': '0 0 5px #39d353, 0 0 10px #39d353, 0 0 20px #39d353',
+          }
+        },
+      },
+    }
+  </script>
+
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.543.0",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.19.0",
+    "react-markdown": "https://aistudiocdn.com/react-markdown@^10.1.0",
+    "remark-gfm": "https://aistudiocdn.com/remark-gfm@^4.0.0"
+  }
+}
+</script>
+  <script type="module" crossorigin src="./assets/main-Cj-Jk5PZ.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/vendor-ChtzOUez.js">
+  <link rel="stylesheet" crossorigin href="./assets/main-DhJfyLnz.css">
 </head>
 
-<body class="bg-main text-primary font-sans antialiased">
+<body class="bg-background text-foreground font-sans">
   <div id="root"></div>
 </body>
 

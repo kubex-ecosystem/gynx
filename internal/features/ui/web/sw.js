@@ -4,8 +4,8 @@
  */
 
 const CACHE_NAME = 'gnyx-v0.0.1';
-const API_CACHE_NAME = 'gnyx-api-v0.0.1';
-const DYNAMIC_CACHE_NAME = 'gnyx-dynamic-v0.0.1';
+const API_CACHE_NAME = 'grompt-api-v1.0.9';
+const DYNAMIC_CACHE_NAME = 'grompt-dynamic-v1.0.9';
 
 // Files to cache immediately
 const STATIC_ASSETS = [
@@ -38,15 +38,15 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Service Worker: Caching static assets');
+        console.log('📦 Service Worker: Caching static assets');
         return cache.addAll(STATIC_ASSETS);
       })
       .then(() => {
-        console.log('Service Worker: Installation complete');
+        console.log('✅ Service Worker: Installation complete');
         return self.skipWaiting();
       })
       .catch((error) => {
-        console.error('Service Worker: Installation failed', error);
+        console.error('❌ Service Worker: Installation failed', error);
       })
   );
 });
@@ -55,7 +55,7 @@ self.addEventListener('install', (event) => {
  * Activate event - clean up old caches
  */
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activating...');
+  console.log('🚀 Service Worker: Activating...');
 
   event.waitUntil(
     caches.keys()
@@ -67,14 +67,14 @@ self.addEventListener('activate', (event) => {
               cacheName !== API_CACHE_NAME &&
               cacheName !== DYNAMIC_CACHE_NAME
             ) {
-              console.log('Service Worker: Deleting old cache', cacheName);
+              console.log('🗑️ Service Worker: Deleting old cache', cacheName);
               return caches.delete(cacheName);
             }
           })
         );
       })
       .then(() => {
-        console.log('Service Worker: Activation complete');
+        console.log('✅ Service Worker: Activation complete');
         return self.clients.claim();
       })
   );
@@ -112,7 +112,7 @@ self.addEventListener('fetch', (event) => {
  */
 self.addEventListener('sync', (event) => {
   if (event.tag === 'background-sync') {
-    console.log('Service Worker: Background sync triggered');
+    console.log('🔄 Service Worker: Background sync triggered');
     event.waitUntil(syncOfflineRequests());
   }
 });
@@ -121,10 +121,10 @@ self.addEventListener('sync', (event) => {
  * Handle push notifications
  */
 self.addEventListener('push', (event) => {
-  console.log('Service Worker: Push received');
+  console.log('🔔 Service Worker: Push received');
 
   const options = {
-    body: 'Novo conteúdo disponível no Gnyx',
+    body: 'Novo conteúdo disponível no Grompt',
     icon: '/icons/icon-192x192.png',
     badge: '/icons/badge-72x72.png',
     vibrate: [100, 50, 100],
@@ -135,7 +135,7 @@ self.addEventListener('push', (event) => {
     actions: [
       {
         action: 'explore',
-        title: 'Abrir Gnyx',
+        title: 'Abrir Grompt',
         icon: '/icons/action-explore.png'
       },
       {
@@ -147,7 +147,7 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification('Gnyx', options)
+    self.registration.showNotification('Grompt', options)
   );
 });
 
@@ -155,7 +155,7 @@ self.addEventListener('push', (event) => {
  * Handle notification clicks
  */
 self.addEventListener('notificationclick', (event) => {
-  console.log('Service Worker: Notification clicked');
+  console.log('🖱️ Service Worker: Notification clicked');
 
   event.notification.close();
 
@@ -209,7 +209,7 @@ async function handleAPIRequest(request) {
 
     return networkResponse;
   } catch (error) {
-    console.log('Service Worker: Network failed for API, trying cache', url.pathname);
+    console.log('🔄 Service Worker: Network failed for API, trying cache', url.pathname);
 
     // Network failed, try cache
     const cache = await caches.open(API_CACHE_NAME);
@@ -220,7 +220,7 @@ async function handleAPIRequest(request) {
       const isStale = cachedAt && (Date.now() - parseInt(cachedAt)) > MAX_CACHE_AGE;
 
       if (isStale) {
-        console.log('Service Worker: Cached API response is stale', url.pathname);
+        console.log('⚠️ Service Worker: Cached API response is stale', url.pathname);
       }
 
       return cachedResponse;
@@ -253,7 +253,7 @@ async function handleStaticAsset(request) {
 
     return networkResponse;
   } catch (error) {
-    console.log('Service Worker: Network failed for static asset, trying cache');
+    console.log('🔄 Service Worker: Network failed for static asset, trying cache');
 
     // Network failed, try cache again
     const cache = await caches.open(CACHE_NAME);
@@ -295,7 +295,7 @@ async function handleDynamicContent(request) {
 
     return networkResponse;
   } catch (error) {
-    console.log('Service Worker: Network failed for dynamic content, trying cache');
+    console.log('🔄 Service Worker: Network failed for dynamic content, trying cache');
 
     // Network failed, try cache
     const cachedResponse = await cache.match(request);
@@ -329,8 +329,8 @@ function createOfflineAPIResponse(url) {
     ];
   } else if (url.pathname.includes('/health')) {
     offlineData.status = 'offline';
-    offlineData.service = 'gnyx-v0';
-    offlineData.version = '0.0.1';
+    offlineData.service = 'grompt-v1';
+    offlineData.version = '1.0.9';
   }
 
   return new Response(JSON.stringify(offlineData), {
@@ -350,7 +350,7 @@ function createOfflinePage() {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Gnyx - Offline</title>
+      <title>Grompt - Offline</title>
       <style>
         body {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -398,7 +398,7 @@ function createOfflinePage() {
       <div class="offline-icon">🔌</div>
       <h1>Modo Offline</h1>
       <p>
-        Você está navegando offline. O Gnyx continua funcionando com
+        Você está navegando offline. O Grompt continua funcionando com
         funcionalidades limitadas usando templates locais e dados em cache.
       </p>
       <button class="retry-btn" onclick="window.location.reload()">
@@ -432,7 +432,7 @@ async function updateCacheInBackground(request, cache) {
     }
   } catch (error) {
     // Silent background update failure
-    console.log('Service Worker: Background cache update failed');
+    console.log('🔄 Service Worker: Background cache update failed');
   }
 }
 
@@ -449,7 +449,7 @@ async function syncOfflineRequests() {
   try {
     // This would integrate with the IndexedDB offline queue
     // from the enhancedAPI service to sync pending requests
-    console.log('Service Worker: Syncing offline requests...');
+    console.log('🔄 Service Worker: Syncing offline requests...');
 
     // Send message to main thread to trigger sync
     const clients = await self.clients.matchAll();
@@ -459,7 +459,7 @@ async function syncOfflineRequests() {
       });
     });
   } catch (error) {
-    console.error('Service Worker: Sync failed', error);
+    console.error('❌ Service Worker: Sync failed', error);
   }
 }
 
@@ -477,4 +477,4 @@ self.addEventListener('message', (event) => {
   }
 });
 
-console.log('Service Worker: Script loaded');
+console.log('🚀 Service Worker: Script loaded');
