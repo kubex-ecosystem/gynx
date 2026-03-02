@@ -84,6 +84,7 @@ func RegisterAuthHTTP(r *gin.RouterGroup, container types.IContainer) (gin.IRout
 		"POST /auth/refresh":     h.refresh,
 		"POST /sign-out":         h.signOut,
 		"GET /me":                h.me,
+		"GET /auth/me":           h.me,
 		"GET /auth/google/start": h.googleStart,
 		"GET /auth/v1/callback":  h.handleGoogleCallback,
 		// "GET /auth/google/oauth2/callback": h.googleCallback,
