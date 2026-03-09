@@ -311,22 +311,22 @@ func (ctl *runtimeAIController) decodeUnifiedRequest(c *gin.Context) (unifiedReq
 	if providerName == "" {
 		available := ctl.reg.ListProviders()
 		if len(available) == 0 {
-			return req, "", nil, fmt.Errorf("no providers are available in the active registry")
+			return req, "", nil, gl.Errorf("no providers are available in the active registry")
 		}
 		providerName = available[0]
 	}
 
 	provider := ctl.reg.ResolveProvider(providerName)
 	if provider == nil {
-		return req, "", nil, fmt.Errorf("provider '%s' is not available in the active registry", providerName)
+		return req, "", nil, gl.Errorf("provider '%s' is not available in the active registry", providerName)
 	}
 	if err := provider.Available(); err != nil {
-		return req, "", nil, fmt.Errorf("provider '%s' is unavailable: %v", providerName, err)
+		return req, "", nil, gl.Errorf("provider '%s' is unavailable: %v", providerName, err)
 	}
 
 	modelCandidates := ctl.resolveCandidateModels(providerName, req)
 	if len(modelCandidates) == 0 {
-		return req, "", nil, fmt.Errorf("provider '%s' has no model candidates configured", providerName)
+		return req, "", nil, gl.Errorf("provider '%s' has no model candidates configured", providerName)
 	}
 
 	return req, providerName, modelCandidates, nil
@@ -408,7 +408,7 @@ func (ctl *runtimeAIController) executeUnified(
 		var streamErr error
 		for chunk := range ch {
 			if chunk.Error != "" {
-				streamErr = fmt.Errorf(chunk.Error)
+				streamErr = gl.Errorf("provider=%s model=%s error=%s", providerName, modelName, chunk.Error)
 				break
 			}
 			if chunk.Content != "" {
@@ -436,7 +436,7 @@ func (ctl *runtimeAIController) executeUnified(
 		return builder.String(), modelName, usage, attempts, nil
 	}
 
-	return "", "", nil, attempts, fmt.Errorf("all model candidates failed for provider '%s'", providerName)
+	return "", "", nil, attempts, gl.Errorf("all model candidates failed for provider '%s'", providerName)
 }
 
 func (ctl *runtimeAIController) streamUnified(
@@ -467,7 +467,7 @@ func (ctl *runtimeAIController) streamUnified(
 		hasEmittedContent := false
 		for chunk := range ch {
 			if chunk.Error != "" {
-				streamErr = fmt.Errorf(chunk.Error)
+				streamErr = gl.Errorf("provider=%s model=%s error=%s", providerName, modelName, chunk.Error)
 				break
 			}
 			if chunk.Content != "" {
@@ -494,7 +494,7 @@ func (ctl *runtimeAIController) streamUnified(
 		return modelName, usage, attempts, nil
 	}
 
-	return "", nil, attempts, fmt.Errorf("all model candidates failed for provider '%s'", providerName)
+	return "", nil, attempts, gl.Errorf("all model candidates failed for provider '%s'", providerName)
 }
 
 func buildChatRequest(ctx context.Context, providerName, modelName string, req unifiedRequest, stream bool) kbxTypes.ChatRequest {
