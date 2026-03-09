@@ -190,7 +190,7 @@ func (s *Server) Start() error {
 		}
 		c.Redirect(http.StatusTemporaryRedirect, redirectTo)
 	})
-	routes.RegisterRoutes(s.Group("/api/v1"), s.container)
+	routes.RegisterRoutesWithProviders(s.Group("/api/v1"), s.container, s.registry, s.middleware)
 
 	if uiroutes, err := web.NewHandler(ui.NewUIService().GetWebFS()); err != nil {
 		gl.Log("warn", "Failed to initialize web handler for UI routes: %v", err)

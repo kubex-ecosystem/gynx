@@ -74,13 +74,13 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	}
 
 	// Create route registrar function
-	routeRegistrar := func(r *gin.RouterGroup, cont any) gin.IRoutes {
+	routeRegistrar := func(r *gin.RouterGroup, cont any, reg *registry.Registry, prod *middlewares.ProductionMiddleware) gin.IRoutes {
 		// Type assertion to *Container
 		appContainer, ok := cont.(*Container)
 		if !ok {
 			gl.Fatal("route registrar received invalid container type")
 		}
-		return routes.RegisterRoutes(r, appContainer)
+		return routes.RegisterRoutesWithProviders(r, appContainer, reg, prod)
 	}
 
 	// Wire HTTP protocol

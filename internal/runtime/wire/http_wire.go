@@ -162,7 +162,7 @@ func (w *HTTPWire) Wire() (*gin.Engine, error) {
 
 	// Register routes using the provided registrar function
 	if w.routeRegistrar != nil {
-		w.routeRegistrar(w.engine.Group("/api/v1"), w.container)
+		w.routeRegistrar(w.engine.Group("/api/v1"), w.container, w.registry, w.prodMiddleware)
 	} else {
 		gl.Warn("No route registrar provided, routes not registered")
 	}
