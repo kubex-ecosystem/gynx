@@ -17,7 +17,6 @@ import (
 	"github.com/kubex-ecosystem/gnyx/internal/runtime/middlewares"
 	"github.com/kubex-ecosystem/gnyx/internal/runtime/wire"
 
-	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 	kbxGet "github.com/kubex-ecosystem/kbx/get"
 	gl "github.com/kubex-ecosystem/logz"
 )
@@ -66,7 +65,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	}
 
 	// Load provider registry
-	providerRegistry, err := registry.Load(container.GetConfig().ServerConfig.Files.ProvidersConfig)
+	providerRegistry, err := registry.LoadResolved(container.GetConfig().ServerConfig)
 	if err != nil {
 		return nil, gl.Errorf("failed to load provider registry: %v", err)
 	}
@@ -146,7 +145,7 @@ func (s *Server) Start() error {
 	rg := s.registry
 	var err error
 	if rg == nil {
-		rg, err = registry.Load(os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PROVIDERS_CONFIG_PATH", kbxMod.DefaultProvidersConfig)))
+		rg, err = registry.LoadResolved(s.config.ServerConfig)
 		if err != nil {
 			gl.Errorf("Failed to load provider registry: %v", err)
 		}
@@ -216,6 +215,10 @@ func (s *Server) logProviderRegistry() {
 		gl.Noticef("Provider registry contains %d providers", len(s.registry.ListProviders()))
 		for _, p := range s.registry.ListProviders() {
 			r := s.registry.ResolveProvider(p)
+			if r == nil {
+				gl.Debugf(" - Provider: %s, Available: false", p)
+				continue
+			}
 			gl.Debugf(" - Provider: %s, Available: %v", r.Name(), r.Available() == nil)
 		}
 	}

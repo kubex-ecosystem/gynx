@@ -21,7 +21,6 @@ import (
 
 	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 	kbxGet "github.com/kubex-ecosystem/kbx/get"
-	kbxTReg "github.com/kubex-ecosystem/kbx/tools/providers"
 	kbxTypes "github.com/kubex-ecosystem/kbx/types"
 
 	gl "github.com/kubex-ecosystem/logz"
@@ -32,7 +31,7 @@ type Server struct {
 	*gin.Engine
 
 	cfg        *config.ServerConfig
-	registry   *kbxTReg.Registry
+	registry   *registry.Registry
 	middleware *middlewares.ProductionMiddleware
 	handler    http.Handler
 	once       sync.Once
@@ -49,9 +48,7 @@ func NewServer(cfg *config.ServerConfig) (*Server, error) {
 	prodMiddleware := middlewares.NewProductionMiddleware(prodConfig)
 
 	// Load providers registry for gateway, if specified
-	reg, err := kbxTReg.Load(
-		cfg.Files.ProvidersConfig,
-	)
+	reg, err := registry.LoadResolved(cfg)
 	if err != nil {
 		return nil, gl.Errorf("failed to load gateway providers registry: %v", err)
 	}
@@ -85,6 +82,8 @@ func NewServer(cfg *config.ServerConfig) (*Server, error) {
 	if err := container.Bootstrap(context.Background()); err != nil {
 		return nil, gl.Errorf("failed to bootstrap application: %v", err)
 	}
+	container.GetConfig().ServerConfig.ProvidersConfig = cfg.ProvidersConfig
+	container.GetConfig().ServerConfig.Files.ProvidersConfig = cfg.Files.ProvidersConfig
 
 	return &Server{
 		Engine:     engine,
@@ -122,22 +121,25 @@ func (s *Server) Start() error {
 	srvAddr := net.JoinHostPort(
 		serverCfg.Runtime.Bind, serverCfg.Runtime.Port,
 	)
-	swm := middlewares.NewProductionMiddleware(middlewares.DefaultProductionConfig())
-
-	reg, err := registry.Load(kbxGet.ValOrType(
-		serverCfg.ProvidersConfig,
-		kbxGet.EnvOr("KUBEX_GNYX_PROVIDERS_CONFIG_PATH", kbxMod.DefaultProvidersConfig),
-	))
-	if err != nil {
-		gl.Errorf("Failed to load provider registry: %v", err)
+	swm := s.middleware
+	if swm == nil {
+		swm = middlewares.NewProductionMiddleware(middlewares.DefaultProductionConfig())
+		s.middleware = swm
 	}
+
+	reg := s.registry
 	if reg == nil {
-		gl.Warn("Provider registry is nil after loading - this may cause issues with provider resolution")
+		var err error
+		reg, err = registry.LoadResolved(serverCfg)
+		if err != nil {
+			return gl.Errorf("failed to load provider registry: %v", err)
+		}
+		s.registry = reg
 	}
-
-	// Register all providers with production middleware
-	for _, providerName := range reg.ListProviders() {
-		swm.RegisterProvider(providerName)
+	if reg != nil {
+		for _, providerName := range reg.ListProviders() {
+			swm.RegisterProvider(providerName)
+		}
 	}
 	s.logProviderRegistry()
 
@@ -213,6 +215,10 @@ func (s *Server) logProviderRegistry() {
 		gl.Noticef("Provider registry contains %d providers", len(s.registry.ListProviders()))
 		for _, p := range s.registry.ListProviders() {
 			r := s.registry.ResolveProvider(p)
+			if r == nil {
+				gl.Debugf(" - Provider: %s, Available: false", p)
+				continue
+			}
 			gl.Debugf(" - Provider: %s, Available: %v", r.Name(), r.Available() == nil)
 		}
 	}
