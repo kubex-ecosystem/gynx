@@ -1,11 +1,11 @@
 package services
 
-import "github.com/kubex-ecosystem/gnyx/internal/types"
+import "github.com/kubex-ecosystem/kbx/types"
 
 type OrchestrationService struct {
 	// Placeholder for orchestration logic
 }
 
-func NewOrchestrationService(config *types.Config) *OrchestrationService {
+func NewOrchestrationService(config *types.SrvConfig) *OrchestrationService {
 	return &OrchestrationService{}
 }

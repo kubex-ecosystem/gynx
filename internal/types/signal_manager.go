@@ -57,7 +57,7 @@ func (sm *SignalManager[T]) ListenForSignals() (<-chan string, error) {
 
 // StopListening stops listening for signals and closes the channel.
 func (sm *SignalManager[T]) StopListening() {
-	signal.Stop(sm.SigChan) // 🔥 Para de escutar sinais
-	close(sm.SigChan)       // 🔥 Fecha o canal para evitar vazamento de goroutines
+	signal.Stop(sm.SigChan)
+	close(sm.SigChan)
 	gl.Log("info", "Parando escuta de sinais")
 }

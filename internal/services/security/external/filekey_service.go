@@ -54,7 +54,7 @@ func newFileKeyService(service, name string) *FileKeyService {
 	// Inicializa apenas uma vez as configurações globais
 	if globalMasterKey == nil {
 		// Use kbxGet.EnvOr para resiliência na obtenção do diretório de secrets
-		dir := kbxGet.EnvOr("APP_SECRETS_DIR", os.ExpandEnv(defaults.DefaultVaultDir))
+		dir := kbxGet.EnvOr("KUBEX_GNYX_SECRETS_DIR", os.ExpandEnv(defaults.DefaultVaultDir))
 
 		// Tenta criar o diretório
 		if err := os.MkdirAll(dir, 0o700); err != nil {
@@ -77,23 +77,25 @@ func newFileKeyService(service, name string) *FileKeyService {
 		masterKeyPath := filepath.Join(dir, "kubex_kubex-jwt_secret.secret")
 		ephemeralKeyPath := filepath.Join(dir, "kubex_ephemeral_jwt_secret.secret")
 
-		// 1) Se APP_MASTER_KEY estiver set, usa ela.
-		mk := strings.TrimSpace(kbxGet.EnvOr("APP_MASTER_KEY", ""))
+		// 1) Se KUBEX_GNYX_APP_MASTER_KEY estiver set, usa ela.
+		mk := strings.TrimSpace(kbxGet.EnvOr("KUBEX_GNYX_APP_MASTER_KEY", ""))
 
 		// 2) Caso contrário, tenta ler chave persistida (principal ou a efêmera gerada antes)
 		if mk == "" {
 			if data, err := os.ReadFile(masterKeyPath); err == nil && len(data) > 0 {
 				mk = strings.TrimSpace(string(data))
-				gl.Debugf("Loaded master key from %s", masterKeyPath)
+				// gl.Debugf("Loaded master key from %s", masterKeyPath)
+				gl.Debugf("Master key loaded successfully from file.")
 			} else if data, err := os.ReadFile(ephemeralKeyPath); err == nil && len(data) > 0 {
 				mk = strings.TrimSpace(string(data))
-				gl.Debugf("Loaded ephemeral master key from %s", ephemeralKeyPath)
+				// gl.Debugf("Loaded ephemeral master key from %s", ephemeralKeyPath)
+				gl.Debugf("Ephemeral master key loaded successfully from file.")
 			}
 		}
 
 		// 3) Se ainda vazio, gera e persiste (no caminho principal para reutilizar em restarts)
 		if mk == "" {
-			gl.Debugf("APP_MASTER_KEY not set; generating persistent master key")
+			gl.Debugf("KUBEX_GNYX_APP_MASTER_KEY not set; generating persistent master key")
 			tmp := make([]byte, 32)
 			_, _ = rand.Read(tmp)
 			mk = base64.StdEncoding.EncodeToString(tmp)

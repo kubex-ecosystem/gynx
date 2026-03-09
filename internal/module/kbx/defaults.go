@@ -3,26 +3,29 @@ package kbx
 
 // Default configuration constants
 const (
-	DefaultKubexConfigDir = "$HOME/.gnyx"
+	DefaultKubexConfigDir = "$HOME/.kubex/gnyx"
 
-	DefaultGNyxCAPath   = "$HOME/.gnyx/ca-cert.pem"
-	DefaultGNyxKeyPath  = "$HOME/.gnyx/gnyxgnyx"
-	DefaultGNyxCertPath = "$HOME/.gnyx/gnyxgnyxm"
+	DefaultGNyxCAPath   = "$HOME/.kubex/gnyx/ca-cert.pem"
+	DefaultGNyxKeyPath  = "$HOME/.kubex/gnyx/gnyx.key" // Priv
+	DefaultGNyxCertPath = "$HOME/.kubex/gnyx/gnyx.crt"
 
-	DefaultGNyxConfigPath = "$HOME/.gnyx/config/config.json"
-	DefaultGNyxEnvPath    = "$HOME/.gnyx/config/.env"
-	DefaultGNyxLogPath    = "$HOME/.gnyxs/github.com/kubex-ecosystem/gnyx_process.log.txt"
+	DefaultGNyxConfigPath = "$HOME/.kubex/gnyx/config/config.json"
+	DefaultGNyxEnvPath    = "$HOME/.kubex/gnyx/config/.env"
+	DefaultGNyxLogPath    = "$HOME/.kubex/gnyx/logs/gnyx_process.log.txt"
 
-	DefaultKubexDomusConfigPath = "$HOME/.domus/config/config.json"
+	DefaultKubexDomusConfigPath = "$HOME/.kubex/domus/config/config.json"
 
-	DefaultGoogleAuthClientPath = "$HOME/.gnyx/config/google_auth_client.json"
+	DefaultMailConfigPath       = "$HOME/.kubex/gnyx/config/mail_config.json"
+	DefaultGoogleAuthClientPath = "$HOME/.kubex/gnyx/config/google_auth_client.json"
 
-	DefaultVaultDir = "$HOME/.gnyxrets"
+	DefaultVaultDir = "$HOME/.kubex/gnyx/secrets"
 
 	DefaultVaultKey = "kubex_kubex-jwt_secret.secret"
+
+	DefaultTemplatesDir = "templates"
 )
 
-const DefaultProvidersConfig = "$HOME/.gnyx/config/providers.yaml"
+const DefaultProvidersConfig = "$HOME/.kubex/gnyx/config/providers.yaml"
 
 // Default General Rate Limiting Settings
 const (
@@ -56,15 +59,37 @@ const (
 // Default LLM Settings
 const (
 	DefaultLLMProvider    = "gemini"
-	DefaultLLMModel       = "gemini-2.0-flash"
+	DefaultLLMModel       = "gemini-2.5-flash"
 	DefaultLLMMaxTokens   = 1024
 	DefaultLLMTemperature = 0.3
 )
 
+const (
+	DefaultLLMOpenAIKeyEnv       = "OPENAI_API_KEY"
+	DefaultLLMGoogleKeyEnv       = "GOOGLE_API_KEY"
+	DefaultLLMAzureKeyEnv        = "AZURE_API_KEY"
+	DefaultLLMAnthropicKeyEnv    = "ANTHROPIC_API_KEY"
+	DefaultLLMGeminiKeyEnv       = "GEMINI_API_KEY"
+	DefaultLLMOllamaKeyEnv       = "OLLAMA_API_KEY"
+	DefaultLLMChatGPTKeyEnv      = "CHATGPT_API_KEY"
+	DefaultLLMDeepseekKeyEnv     = "DEEPSEEK_API_KEY"
+	DefaultLLMCohereKeyEnv       = "COHERE_API_KEY"
+	DefaultLLMGroqKeyEnv         = "GROQ_API_KEY"
+	DefaultLLMGrokKeyEnv         = "GROK_API_KEY"
+	DefaultLLMMistralKeyEnv      = "MISTRAL_API_KEY"
+	DefaultLLMCustomKeyEnv       = "CUSTOM_API_KEY"
+	DefaultLLMMetaKeyEnv         = "META_API_KEY"
+	DefaultLLMClaudeKeyEnv       = "CLAUDE_API_KEY"
+	DefaultLLMErnieKeyEnv        = "ERNIE_API_KEY"
+	DefaultLLMCustomKeyEnvPrefix = "CUSTOM_"
+	DefaultLLMCustomKeyEnvSuffix = "_KEY_ENV"
+)
+
 // Default Server Settings
 const (
-	DefaultServerPort = "3000"
-	DefaultServerHost = "0.0.0.0"
+	DefaultServerPort = "5000"
+	DefaultServerBind = "0.0.0.0"
+	DefaultServerHost = "localhost"
 )
 
 // Default HTTP Basic Header Security Keys
@@ -88,9 +113,9 @@ type DBNameKey string
 
 const (
 	ContextDBNameKey      = DBNameKey("postgres")
-	DefaultVolumesDir     = "$HOME/.gnyxumes"
-	DefaultMongoVolume    = "$HOME/.gnyxumes/mongo"
-	DefaultRedisVolume    = "$HOME/.gnyxumes/redis"
-	DefaultPostgresVolume = "$HOME/.gnyxumes/postgresql"
-	DefaultRabbitMQVolume = "$HOME/.gnyxumes/rabbitmq"
+	DefaultVolumesDir     = "$HOME/.kubex/domus/volumes"
+	DefaultMongoVolume    = "$HOME/.kubex/domus/volumes/mongo"
+	DefaultRedisVolume    = "$HOME/.kubex/domus/volumes/redis"
+	DefaultPostgresVolume = "$HOME/.kubex/domus/volumes/postgresql"
+	DefaultRabbitMQVolume = "$HOME/.kubex/domus/volumes/rabbitmq"
 )

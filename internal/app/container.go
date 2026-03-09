@@ -12,11 +12,14 @@ import (
 	api "github.com/kubex-ecosystem/gnyx/internal/api/invite"
 	ds "github.com/kubex-ecosystem/gnyx/internal/dsclient/datastore"
 	companystore "github.com/kubex-ecosystem/gnyx/internal/dsclient/datastore/company_store"
+	ui "github.com/kubex-ecosystem/gnyx/internal/features/ui"
+	kbxGet "github.com/kubex-ecosystem/kbx/get"
 
 	userstore "github.com/kubex-ecosystem/gnyx/internal/dsclient/datastore/user_store"
+	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 	invitesvc "github.com/kubex-ecosystem/gnyx/internal/services/invite"
 	crt "github.com/kubex-ecosystem/gnyx/internal/services/security/certificates"
-	"github.com/kubex-ecosystem/kbx"
+	kbx "github.com/kubex-ecosystem/kbx"
 	gl "github.com/kubex-ecosystem/logz"
 
 	"github.com/kubex-ecosystem/gnyx/internal/config"
@@ -35,6 +38,7 @@ type Container struct {
 	factory    *dsclient.AdapterFactory      `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 	stores     map[string]dsclient.StoreType `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 	imapSvc    *mailer.IMAPService           `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	uiSvc      *ui.UIService                 `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 
 	// Controllers genéricos CRUD usando stores do DS
 	UserController    *genericapi.Controller[dsclient.User]    `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
@@ -48,13 +52,23 @@ func NewContainer(ctx context.Context, cfg *config.Config) (*Container, error) {
 		return nil, gl.Errorf("failed to init datastore: %v", err)
 	}
 
-	templateLoader, err := loadTemplates(cfg.TemplatesDir)
+	templateLoader, err := loadTemplates(cfg.ServerConfig.Files.TemplatesDir)
 	if err != nil {
 		return nil, gl.Errorf("failed to load templates: %v", err)
 	}
 
-	mailSender := buildMailer(cfg.MailerConfigFilePath)
-	imapSvc := buildIMAPService(cfg.MailerConfigFilePath)
+	mlCfgFile := os.ExpandEnv(
+		kbxGet.ValOrType(
+			cfg.MailerConfigFilePath,
+			kbxGet.ValOrType(
+				cfg.ServerConfig.SrvConfig.Files.MailerConfigFile,
+				kbxGet.EnvOr("KUBEX_GNYX_MAILER_CONFIG_PATH", kbxMod.DefaultMailConfigPath),
+			),
+		),
+	)
+	mailSender := buildMailer(mlCfgFile)
+
+	imapSvc := buildIMAPService(mlCfgFile)
 	invStore, err := ds.GetInviteStore(ctx)
 	if err != nil {
 		return nil, gl.Errorf("failed to create invite store: %v", err)
@@ -86,11 +100,14 @@ func NewContainer(ctx context.Context, cfg *config.Config) (*Container, error) {
 	stores["user"] = usrStore
 	stores["invite"] = invStore
 
+	uiSvc := ui.NewUIService()
+
 	return &Container{
 		templates:  templateLoader,
 		smtpSender: mailSender,
 		imapSvc:    imapSvc,
 		inviteSvc:  inviteSvc,
+		uiSvc:      uiSvc,
 
 		stores: stores,
 
@@ -123,10 +140,12 @@ func (c *Container) Bootstrap(ctx context.Context) error {
 		if errOSPubKey != nil && !os.IsNotExist(errOSPubKey) {
 			return gl.Errorf("failed to access public certificate key: %v", errOSPubKey)
 		}
+
 		certService := crt.NewCertServiceType(
-			os.ExpandEnv(c.cfg.ServerConfig.Runtime.PrivKeyPath),
-			os.ExpandEnv(c.cfg.ServerConfig.Runtime.PubCertKeyPath),
+			os.ExpandEnv(kbxGet.ValOrType(c.cfg.ServerConfig.Runtime.PrivKeyPath, kbxGet.EnvOr("KUBEX_GNYX_PRIVATE_KEY_PATH", kbxMod.DefaultGNyxKeyPath))),
+			os.ExpandEnv(kbxGet.ValOrType(c.cfg.ServerConfig.Runtime.PubCertKeyPath, kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_KEY_PATH", kbxMod.DefaultGNyxCertPath))),
 		)
+
 		var rsaPrivKey *rsa.PrivateKey
 		if errOSPrivKey != nil || errOSPubKey != nil {
 			err := os.MkdirAll(filepath.Dir(c.cfg.ServerConfig.Runtime.PrivKeyPath), 0700)
@@ -138,23 +157,21 @@ func (c *Container) Bootstrap(ctx context.Context) error {
 				return gl.Errorf("failed to create directory for JWT certificates: %v", err)
 			}
 
-			gl.Notice("🔐 Generating new JWT certificates...")
+			// gl.Notice("🔐 Generating new JWT certificates...")
 			if _, _, _, err = certService.GenSelfCert(nil); err != nil {
 				return gl.Errorf("failed to generate JWT certificates: %v", err)
 			}
-			gl.Notice("🔐 JWT certificates generated successfully.")
+			gl.Debug("JWT certificates generated successfully.")
 		} else {
-			gl.Debug("🔐 Loading JWT certificates...")
+			// gl.Debug("🔐 Loading JWT certificates...")
 			var err error
 			if rsaPrivKey, err = certService.DecryptPrivateKey(nil); err != nil {
 				return gl.Errorf("failed to decrypt JWT private key: %v", err)
 			}
 		}
-		gl.Debugf("🔐 JWT certificates loaded successfully. PrivKey Decrypted: %v", rsaPrivKey != nil)
+		gl.Noticef("🔐 JWT certificates loaded successfully. PrivKey Decrypted: %v", (rsaPrivKey != nil))
 	}
 
-	// DSClient initialization
-	gl.Debug("Initializing DSClient...")
 	db := dsclient.NewDSClient(ctx, c.cfg, gl.GetLoggerZ("gateway.routes"))
 	if db == nil {
 		return gl.Errorf("failed to create dsclient")
@@ -163,20 +180,18 @@ func (c *Container) Bootstrap(ctx context.Context) error {
 		return gl.Errorf("failed to init dsclient: %v", err)
 	}
 	c.db = db
-	gl.Debug("DSClient initialized successfully.")
-	// GORM DB initialization (temporário, para fallback ORM)
-	gl.Debug("Initializing GORM DB...")
+	// gl.Debug("DSClient initialized successfully.")
 	gormDB, err := c.initGORM(ctx)
 	if err != nil {
-		gl.Debugf("GORM DB initialization failed: %v. Stores will use DS only.", err)
+		gl.Noticef("GORM initialization failed: %v. Stores will use DS only.", err)
 		c.gormDB = nil
 	} else {
 		c.gormDB = gormDB
-		gl.Debug("GORM DB initialized successfully.")
+		gl.Debug("GORM initialized successfully.")
 	}
 
 	// AdapterFactory creation
-	gl.Debug("Creating AdapterFactory...")
+	// gl.Debug("Creating AdapterFactory...")
 	factory, err := db.NewAdapterFactory(ctx, "domus", c.gormDB, nil)
 	if err != nil {
 		return gl.Errorf("failed to create adapter factory: %v", err)
@@ -273,6 +288,10 @@ func (c *Container) GetDSClient(ctx context.Context) any {
 // IMAPService retorna o serviço IMAP opcional.
 func (c *Container) IMAPService() any {
 	return c.imapSvc
+}
+
+func (c *Container) UIService() any {
+	return kbxGet.ValueOrIf(!c.cfg.ServerConfig.Basic.UIDisabled, kbxGet.ValOrType(c.uiSvc, ui.NewUIService()), nil)
 }
 
 func loadTemplates(dir string) (*mailer.TemplateLoader, error) {

@@ -16,6 +16,9 @@ import (
 	"github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 	"github.com/kubex-ecosystem/gnyx/internal/runtime/middlewares"
 	"github.com/kubex-ecosystem/gnyx/internal/runtime/wire"
+
+	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
+	kbxGet "github.com/kubex-ecosystem/kbx/get"
 	gl "github.com/kubex-ecosystem/logz"
 )
 
@@ -39,7 +42,7 @@ type Server struct {
 // NewServer creates a new application server instance.
 // This is the main entry point for starting the Kubex BE application.
 func NewServer(cfg *config.Config) (*Server, error) {
-	gl.Info("🚀 Initializing Kubex BE Server...")
+	gl.Info("Initializing Kubex BE Server...")
 
 	// Create and bootstrap container
 	container, err := NewContainer(context.Background(), cfg)
@@ -60,6 +63,15 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	// Bootstrap the container
 	if err := container.Bootstrap(context.Background()); err != nil {
 		return nil, gl.Errorf("failed to bootstrap application: %v", err)
+	}
+
+	// Load provider registry
+	providerRegistry, err := registry.Load(container.GetConfig().ServerConfig.Files.ProvidersConfig)
+	if err != nil {
+		return nil, gl.Errorf("failed to load provider registry: %v", err)
+	}
+	if providerRegistry == nil {
+		return nil, gl.Errorf("provider registry is nil after loading")
 	}
 
 	// Create route registrar function
@@ -84,12 +96,13 @@ func NewServer(cfg *config.Config) (*Server, error) {
 		return nil, gl.Errorf("failed to wire HTTP: %v", err)
 	}
 
-	gl.Info("✅ Kubex BE Server initialized successfully")
+	gl.Info("Kubex BE Server initialized successfully")
 
 	return &Server{
 		container: container,
 		httpWire:  httpWire,
 		engine:    engine,
+		registry:  providerRegistry,
 		config:    cfg,
 	}, nil
 }
@@ -130,7 +143,34 @@ func (s *Server) Start() error {
 	)
 	srvAddr := net.JoinHostPort(srvRightHost, s.config.ServerConfig.Runtime.Port)
 
+	rg := s.registry
+	var err error
+	if rg == nil {
+		rg, err = registry.Load(os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PROVIDERS_CONFIG_PATH", kbxMod.DefaultProvidersConfig)))
+		if err != nil {
+			gl.Errorf("Failed to load provider registry: %v", err)
+		}
+		if rg == nil {
+			gl.Warn("Provider registry is nil after loading - this may cause issues with provider resolution")
+		}
+		s.registry = rg
+	}
+
+	// Initialize production middleware
+	prodConfig := middlewares.DefaultProductionConfig()
+	prodMiddleware := middlewares.NewProductionMiddleware(prodConfig)
+
+	// Register all providers with production middleware
+	for _, providerName := range s.registry.ListProviders() {
+		prodMiddleware.RegisterProvider(providerName)
+	}
 	swm := middlewares.NewProductionMiddleware(middlewares.DefaultProductionConfig())
+
+	// Register all providers with production middleware
+	for _, providerName := range s.registry.ListProviders() {
+		swm.RegisterProvider(providerName)
+	}
+	s.logProviderRegistry()
 
 	// Recover middleware
 	s.Use(gin.Recovery())
@@ -161,22 +201,24 @@ func (s *Server) Shutdown() error {
 func setupJWTCertificates(container *Container) error {
 	cfg := container.GetConfig().ServerConfig.Runtime
 
-	if cfg.PubCertKeyPath == "" || cfg.PrivKeyPath == "" {
-		cfg.PubCertKeyPath = os.ExpandEnv(kbx.GetEnvOrDefault(
-			"KUBEX_BE_PUBLIC_KEY_PATH",
-			"$HOME/.gnyx/github.com/kubex-ecosystem/gnyx/certs/github.com/kubex-ecosystem/gnyx.pub",
-		))
-		cfg.PrivKeyPath = os.ExpandEnv(kbx.GetEnvOrDefault(
-			"KUBEX_BE_PRIVATE_KEY_PATH",
-			"$HOME/.gnyx/github.com/kubex-ecosystem/gnyx/certs/github.com/kubex-ecosystem/gnyx.pem",
-		))
-	}
-
-	if cfg.PrivKeyPath == "" || cfg.PubCertKeyPath == "" {
-		return gl.Errorf("JWT certificate paths are not set in server config")
-	}
+	cfg.PubCertKeyPath = os.ExpandEnv(kbxGet.ValOrType(cfg.PubCertKeyPath, kbx.GetEnvOrDefault("KUBEX_GNYX_PUBLIC_KEY_PATH", kbx.DefaultGNyxCertPath)))
+	cfg.PrivKeyPath = os.ExpandEnv(kbxGet.ValOrType(cfg.PrivKeyPath, kbx.GetEnvOrDefault("KUBEX_GNYX_PRIVATE_KEY_PATH", kbx.DefaultGNyxKeyPath)))
 
 	return nil
+}
+
+func (s *Server) logProviderRegistry() {
+	if s.registry == nil {
+		gl.Warn("Provider registry is nil - this may cause issues with provider resolution")
+	} else if len(s.registry.ListProviders()) == 0 {
+		gl.Warn("Provider registry is empty - no providers available for resolution")
+	} else {
+		gl.Noticef("Provider registry contains %d providers", len(s.registry.ListProviders()))
+		for _, p := range s.registry.ListProviders() {
+			r := s.registry.ResolveProvider(p)
+			gl.Debugf(" - Provider: %s, Available: %v", r.Name(), r.Available() == nil)
+		}
+	}
 }
 
 // Helper functions

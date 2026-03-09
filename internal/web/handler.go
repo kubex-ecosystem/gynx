@@ -1,14 +1,14 @@
-// Package web provides web interface for the kubexbe.
+// Package web provides web interface for the gnyx.
 package web
 
 import (
-	gl "github.com/kubex-ecosystem/logz"
 	"io"
 	"io/fs"
 	"net/http"
-	"os"
 	"path"
 	"strings"
+
+	gl "github.com/kubex-ecosystem/logz"
 )
 
 // Handler provides HTTP handlers for the web interface
@@ -17,10 +17,10 @@ type Handler struct {
 }
 
 // NewHandler creates a new web interface handler
-func NewHandler() (*Handler, error) {
+func NewHandler(fsys fs.FS) (*Handler, error) {
 	// Strip the "embedded/guiweb" prefix from the embedded filesystem
 	return &Handler{
-		fsys: nil,
+		fsys: fsys,
 	}, nil
 }
 
@@ -33,7 +33,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	cleanPath = strings.TrimPrefix(cleanPath, "/")
 
-	if _, err := os.Stat(cleanPath); os.IsNotExist(err) {
+	// Check if the file exists in the embedded filesystem
+	if h.fsys == nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
@@ -56,8 +58,26 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if it's a directory, if so, serve index.html
+	if stat.IsDir() {
+		indexFile, err := h.fsys.Open(path.Join(cleanPath, "index.html"))
+		if err != nil {
+			http.Error(w, "Not found", http.StatusNotFound)
+			return
+		}
+		defer indexFile.Close()
+
+		stat, err = indexFile.Stat()
+		if err != nil || stat.IsDir() {
+			http.Error(w, "Not found", http.StatusNotFound)
+			return
+		}
+
+		file = indexFile
+	}
+
 	// Set content type based on file extension
-	ext := strings.ToLower(path.Ext(cleanPath))
+	ext := strings.ToLower(path.Ext(stat.Name()))
 	switch ext {
 	case ".html":
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -69,6 +89,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	case ".png":
 		w.Header().Set("Content-Type", "image/png")
+	case ".jpg", ".jpeg":
+		w.Header().Set("Content-Type", "image/jpeg")
 	case ".ico":
 		w.Header().Set("Content-Type", "image/x-icon")
 	case ".svg":
@@ -88,11 +110,23 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.ServeContent(w, r, stat.Name(), stat.ModTime(), file.(io.ReadSeeker))
 }
 
-// RegisterRoutes registers web interface routes
-func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
+// RegisterRoutesMux registers web interface routes
+func (h *Handler) RegisterRoutesMux(mux *http.ServeMux) {
 	// Serve web interface on root path
 	mux.Handle("/", h)
 
 	// Also serve on /app/ for explicit access
 	mux.Handle("/app/", http.StripPrefix("/app", h))
+}
+
+func (h *Handler) RegisterRoutesGin(router http.Handler) http.Handler {
+
+	// Serve web interface on root path
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/app/") {
+			http.StripPrefix("/app", h).ServeHTTP(w, r)
+		} else {
+			h.ServeHTTP(w, r)
+		}
+	})
 }

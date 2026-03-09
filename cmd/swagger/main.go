@@ -5,7 +5,7 @@
 // @termsOfService  https://github.com/kubex-ecosystem/gnyx/terms
 // @contact.name   GNyx API Support
 // @contact.url    https://github.com/kubex-ecosystem/gnyx
-// @contact.email  ti@gnyx.app
+// @contact.email  ti@kubex.world
 // @host      localhost:8080
 // @BasePath  /
 // @securityDefinitions.apikey BearerAuth
@@ -20,6 +20,7 @@ package swagger
 
 import (
 	"net"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kubex-ecosystem/gnyx/internal/config"
@@ -49,14 +50,16 @@ func SwaggerMain(dbService services.Service[any], _ error) {
 				Bind: net.JoinHostPort("localhost", "8080"),
 			},
 			Files: kbxTypes.SrvFilesParams{
-				EnvFile:         kbxGet.EnvOr("KUBEX_ENV_FILE", "./.env"),
-				DBConfigFile:    kbxGet.EnvOr("KUBEX_DB_CONFIG_FILE", "./config/db_config.yaml"),
-				ProvidersConfig: kbxGet.EnvOr("KUBEX_PROVIDERS_CONFIG", kbxMod.DefaultProvidersConfig),
+				EnvFile:         os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_ENV_FILE", "./.env")),
+				DBConfigFile:    os.ExpandEnv(kbxGet.EnvOr("KUBEX_DOMUS_CONFIG_FILE", "./config/db_config.yaml")),
+				ProvidersConfig: os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PROVIDERS_CONFIG_PATH", kbxMod.DefaultProvidersConfig)),
 			},
 			Basic: kbxTypes.SrvBasicParams{
-				Debug:          kbxGet.EnvOr("KUBEX_DEBUG_MODE", "false") == "true",
-				ReleaseMode:    kbxGet.EnvOr("KUBEX_RELEASE_MODE", "false") == "true",
-				IsConfidential: kbxGet.EnvOr("KUBEX_CONFIDENTIAL_MODE", "false") == "true",
+				Debug:          kbxGet.EnvOrType("KUBEX_GNYX_DEBUG_MODE", false),
+				ReleaseMode:    kbxGet.EnvOrType("KUBEX_GNYX_RELEASE_MODE", false),
+				IsConfidential: kbxGet.EnvOrType("KUBEX_GNYX_CONFIDENTIAL_MODE", false),
+				CORSEnabled:    kbxGet.EnvOrType("KUBEX_GNYX_ENABLE_CORS", true),
+				UIDisabled:     kbxGet.EnvOrType("KUBEX_GNYX_DISABLE_UI", false),
 			},
 		},
 	}
@@ -67,7 +70,7 @@ func SwaggerMain(dbService services.Service[any], _ error) {
 	)
 
 	if err != nil {
-		gl.Log("fatal", "❌ Failed to initialize router:", err)
+		gl.Log("fatal", "Failed to initialize router:", err)
 		return
 	}
 
@@ -102,12 +105,12 @@ func SwaggerMain(dbService services.Service[any], _ error) {
 	// Set up CORS
 	// err = router.SecureServerInit(rtr.GetEngine(), net.JoinHostPort("localhost", "8080"))
 	// if err != nil {
-	// 	gl.Log("fatal", "❌ Failed to initialize CORS:", err)
+	// 	gl.Log("fatal", "Failed to initialize CORS:", err)
 	// 	return
 	// }
 
 	// Start server
-	gl.Log("info", "🚀 GNyx API Server starting...")
+	gl.Log("info", "GNyx API Server starting...")
 	gl.Log("info", "📚 Swagger docs available at: http://localhost:8080/swagger/index.html")
 	gl.Log("info", "🔍 API endpoints at: http://localhost:8080/api/v1")
 
@@ -115,7 +118,7 @@ func SwaggerMain(dbService services.Service[any], _ error) {
 	docs.SwaggerInfo.Title = "GNyx API"
 
 	if err := rtr.Start(); err != nil {
-		gl.Log("fatal", "❌ Failed to start server:", err)
+		gl.Log("fatal", "Failed to start server:", err)
 	}
 }
 

@@ -23,6 +23,7 @@ type httpHandlersSSE struct {
 // 	mux.HandleFunc("/v1/providers", h.listProviders)
 // }
 
+// WireHTTPSSE sets up HTTP routes with SSE support for streaming responses
 func WireHTTPSSE(mux *http.ServeMux, reg *registry.Registry) {
 	hh := &httpHandlersSSE{reg: reg /* engine: nil */} // TODO: Initialize engine when ready
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusNoContent) })
@@ -56,7 +57,7 @@ func (h *httpHandlersSSE) chatSSE(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	p := h.reg.Resolve(in.Provider)
+	p := h.reg.ResolveProvider(in.Provider)
 	if p == nil {
 		http.Error(w, "bad provider", http.StatusBadRequest)
 		return
@@ -117,7 +118,7 @@ func (h *httpHandlersSSE) providers(w http.ResponseWriter, r *http.Request) {
 	type item struct{ Name, Type string }
 	out := []item{}
 	for name, pc := range cfg.Providers {
-		out = append(out, item{Name: name, Type: pc.Type})
+		out = append(out, item{Name: name, Type: pc.Type()})
 	}
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]any{"providers": out})

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Test script for the kubexbe gateway
+# Test script for the gnyx gateway
 # This script demonstrates the gateway functionality
 
-echo "🚀 Testing GNyx Gateway"
+echo "Testing GNyx Gateway"
 echo "=========================="
 
 # Set OpenAI API key (replace with your key)
@@ -11,7 +11,7 @@ export OPENAI_API_KEY="your-openai-api-key-here"
 
 # Start the gateway in background
 echo "Starting gateway..."
-./dist/kubexbe-gw &
+./dist/gnyx-gw &
 GATEWAY_PID=$!
 
 # Wait for gateway to start
@@ -43,4 +43,4 @@ curl -X POST http://localhost:8080/v1/chat \
 echo "Stopping gateway..."
 kill $GATEWAY_PID
 
-echo "✅ Test completed!"
+echo "Test completed!"

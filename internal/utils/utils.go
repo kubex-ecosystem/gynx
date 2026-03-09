@@ -11,6 +11,8 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/kubex-ecosystem/gnyx/internal/module/kbx"
+	kbxGet "github.com/kubex-ecosystem/kbx/get"
 	gl "github.com/kubex-ecosystem/logz"
 	"github.com/spf13/viper"
 )
@@ -153,23 +155,23 @@ func GetDefaultConfigPath() (string, error) {
 		vprFile = filepath.Dir(vprFile)
 	}
 
-	configPath := GetEnvOrDefault("GOBE_CONFIG_PATH", vprFile)
+	configPath := os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_CONFIG_PATH", kbxGet.ValOrType(vprFile, kbx.DefaultGNyxConfigPath)))
 	if strings.TrimSpace(configPath) == "" || configPath == "." {
 		configPath, err = os.UserHomeDir()
 		if err != nil {
 			gl.Log("error", fmt.Sprintf("Failed to get user home directory: %v", err))
 			return fallbackTempDir()
 		}
-		configPath = filepath.Join(configPath, ".gnyx.config")
+		configPath = filepath.Join(configPath, "config.json")
 	}
 
 	realPath := configPath
-	if filepath.Base(realPath) != "gnyx.config" {
-		realPath = filepath.Join(realPath, "gnyx.config")
+	if filepath.Base(realPath) != "config.json" {
+		realPath = filepath.Join(realPath, "config.json")
 	}
 
-	if err = os.MkdirAll(realPath, 0o755); err != nil {
-		gl.Log("error", fmt.Sprintf("Failed to create directory %s: %v", realPath, err))
+	if err = os.MkdirAll(filepath.Dir(realPath), 0o755); err != nil {
+		gl.Log("error", fmt.Sprintf("Failed to create directory %s: %v", filepath.Dir(realPath), err))
 		return fallbackTempDir()
 	}
 
@@ -178,7 +180,7 @@ func GetDefaultConfigPath() (string, error) {
 
 func fallbackTempDir() (string, error) {
 	base := os.TempDir()
-	tmpDir, err := os.MkdirTemp(base, "kubex_gobe_")
+	tmpDir, err := os.MkdirTemp(base, "kubex_gnyx_")
 	if err != nil {
 		gl.Log("fatal", fmt.Sprintf("Failed to create temp dir for fallback: %v", err))
 		return "", err

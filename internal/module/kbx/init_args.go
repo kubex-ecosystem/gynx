@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	kbxGet "github.com/kubex-ecosystem/kbx/get"
 )
 
 // Reference is the internal struct that holds the server startup unique identifier with name.
@@ -50,15 +52,19 @@ type InitArgs struct {
 	IsConfidential bool     `yaml:"is_confidential" json:"is_confidential" mapstructure:"is_confidential"`
 	CORSEnabled    *bool    `yaml:"enable_cors" json:"enable_cors" mapstructure:"enable_cors"`
 	TrustedProxies []string `yaml:"trusted_proxies" json:"trusted_proxies" mapstructure:"trusted_proxies"`
+	UIEnabled      bool     `yaml:"ui_enabled" json:"ui_enabled" mapstructure:"ui_enabled"`
 
 	// Paths and files
 
-	Cwd             string `yaml:"cwd,omitempty" json:"cwd,omitempty" mapstructure:"cwd,omitempty"`
-	LogFile         string `yaml:"log_file,omitempty" json:"log_file,omitempty" mapstructure:"log_file,omitempty"`
-	EnvFile         string `yaml:"env_file,omitempty" json:"env_file,omitempty" mapstructure:"env_file,omitempty"`
-	ConfigFile      string `yaml:"config_file,omitempty" json:"config_file,omitempty" mapstructure:"config_file,omitempty"`
-	DBConfigFile    string `yaml:"db_config_file,omitempty" json:"db_config_file,omitempty" mapstructure:"db_config_file,omitempty"`
-	ProvidersConfig string `yaml:"providers_config,omitempty" json:"providers_config,omitempty" mapstructure:"providers_config,omitempty"`
+	Cwd              string `yaml:"cwd,omitempty" json:"cwd,omitempty" mapstructure:"cwd,omitempty"`
+	LogFile          string `yaml:"log_file,omitempty" json:"log_file,omitempty" mapstructure:"log_file,omitempty"`
+	EnvFile          string `yaml:"env_file,omitempty" json:"env_file,omitempty" mapstructure:"env_file,omitempty"`
+	ConfigFile       string `yaml:"config_file,omitempty" json:"config_file,omitempty" mapstructure:"config_file,omitempty"`
+	DBConfigFile     string `yaml:"db_config_file,omitempty" json:"db_config_file,omitempty" mapstructure:"db_config_file,omitempty"`
+	MailerConfigFile string `yaml:"mail_config_file,omitempty" json:"mail_config_file,omitempty" mapstructure:"mail_config_file,omitempty"`
+	ProvidersConfig  string `yaml:"providers_config,omitempty" json:"providers_config,omitempty" mapstructure:"providers_config,omitempty"`
+	ScorecardPath    string `yaml:"scorecard_path,omitempty" json:"scorecard_path,omitempty" mapstructure:"scorecard_path,omitempty"`
+	TemplatesDir     string `yaml:"template_dir,omitempty" json:"template_dir,omitempty" mapstructure:"template_dir,omitempty"`
 
 	// Runtime options
 
@@ -112,33 +118,32 @@ func NewInitArgs(
 	pubCertKeyPath string,
 	pubKeyPath string,
 	pwd string,
+	templatesDir string,
+	uiEnabled bool,
 ) *InitArgs {
 	// Resiliency layer: use os.ExpandEnv to resolve environment variables in paths
 	// Define default values, if not provided
 	ref := NewReference(name)
 
-	defaultConfigFile := os.ExpandEnv(DefaultGNyxConfigPath)
-	logFile = GetValueOrDefaultSimple(
-		logFile,
-		filepath.Join(filepath.Dir(filepath.Dir(defaultConfigFile)), "logs", "gnyx.log"),
-	)
-	configFile = GetValueOrDefaultSimple(configFile, defaultConfigFile)
-	configDBFile = GetValueOrDefaultSimple(configDBFile, filepath.Base(os.ExpandEnv(DefaultKubexDomusConfigPath)))
-	envFile = GetValueOrDefaultSimple(envFile, os.ExpandEnv(filepath.Join("$PWD", ".env")))
-	port = GetValueOrDefaultSimple(port, "8088")
-	bind = GetValueOrDefaultSimple(bind, "0.0.0.0")
+	logFile = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_GNYX_LOG_FILE_PATH", logFile), DefaultGNyxLogPath))
+	configFile = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_GNYX_CONFIG_FILE_PATH", configFile), DefaultGNyxConfigPath))
+	configDBFile = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_GNYX_DOMUS_CONFIG_FILE_PATH", configDBFile), DefaultKubexDomusConfigPath))
+	envFile = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_GNYX_ENV_FILE_PATH", envFile), filepath.Join("$PWD", ".env")))
+	port = kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_GNYX_PORT", port), "5000")
+	bind = kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_GNYX_BIND", bind), DefaultServerBind)
+	templatesDir = os.ExpandEnv(kbxGet.ValOrType(kbxGet.EnvOr("KUBEX_GNYX_TEMPLATES_DIR", templatesDir), DefaultTemplatesDir))
 
 	// Create and return InitArgs instance
 
 	return &InitArgs{
 		Reference: ref.GetReference(),
 
-		Debug:          GetValueOrDefaultSimple(debug, false),
-		ReleaseMode:    BoolPtr(GetValueOrDefaultSimple(releaseMode, false)),
-		IsConfidential: GetValueOrDefaultSimple(isConfidential, false),
-		PubCertKeyPath: GetValueOrDefaultSimple(pubCertKeyPath, os.ExpandEnv(DefaultGNyxKeyPath)),
-		PubKeyPath:     GetValueOrDefaultSimple(pubKeyPath, os.ExpandEnv(DefaultGNyxCertPath)),
-		Cwd:            GetValueOrDefaultSimple(pwd, ""),
+		Debug:          kbxGet.ValOrType(debug, false),
+		ReleaseMode:    BoolPtr(kbxGet.ValOrType(releaseMode, false)),
+		IsConfidential: kbxGet.ValOrType(isConfidential, false),
+		PubCertKeyPath: os.ExpandEnv(kbxGet.ValOrType(pubCertKeyPath, DefaultGNyxKeyPath)),
+		PubKeyPath:     os.ExpandEnv(kbxGet.ValOrType(pubKeyPath, DefaultGNyxCertPath)),
+		Cwd:            os.ExpandEnv(kbxGet.ValOrType(pwd, "")),
 
 		ConfigFile:   configFile,
 		DBConfigFile: configDBFile,
@@ -146,5 +151,7 @@ func NewInitArgs(
 		LogFile:      logFile,
 		Port:         port,
 		Bind:         bind,
+
+		TemplatesDir: templatesDir,
 	}
 }

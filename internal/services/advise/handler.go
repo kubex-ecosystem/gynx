@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/kubex-ecosystem/gnyx/internal/features/providers/registry"
-	providers "github.com/kubex-ecosystem/gnyx/internal/types"
+	kbxTReg "github.com/kubex-ecosystem/kbx/tools/providers"
+	kbxTypes "github.com/kubex-ecosystem/kbx/types"
 )
 
-type Handler struct{ reg *registry.Registry }
+type Handler struct{ reg *kbxTReg.Registry }
 
-func New(reg *registry.Registry) *Handler { return &Handler{reg: reg} }
+func New(reg *kbxTReg.Registry) *Handler { return &Handler{reg: reg} }
 
 type adviseReq struct {
 	Mode        string         `json:"mode"`
@@ -35,7 +35,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	p := h.reg.Resolve(in.Provider)
+	p := h.reg.ResolveProvider(in.Provider)
 	if p == nil {
 		http.Error(w, "bad provider", http.StatusBadRequest)
 		return
@@ -51,12 +51,12 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"x-user-id":        r.Header.Get("x-user-id"),
 	}
 
-	ch, err := p.Chat(r.Context(), providers.ChatRequest{
+	ch, err := p.Chat(r.Context(), kbxTypes.ChatRequest{
 		Provider: in.Provider,
 		Model:    in.Model,
 		Temp:     in.Temperature,
 		Stream:   true,
-		Messages: []providers.Message{
+		Messages: []kbxTypes.Message{
 			{Role: "system", Content: sys},
 			{Role: "user", Content: user},
 		},

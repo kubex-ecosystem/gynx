@@ -1,6 +1,8 @@
 package config
 
 import (
+	"net"
+	"net/url"
 	"os"
 	"path/filepath"
 	"time"
@@ -16,6 +18,7 @@ type ServerConfig struct {
 	InitArgs *kbxMod.InitArgs
 	// Addr            string
 	ProvidersConfig string
+	LLMConfig       *kbx.LLMConfig
 	// EnableCORS      bool
 	DefaultTTL        time.Duration
 	DataServiceConfig DataServiceConfig
@@ -23,34 +26,40 @@ type ServerConfig struct {
 
 func NewServerConfig() *ServerConfig {
 	// ref := kbxMod.NewReference("github.com/kubex-ecosystem/gnyx_server").GetReference()
-	baseURL := kbxMod.GetValueOrDefaultIf(kbxMod.GetEnvOrDefault("KUBEX_ENV", "development") == "production",
-		"https://api.gnyx.app",
-		"http://localhost:4000",
+	scheme := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_GNYX_SCHEME", "http"))
+	host := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_GNYX_HOST", kbxMod.DefaultServerHost))
+	addr := net.JoinHostPort(host, kbxMod.GetEnvOrDefault("KUBEX_GNYX_PORT", "5000"))
+	url := url.URL{Scheme: scheme, Host: addr}
+	baseURL := kbxGet.ValueOrIf(kbxMod.GetEnvOrDefault("KUBEX_ENV", "development") == "production",
+		"https://api.kubex.world",
+		url.String(),
 	)
 	defaultTTL := kbxMod.GetEnvOrDefaultWithType("INVITE_EXPIRATION", 7*24*time.Hour)
-	configPath := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_BE_CONFIG_PATH", "/ALL/KUBEX/projects/BACKEND/github.com/kubex-ecosystem/gnyx/config/config.json"))
+	configPath := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_GNYX_CONFIG_PATH", kbxMod.DefaultGNyxConfigPath))
 	dataServiceConfig := DataServiceConfig{
-		ConfigPath: os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_DS_CONFIG_PATH", "/ALL/KUBEX/projects/DATABASE/domus/configs/config.json")),
-		DBName:     kbxMod.GetEnvOrDefault("KUBEX_DS_DB_NAME", "postgres"),
+		ConfigPath: os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_DOMUS_CONFIG_PATH", kbxMod.DefaultKubexDomusConfigPath)),
+		DBName:     kbxMod.GetEnvOrDefault("KUBEX_DOMUS_DB_NAME", kbxMod.DefaultKubexDomusConfigPath),
 	}
-	pubKeyPath := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_BE_PUBLIC_KEY_PATH", kbxMod.DefaultGNyxCertPath))
-	privKeyPath := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_BE_PRIVATE_KEY_PATH", kbxMod.DefaultGNyxKeyPath))
+	pubKeyPath := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_GNYX_PUBLIC_KEY_PATH", kbxMod.DefaultGNyxCertPath))
+	privKeyPath := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_GNYX_PRIVATE_KEY_PATH", kbxMod.DefaultGNyxKeyPath))
 	InitArgs := kbxMod.NewInitArgs(
 		os.ExpandEnv(configPath),
 		filepath.Ext(configPath)[1:],
 		os.ExpandEnv(dataServiceConfig.ConfigPath),
 		filepath.Ext(dataServiceConfig.ConfigPath)[1:],
-		os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_BE_ENV_PATH", "/ALL/KUBEX/projects/BACKEND/github.com/kubex-ecosystem/gnyx/.env")),
-		os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_BE_LOG_FILE_PATH", "/ALL/KUBEX/logs/github.com/kubex-ecosystem/gnyx.log")),
-		kbxMod.GetEnvOrDefault("KUBEX_BE_PROCESS_NAME", "github.com/kubex-ecosystem/gnyx"),
-		kbxMod.GetEnvOrDefaultWithType("KUBEX_BE_DEBUG_MODE", false),
-		kbxMod.GetEnvOrDefaultWithType("KUBEX_BE_RELEASE_MODE", false),
-		kbxMod.GetEnvOrDefaultWithType("KUBEX_BE_CONFIDENCIAL_MODE", false),
-		kbxMod.GetEnvOrDefaultWithType("KUBEX_BE_PORT", "4000"),
-		kbxMod.GetEnvOrDefaultWithType("KUBEX_BE_HOST", "localhost"),
+		os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_ENV_PATH", kbxMod.DefaultGNyxEnvPath)),
+		os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_LOG_FILE_PATH", kbxMod.DefaultGNyxLogPath)),
+		os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PROCESS_NAME", kbxMod.DefaultServerHost)),
+		kbxGet.EnvOrType("KUBEX_GNYX_DEBUG_MODE", false),
+		kbxGet.EnvOrType("KUBEX_GNYX_RELEASE_MODE", false),
+		kbxGet.EnvOrType("KUBEX_GNYX_CONFIDENTIAL_MODE", false),
+		kbxGet.EnvOrType("KUBEX_GNYX_PORT", "5000"),
+		os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_BIND", kbxMod.DefaultServerBind)),
 		pubKeyPath,
 		privKeyPath,
-		kbxMod.GetEnvOrDefault("KUBEX_BE_PRIVATE_KEY_PASSWORD", ""),
+		kbxMod.GetEnvOrDefault("KUBEX_GNYX_PRIVATE_KEY_PASSWORD", ""),
+		kbxMod.GetEnvOrDefault("KUBEX_GNYX_TEMPLATES_DIR", kbxMod.DefaultTemplatesDir),
+		kbxGet.EnvOrType("KUBEX_GNYX_DISABLE_UI", false),
 	)
 	cfg := &ServerConfig{
 		SrvConfig: kbx.NewSrvArgs(),
@@ -63,13 +72,19 @@ func NewServerConfig() *ServerConfig {
 	cfg.SrvConfig.Basic.Environment = kbxGet.EnvOr("KUBEX_ENV", kbxGet.EnvOr("ENV", "development"))
 	// cfg.SrvConfig.Basic.BaseURL = baseURL
 	cfg.ProvidersConfig = InitArgs.ProvidersConfig
-	cfg.SrvConfig.Basic.CORSEnabled = kbxGet.EnvOrType("KUBEX_BE_ENABLE_CORS", true)
-	cfg.SrvConfig.Runtime.AccessTokenTTL = kbxGet.EnvOrType("KUBEX_BE_ACCESS_TOKEN_TTL", 15*time.Minute)
-	cfg.SrvConfig.Runtime.RefreshTokenTTL = kbxGet.EnvOrType("KUBEX_BE_REFRESH_TOKEN_TTL", 7*24*time.Hour)
+	cfg.SrvConfig.Basic.CORSEnabled = kbxGet.EnvOrType("KUBEX_GNYX_ENABLE_CORS", true)
+	cfg.SrvConfig.Runtime.AccessTokenTTL = kbxGet.EnvOrType("KUBEX_GNYX_ACCESS_TOKEN_TTL", 15*time.Minute)
+	cfg.SrvConfig.Runtime.RefreshTokenTTL = kbxGet.EnvOrType("KUBEX_GNYX_REFRESH_TOKEN_TTL", 7*24*time.Hour)
 	cfg.SrvConfig.Runtime.Host = baseURL
 
 	cfg.DefaultTTL = defaultTTL
 	cfg.DataServiceConfig = dataServiceConfig
 	// cfg.Mapper = types.NewMapperType(&cfg, cfg.ConfigFile)
+
+	cfg.LLMConfig = &kbx.LLMConfig{
+		Providers:   make(map[string]*kbx.LLMProviderConfig),
+		Development: kbx.LLMDevelopmentConfig{},
+	}
+
 	return cfg
 }

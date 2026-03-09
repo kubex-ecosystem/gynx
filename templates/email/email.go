@@ -37,21 +37,21 @@ const (
 
 func init() {
 	// Garantir que os pacotes sejam importados
-	_ = templates.EmailTemplateFS{}
+	_ = templates.EmailTemplateFSImpl{}
 }
 
 type EmailHTMLRenderer struct {
-	*templates.EmailTemplateFS
+	*templates.EmailTemplateFSImpl
 }
 
-func NewEmailHTMLRenderer() *EmailHTMLRenderer {
+func NewEmailHTMLRenderer(path string) *EmailHTMLRenderer {
 	return &EmailHTMLRenderer{
-		EmailTemplateFS: templates.GetEmailTemplateFS(),
+		EmailTemplateFSImpl: templates.GetEmailTemplateFS(path),
 	}
 }
 
 func (r *EmailHTMLRenderer) RenderTemplate(templateType string, data any) (string, error) {
-	tplFileContent, err := r.EmailTemplateFS.ReadFile(templateType)
+	tplFileContent, err := r.EmailTemplateFSImpl.ReadFile(templateType)
 	if err != nil {
 		return "", err
 	}
@@ -70,21 +70,21 @@ func (r *EmailHTMLRenderer) RenderTemplate(templateType string, data any) (strin
 }
 
 func (r *EmailHTMLRenderer) ListTemplates() []string {
-	return r.EmailTemplateFS.ListTemplates()
+	return r.EmailTemplateFSImpl.ListTemplates()
 }
 
-func GetEmailHTMLRenderer() *EmailHTMLRenderer {
-	return NewEmailHTMLRenderer()
+func GetEmailHTMLRenderer(path string) *EmailHTMLRenderer {
+	return NewEmailHTMLRenderer(path)
 }
 
 // GetEmailTemplate retorna o conteúdo do template de email pelo nome.
 func GetEmailTemplate(name string) ([]byte, error) {
-	templateFS := GetEmailHTMLRenderer()
-	return templateFS.EmailTemplateFS.ReadFile(name)
+	templateFS := GetEmailHTMLRenderer("")
+	return templateFS.EmailTemplateFSImpl.ReadFile(name)
 }
 
 // ListEmailTemplates lista os nomes dos templates de email disponíveis.
 func ListEmailTemplates() []string {
-	templateFS := GetEmailHTMLRenderer()
-	return templateFS.EmailTemplateFS.ListTemplates()
+	templateFS := GetEmailHTMLRenderer("")
+	return templateFS.EmailTemplateFSImpl.ListTemplates()
 }

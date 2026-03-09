@@ -4,12 +4,12 @@ echo "📊 Generating i18n technical debt report..."
 
 # Ensure input files exist
 if [[ ! -f i18n_used_keys.txt ]]; then
-  echo "❌ i18n_used_keys.txt not found! Run get_i18n_used_keys.sh first"
+  echo "i18n_used_keys.txt not found! Run get_i18n_used_keys.sh first"
   exit 1
 fi
 
 if [[ ! -f i18n_avail_en.txt ]]; then
-  echo "❌ i18n_avail_en.txt not found! Run locales_flattem_by_lang.sh first"
+  echo "i18n_avail_en.txt not found! Run locales_flattem_by_lang.sh first"
   exit 1
 fi
 
@@ -32,13 +32,13 @@ echo "==================="
 echo "🔑 Used keys: $(wc -l < i18n_used_keys.txt)"
 echo ""
 echo "🇺🇸 ENGLISH:"
-echo "  ❌ Missing: $(wc -l < i18n_missing_en.txt)"
+echo "  Missing: $(wc -l < i18n_missing_en.txt)"
 echo "  🗑️  Unused:  $(wc -l < i18n_unused_en.txt)"
 
 if [[ -f i18n_missing_ptBR.txt ]]; then
   echo ""
   echo "🇧🇷 PORTUGUÊS:"
-  echo "  ❌ Missing: $(wc -l < i18n_missing_ptBR.txt)"
+  echo "  Missing: $(wc -l < i18n_missing_ptBR.txt)"
   echo "  🗑️  Unused:  $(wc -l < i18n_unused_ptBR.txt)"
 fi
 

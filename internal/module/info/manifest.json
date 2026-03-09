@@ -1,20 +1,21 @@
 {
-  "name": "Kubex - BE",
-  "application": "github.com/kubex-ecosystem/gnyx",
+  "name": "Kubex - GNyx",
+  "application": "gnyx",
   "version": "0.0.1",
   "private": true,
   "published": false,
   "aliases": [
-    "github.com/kubex-ecosystem/gnyx"
+    "gnyx",
+    "kbnyx"
   ],
   "repository": "https://github.com/kubex-ecosystem/gnyx",
   "homepage": "https://github.com/kubex-ecosystem/gnyx",
-  "description": "Kubex PRM Backend Project",
-  "go_version": "1.25.5",
+  "description": "Kubex Backend Project",
+  "go_version": "1.26.0",
   "main": "cmd/main.go",
-  "bin": "github.com/kubex-ecosystem/gnyx",
+  "bin": "gnyx",
   "author": "Rafael Mori <faelmori@gmail.com>",
-  "organization": "kbx_gnyx",
+  "organization": "Kubex Ecosystem",
   "license": "MIT",
   "keywords": [
     "prm",
@@ -44,5 +45,5 @@
   ],
   "healthcheck_type": "http",
   "healthcheck_url": "http://localhost:4000/health",
-  "healthcheck_cmd": "systemctl --user is-active gnyx-be.service"
+  "healthcheck_cmd": "systemctl --user is-active gnyx.service"
 }

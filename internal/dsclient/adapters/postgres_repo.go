@@ -38,5 +38,3 @@ func (r *PGRepository[T]) List(ctx context.Context, cond any) ([]T, error) {
 	}
 	return list, nil
 }
-
-

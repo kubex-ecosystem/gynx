@@ -41,7 +41,7 @@ func Init(ctx context.Context, argCfg *cf.Config) (ds.DSClient, error) {
 	})
 
 	clientOnce.Do(func() {
-		logger := gl.GetLoggerZ("github.com/kubex-ecosystem/gnyx_datastore")
+		logger := gl.GetLoggerZ("gnyx")
 		client = ds.NewDSClient(ctx, cfg, logger)
 		if key, err := resolveDBKey(cfgDBService); err == nil && strings.TrimSpace(key) != "" {
 			dbKey = key

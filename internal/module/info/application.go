@@ -13,7 +13,7 @@ import (
 )
 
 var banners = []string{
-`
+	`
   ______  __    __
  /      \|  \  |  \
 |  ▓▓▓▓▓▓\ ▓▓\ | ▓▓__    __ __    __ 
@@ -28,7 +28,7 @@ var banners = []string{
                    \▓▓▓▓▓▓
  %sPowered by - Kubex Ecosystem %s%s
 `,
-`
+	`
    ██████╗ ███╗   ██╗██╗   ██╗██╗  ██╗
   ██╔════╝ ████╗  ██║╚██╗ ██╔╝╚██╗██╔╝
   ██║  ███╗██╔██╗ ██║ ╚████╔╝  ╚███╔╝ 
@@ -56,8 +56,8 @@ func GetDescriptions(descriptionArg []string, _ bool) map[string]string {
 	if err != nil {
 		description += ""
 	} else {
-		if manifest.GetDescription() != "" {
-			description += manifest.GetDescription()
+		if manifest.GetDescription() != "" && description == "" {
+			description = manifest.GetDescription()
 		}
 	}
 

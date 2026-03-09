@@ -25,4 +25,7 @@ type IContainer interface {
 	// Service getters
 	InviteService() interface{}
 	IMAPService() interface{}
+
+	// UIService returns the UI service instance (if available)
+	UIService() interface{}
 }

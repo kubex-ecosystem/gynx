@@ -1,4 +1,4 @@
-// Package gateway provides the gateway server functionality for the kubexbe.
+// Package gateway provides the gateway server functionality for the gnyx.
 package gateway
 
 import (
@@ -15,11 +15,14 @@ import (
 	"github.com/kubex-ecosystem/gnyx/internal/app"
 	"github.com/kubex-ecosystem/gnyx/internal/config"
 	"github.com/kubex-ecosystem/gnyx/internal/features/providers/registry"
+	"github.com/kubex-ecosystem/gnyx/internal/features/ui"
 	"github.com/kubex-ecosystem/gnyx/internal/runtime/middlewares"
+	"github.com/kubex-ecosystem/gnyx/internal/web"
 
-	"github.com/kubex-ecosystem/gnyx/internal/module/kbx"
-
+	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 	kbxGet "github.com/kubex-ecosystem/kbx/get"
+	kbxTReg "github.com/kubex-ecosystem/kbx/tools/providers"
+	kbxTypes "github.com/kubex-ecosystem/kbx/types"
 
 	gl "github.com/kubex-ecosystem/logz"
 )
@@ -29,7 +32,7 @@ type Server struct {
 	*gin.Engine
 
 	cfg        *config.ServerConfig
-	registry   *registry.Registry
+	registry   *kbxTReg.Registry
 	middleware *middlewares.ProductionMiddleware
 	handler    http.Handler
 	once       sync.Once
@@ -39,44 +42,41 @@ type Server struct {
 // NewServer creates a new gateway server instance
 func NewServer(cfg *config.ServerConfig) (*Server, error) {
 	engine := gin.New()
-
-	var reg *registry.Registry
 	var err error
-	if len(cfg.ProvidersConfig) > 0 {
-		// Load providers registry for gateway, if specified
-		reg, err = registry.Load(cfg.ProvidersConfig)
-		if err != nil {
-			return nil, gl.Errorf("failed to load gateway providers registry: %v", err)
-		}
-	} else {
-		// Create an empty registry if no config is provided
-		reg = &registry.Registry{}
-	}
 
 	// Initialize production middleware
 	prodConfig := middlewares.DefaultProductionConfig()
 	prodMiddleware := middlewares.NewProductionMiddleware(prodConfig)
 
-	// Register all providers with production middleware
-	for _, providerName := range reg.ListProviders() {
-		prodMiddleware.RegisterProvider(providerName)
+	// Load providers registry for gateway, if specified
+	reg, err := kbxTReg.Load(
+		cfg.Files.ProvidersConfig,
+	)
+	if err != nil {
+		return nil, gl.Errorf("failed to load gateway providers registry: %v", err)
+	}
+	if reg == nil {
+		gl.Warn("Provider registry is nil after loading - this may cause issues with provider resolution in the gateway")
+	} else {
+		for _, providerName := range reg.ListProviders() {
+			prodMiddleware.RegisterProvider(providerName)
+		}
 	}
 
-	// config.Config
-
+	// Bootstrap application container
 	container, err := app.NewContainer(context.Background(), config.LoadConfig())
 	if err != nil {
 		return nil, gl.Errorf("failed to bootstrap application container: %v", err)
 	}
-
 	if container.GetConfig().ServerConfig == nil {
-		return nil, gl.Errorf("server config is nil in application container")
+		sCfg := container.GetConfig()
+		sCfg.ServerConfig = config.NewServerConfig()
+		sCfg.ServerConfig.SrvConfig = kbxTypes.NewSrvConfig()
+		container, err = app.NewContainer(context.Background(), sCfg)
 	}
 
-	if container.GetConfig().ServerConfig.Runtime.PubCertKeyPath == "" || container.GetConfig().ServerConfig.Runtime.PrivKeyPath == "" {
-		container.GetConfig().ServerConfig.Runtime.PubCertKeyPath = os.ExpandEnv(kbx.GetEnvOrDefault("GNYX_PUBLIC_KEY_PATH", "$HOME/.gnyx/github.com/kubex-ecosystem/gnyx/certs/github.com/kubex-ecosystem/gnyx.pub"))
-		container.GetConfig().ServerConfig.Runtime.PrivKeyPath = os.ExpandEnv(kbx.GetEnvOrDefault("GNYX_PRIVATE_KEY_PATH", "$HOME/.gnyx/github.com/kubex-ecosystem/gnyx/certs/github.com/kubex-ecosystem/gnyx.pem"))
-	}
+	container.GetConfig().ServerConfig.Runtime.PubCertKeyPath = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_KEY_PATH", kbxMod.DefaultGNyxCertPath))
+	container.GetConfig().ServerConfig.Runtime.PrivKeyPath = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PRIVATE_KEY_PATH", kbxMod.DefaultGNyxKeyPath))
 
 	if container.GetConfig().ServerConfig.Runtime.PrivKeyPath == "" || container.GetConfig().ServerConfig.Runtime.PubCertKeyPath == "" {
 		return nil, gl.Errorf("JWT certificate paths are not set in server config")
@@ -113,8 +113,8 @@ func (s *Server) Start() error {
 		os.Exit(0)
 	}()
 
-	serverCfg.Runtime.Bind = kbxGet.ValueOrIf(len(serverCfg.Runtime.Bind) == 0, kbxGet.EnvOr("GNYX_BIND", "0.0.0.0"), serverCfg.Runtime.Bind)
-	serverCfg.Runtime.Port = kbxGet.ValueOrIf(len(serverCfg.Runtime.Port) == 0, kbxGet.EnvOr("GNYX_PORT", "4000"), serverCfg.Runtime.Port)
+	serverCfg.Runtime.Bind = kbxGet.ValueOrIf(len(serverCfg.Runtime.Bind) == 0, kbxGet.EnvOr("KUBEX_GNYX_BIND", kbxMod.DefaultServerBind), serverCfg.Runtime.Bind)
+	serverCfg.Runtime.Port = kbxGet.ValueOrIf(len(serverCfg.Runtime.Port) == 0, kbxGet.EnvOr("KUBEX_GNYX_PORT", kbxMod.DefaultServerPort), serverCfg.Runtime.Port)
 
 	gl.Debugf("binding address: %s", serverCfg.Runtime.Bind)
 	gl.Debugf("binding port: %s", serverCfg.Runtime.Port)
@@ -123,13 +123,31 @@ func (s *Server) Start() error {
 		serverCfg.Runtime.Bind, serverCfg.Runtime.Port,
 	)
 	swm := middlewares.NewProductionMiddleware(middlewares.DefaultProductionConfig())
+
+	reg, err := registry.Load(kbxGet.ValOrType(
+		serverCfg.ProvidersConfig,
+		kbxGet.EnvOr("KUBEX_GNYX_PROVIDERS_CONFIG_PATH", kbxMod.DefaultProvidersConfig),
+	))
+	if err != nil {
+		gl.Errorf("Failed to load provider registry: %v", err)
+	}
+	if reg == nil {
+		gl.Warn("Provider registry is nil after loading - this may cause issues with provider resolution")
+	}
+
+	// Register all providers with production middleware
+	for _, providerName := range reg.ListProviders() {
+		swm.RegisterProvider(providerName)
+	}
+	s.logProviderRegistry()
+
 	// Recover middleware
 	s.Use(gin.Recovery())
 
 	// Enable logging middleware in release mode
-	s.Use(swm.Logger(gl.GetLoggerZ("github.com/kubex-ecosystem/gnyx"))) //  Por ora, tudo igual
+	s.Use(swm.Logger(gl.GetLoggerZ("gnyx"))) //  Por ora, tudo igual
 
-	if kbxGet.ValOrType[bool](serverCfg.Basic.CORSEnabled, kbxGet.EnvOrType("GNYX_ENABLE_CORS", true)) {
+	if kbxGet.ValOrType[bool](serverCfg.Basic.CORSEnabled, kbxGet.EnvOrType("KUBEX_GNYX_ENABLE_CORS", true)) {
 		if err := swm.SecureServerInit(s.Engine, srvAddr); err != nil {
 			return gl.Errorf("failed to initialize security middleware: %v", err)
 		}
@@ -143,7 +161,7 @@ func (s *Server) Start() error {
 			c.Header("Access-Control-Allow-Credentials", "true")
 			c.Header("Access-Control-Allow-Methods", "*")
 			c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-			c.Header("Content-Security-Policy", "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;")
+			// c.Header("Content-Security-Policy", "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;")
 			c.Header("Referrer-Policy", "no-referrer")
 
 			if c.Request.Method == "OPTIONS" {
@@ -172,7 +190,30 @@ func (s *Server) Start() error {
 	})
 	routes.RegisterRoutes(s.Group("/api/v1"), s.container)
 
+	if uiroutes, err := web.NewHandler(ui.NewUIService().GetWebFS()); err != nil {
+		gl.Log("warn", "Failed to initialize web handler for UI routes: %v", err)
+	} else {
+		s.NoRoute(func(c *gin.Context) {
+			uiroutes.ServeHTTP(c.Writer, c.Request)
+		})
+		gl.Info("UI routes registered successfully")
+	}
+
 	// Start server
 	gl.Successf("GNyx listening on %s (Enterprise features enabled)", srvAddr)
 	return s.Run(srvAddr)
+}
+
+func (s *Server) logProviderRegistry() {
+	if s.registry == nil {
+		gl.Warn("Provider registry is nil - this may cause issues with provider resolution")
+	} else if len(s.registry.ListProviders()) == 0 {
+		gl.Warn("Provider registry is empty - no providers available for resolution")
+	} else {
+		gl.Noticef("Provider registry contains %d providers", len(s.registry.ListProviders()))
+		for _, p := range s.registry.ListProviders() {
+			r := s.registry.ResolveProvider(p)
+			gl.Debugf(" - Provider: %s, Available: %v", r.Name(), r.Available() == nil)
+		}
+	}
 }

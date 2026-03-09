@@ -78,21 +78,22 @@ func NewService(cfg Config) (*Service, error) {
 	if cfg.Templates == nil {
 		return nil, errors.New("template engine is required")
 	}
-	if cfg.DefaultTTL <= 0 {
-		cfg.DefaultTTL = 7 * 24 * time.Hour
-	}
-	if cfg.BaseURL == "" {
-		cfg.BaseURL = "https://api.gnyx.app"
-	}
-	if cfg.SenderName == "" {
-		cfg.SenderName = "Equipe Kubex"
-	}
-	if cfg.SenderEmail == "" {
-		cfg.SenderEmail = "convites@gnyx.app"
-	}
-	if cfg.CompanyName == "" {
-		cfg.CompanyName = "GNyxM"
-	}
+
+	// If DefaultTTL is not set or less than 0, set it to 7 days
+	cfg.DefaultTTL = kbxGet.ValueOrIf(cfg.DefaultTTL <= 0, kbxGet.EnvOrType("DEFAULT_TTL", 7*24*time.Hour), cfg.DefaultTTL)
+
+	// If BaseURL is not set, try to get it from environment variable BASE_URL, otherwise set it to https://api.kubex.world
+	cfg.BaseURL = kbxGet.ValOrType(cfg.BaseURL, kbxGet.EnvOr("BASE_URL", "https://api.kubex.world"))
+
+	// If SenderName is not set, try to get it from environment variable SENDER_NAME, otherwise set it to Equipe Kubex
+	cfg.SenderName = kbxGet.ValOrType(cfg.SenderName, kbxGet.EnvOr("SENDER_NAME", "Equipe Kubex"))
+
+	// If SenderEmail is not set, try to get it from environment variable SENDER_EMAIL, otherwise set it to convites@kubex.world
+	cfg.SenderEmail = kbxGet.ValOrType(cfg.SenderEmail, kbxGet.EnvOr("SENDER_EMAIL", "convites@kubex.world"))
+
+	// If CompanyName is not set, try to get it from environment variable COMPANY_NAME, otherwise set it to GNyxM
+	cfg.CompanyName = kbxGet.ValOrType(cfg.CompanyName, kbxGet.EnvOr("COMPANY_NAME", "GNyxM"))
+
 	if cfg.UserRepo == nil {
 		repo, err := userstore.NewUserRepository()
 		if err != nil {

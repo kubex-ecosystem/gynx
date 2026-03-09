@@ -18,6 +18,7 @@ import (
 	"github.com/kubex-ecosystem/gnyx/internal/features/health"
 	"github.com/kubex-ecosystem/gnyx/internal/features/lookatni"
 	"github.com/kubex-ecosystem/gnyx/internal/features/providers/registry"
+	"github.com/kubex-ecosystem/gnyx/internal/features/ui"
 	"github.com/kubex-ecosystem/gnyx/internal/runtime/middlewares"
 
 	// providers "github.com/kubex-ecosystem/gnyx/internal/types"
@@ -158,15 +159,14 @@ func WireHTTP(mux *gin.Engine, reg *registry.Registry, prodMiddleware *middlewar
 
 	routes.RegisterRoutes(mux.Group("/api/v1"), container)
 
-	// Auth endpoints (BE-native, sem Supabase)
-	// if err := routes.RegisterAuthHTTP(mux, dsClient, initData); err != nil {
-	// 	gl.Warnf("failed to register auth routes: %v", err)
-	// } else {
-	// 	gl.Info("Auth endpoints enabled at /api/v1/auth/* and /api/v1/me")
-	// }
+	// Web Interface - Frontend embarcado! (registrado por último para não capturar /invite) - Se habilitado
+	uiSvc, ok := container.UIService().(*ui.UIService)
+	if !ok || uiSvc == nil {
+		gl.Log("warn", "UIService is not available. Web interface will be disabled.")
+		return
+	}
 
-	// Web Interface - Frontend embarcado! 🚀 (registrado por último para não capturar /invite)
-	webHandler, err := web.NewHandler()
+	webHandler, err := web.NewHandler(uiSvc.GetWebFS())
 	if err != nil {
 		gl.Log("warn", "Failed to initialize web interface: %v", err)
 	} else {
@@ -184,14 +184,14 @@ func WireHTTP(mux *gin.Engine, reg *registry.Registry, prodMiddleware *middlewar
 func (h *httpHandlers) healthCheckGin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "healthy",
-		"service": "kubexbe-gw",
+		"service": "gnyx-gw",
 	})
 }
 
 // listProviders returns available providers with health status
 func (h *httpHandlers) listProvidersGin(c *gin.Context) {
 	providerNames := h.registry.ListProviders()
-	config := h.registry.GetConfig()
+	config := h.registry.Config()
 
 	healthStatuses := make(map[string]interface{})
 	if h.productionMiddleware != nil {
@@ -264,7 +264,7 @@ func (h *httpHandlers) listProvidersGin(c *gin.Context) {
 // 		return
 // 	}
 
-// 	provider := h.registry.Resolve(req.Provider)
+// 	provider := h.registry.ResolveProvider(req.Provider)
 // 	if provider == nil {
 // 		http.Error(w, fmt.Sprintf("Provider '%s' not found", req.Provider), http.StatusBadRequest)
 // 		return
@@ -376,7 +376,7 @@ func (h *httpHandlers) productionStatus(w http.ResponseWriter, r *http.Request) 
 	}
 
 	status := map[string]interface{}{
-		"service":   "kubexbe-gw",
+		"service":   "gnyx-gw",
 		"status":    "healthy",
 		"providers": h.registry.ListProviders(),
 	}
@@ -530,7 +530,7 @@ func (h *httpHandlers) handleRepositoryScorecard(w http.ResponseWriter, r *http.
 	// TODO: Implement with real scorecard engine
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("X-Schema-Version", "scorecard@1.0.0")
-	w.Header().Set("X-Server-Version", "kubexbe-v1.0.0")
+	w.Header().Set("X-Server-Version", "gnyx-v1.0.0")
 
 	// Placeholder response
 	placeholder := map[string]interface{}{
@@ -594,7 +594,7 @@ func (h *httpHandlers) handleRepositoryHealth(w http.ResponseWriter, r *http.Req
 			"chi_calculator":   "not_initialized",
 			"ai_metrics":       "not_initialized",
 		},
-		"version": "kubexbe-v1.0.0",
+		"version": "gnyx-v1.0.0",
 	}
 	json.NewEncoder(w).Encode(health)
 }
@@ -733,7 +733,7 @@ var clientMetaConfig = map[string]map[string]interface{}{
 			"name":          "Kubex",
 			"primary_color": "#6A0DAD",
 			"accent_color":  "#008CFF",
-			"logo":          "https://cdn.gnyx.app/assets/logo-light.svg",
+			"logo":          "https://cdn.kubex.world/assets/logo-light.svg",
 		},
 		"features": []string{"invites", "analytics", "academy"},
 	},
@@ -742,7 +742,7 @@ var clientMetaConfig = map[string]map[string]interface{}{
 			"name":          "Kortex",
 			"primary_color": "#1F2937",
 			"accent_color":  "#F97316",
-			"logo":          "https://cdn.gnyx.app/assets/clients/kortex.svg",
+			"logo":          "https://cdn.kubex.world/assets/clients/kortex.svg",
 		},
 		"features": []string{"invites", "academy"},
 	},
@@ -751,7 +751,7 @@ var clientMetaConfig = map[string]map[string]interface{}{
 			"name":          "Pulse",
 			"primary_color": "#111827",
 			"accent_color":  "#10B981",
-			"logo":          "https://cdn.gnyx.app/assets/clients/pulse.svg",
+			"logo":          "https://cdn.kubex.world/assets/clients/pulse.svg",
 		},
 		"features": []string{"invites", "analytics"},
 	},

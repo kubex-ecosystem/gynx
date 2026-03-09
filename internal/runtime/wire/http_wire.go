@@ -143,7 +143,7 @@ func (w *HTTPWire) Wire() (*gin.Engine, error) {
 	}
 
 	// CORS middleware
-	if kbxGet.ValOrType(serverCfg.Basic.CORSEnabled, kbxGet.EnvOrType("KUBEX_BE_ENABLE_CORS", true)) {
+	if kbxGet.ValOrType(serverCfg.Basic.CORSEnabled, kbxGet.EnvOrType("KUBEX_GNYX_ENABLE_CORS", true)) {
 		srvRightHost := kbx.GetValueOrDefaultIf(
 			(containsAny(serverCfg.Runtime.Bind, ":", "0.0.0.0") && !containsString(serverCfg.Runtime.Bind, "::")),
 			"localhost",

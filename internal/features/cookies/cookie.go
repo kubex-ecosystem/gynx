@@ -31,15 +31,15 @@ func ResolveCookieOptions() CookieOptions {
 	env := strings.ToLower(
 		kbxGet.ValueOrIf(
 			kbxGet.EnvOr("GIN_MODE", "debug") == "release", // Confere se está em modo release
-			kbxGet.EnvOr("GNYX_ENV", "production"),         // Se estiver em release, prioriza produção caso variável não esteja setada
-			kbxGet.EnvOr("GNYX_ENV", "development"),        // Senão, assume development como padrão, caso variável não esteja setada
+			kbxGet.EnvOr("KUBEX_GNYX_ENV", "production"),   // Se estiver em release, prioriza produção caso variável não esteja setada
+			kbxGet.EnvOr("KUBEX_GNYX_ENV", "development"),  // Senão, assume development como padrão, caso variável não esteja setada
 		),
 	)
 	publicDomain := strings.TrimSpace(
 		kbxGet.ValueOrIf(
-			env == "production",                        // Confere se está em produção
-			kbxGet.EnvOr("PUBLIC_DOMAIN", ".gnyx.app"), // Se estiver em produção, prioriza domínio oficial caso variável não esteja setada
-			kbxGet.EnvOr("PUBLIC_DOMAIN", "localhost"), // Senão, assume localhost como padrão, caso variável não esteja setada
+			env == "production",                           // Confere se está em produção
+			kbxGet.EnvOr("PUBLIC_DOMAIN", ".kubex.world"), // Se estiver em produção, prioriza domínio oficial caso variável não esteja setada
+			kbxGet.EnvOr("PUBLIC_DOMAIN", "localhost"),    // Senão, assume localhost como padrão, caso variável não esteja setada
 		),
 	)
 
@@ -64,7 +64,7 @@ func ResolveCookieOptions() CookieOptions {
 		return cookie
 	default:
 		// produção
-		cookie.Domain = ".gnyx.app"
+		cookie.Domain = ".kubex.world"
 		cookie.Secure = true
 		cookie.SameSite = http.SameSiteNoneMode
 		cookie.HTTPOnly = true

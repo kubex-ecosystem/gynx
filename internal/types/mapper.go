@@ -174,7 +174,7 @@ func (m *Mapper[T]) SerializeToFile(format string) {
 
 func (m *Mapper[T]) Deserialize(object []byte, format string) (*T, error) {
 	if m.ptr == nil {
-		return nil, errors.New("mapper: ponteiro de destino nil")
+		return nil, gl.Errorf("mapper: ponteiro de destino nil")
 	}
 	var r io.Reader = strings.NewReader(string(object))
 	switch strings.ToLower(format) {
@@ -191,7 +191,7 @@ func (m *Mapper[T]) Deserialize(object []byte, format string) (*T, error) {
 	case "asn", "asn1":
 		// ASN.1 não tem decoder streaming idiomático em std; teria que ler bytes.
 		// Como geralmente é pequeno para config, leremos via io.ReadAll? Evitamos: então rejeita aqui.
-		return nil, errors.New("ASN.1 streaming não suportado no momento")
+		return nil, gl.Errorf("ASN.1 streaming não suportado no momento")
 	default:
 		return nil, gl.Errorf("formato não suportado: %s", format)
 	}
@@ -199,21 +199,21 @@ func (m *Mapper[T]) Deserialize(object []byte, format string) (*T, error) {
 
 func (m *Mapper[T]) DeserializeFromFile(format string) (*T, error) {
 	if m.ptr == nil {
-		return nil, errors.New("mapper: ponteiro de destino nil")
+		return nil, gl.Errorf("mapper: ponteiro de destino nil")
 	}
 	if _, err := os.Stat(m.filePath); err != nil {
-		gl.Log("error", fmt.Sprintf("File does not exist: %v", err))
+		gl.Errorf("File does not exist: %v", err)
 		return nil, err
 	}
 	f, err := os.Open(m.filePath)
 	if err != nil {
-		gl.Log("error", fmt.Sprintf("Error opening file: %v", err))
+		gl.Errorf("Error opening file: %v", err)
 		return nil, err
 	}
 	defer func() {
 		gl.Log("debug", "Closing input file")
 		if cerr := f.Close(); cerr != nil {
-			gl.Log("error", fmt.Sprintf("Error closing file: %v", cerr))
+			gl.Errorf("Error closing file: %v", cerr)
 		}
 	}()
 

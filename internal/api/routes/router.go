@@ -32,8 +32,6 @@ func RegisterRoutes(r *gin.RouterGroup, container types.IContainer) gin.IRoutes 
 		email.Register(r, emailCtl)
 	} else {
 		gl.Log("info", "IMAP service not configured; skipping /email endpoints")
-		gl.Debugf("container: %+v", container)
-		gl.Debugf("IMAPService: %+v", container.IMAPService())
 	}
 
 	// Invite routes (public accept + admin create)

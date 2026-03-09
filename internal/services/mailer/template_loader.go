@@ -4,10 +4,13 @@ package mailer
 import (
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"path/filepath"
 	"strings"
 
+	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 	"github.com/kubex-ecosystem/gnyx/templates"
+	kbxGet "github.com/kubex-ecosystem/kbx/get"
 	gl "github.com/kubex-ecosystem/logz"
 )
 
@@ -21,16 +24,18 @@ type TemplateMetadata struct {
 
 // TemplateLoader carrega templates do filesystem
 type TemplateLoader struct {
-	templatesFS  *templates.EmailTemplateFS   `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
-	templatesDir string                       `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
-	renderer     *TemplateRenderer            `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
-	metadata     map[string]*TemplateMetadata `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	embeddedFS   fs.FS
+	templatesFS  *templates.EmailTemplateFSImpl `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	templatesDir string                         `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	renderer     *TemplateRenderer              `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	metadata     map[string]*TemplateMetadata   `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 }
 
 // NewTemplateLoader cria um novo loader de templates
 func NewTemplateLoader(templatesDir string) *TemplateLoader {
 	return &TemplateLoader{
-		templatesFS:  templates.GetEmailTemplateFS(),
+		embeddedFS:   templates.TemplatesVarFS,
+		templatesFS:  templates.GetEmailTemplateFS(templatesDir),
 		templatesDir: templatesDir,
 		renderer:     NewTemplateRenderer(),
 		metadata:     make(map[string]*TemplateMetadata),
@@ -52,18 +57,37 @@ func (tl *TemplateLoader) LoadAll() error {
 
 // loadTemplate carrega um template específico
 func (tl *TemplateLoader) loadTemplate(name string, path string) error {
-	// Lê o arquivo content.html
-	contentBytes, err := tl.templatesFS.ReadFile(name)
-	if err != nil {
-		return gl.Errorf("erro ao ler conteúdo do template: %v", err)
+	if name == "" {
+		return gl.Errorf("template name is empty")
 	}
+	if path != "" {
+		name = filepath.Join(path, name)
+	} else {
+		name = filepath.Join("email", name)
+	}
+	// fPath := filepath.Join(tl.templatesFS.Path, name+".html")
+	file, err := tl.embeddedFS.Open(name + ".html")
+	if err != nil {
+		return gl.Errorf("erro ao ler conteúdo do template '%s': %v", name, err)
+	}
+	contentBytes := make([]byte, 0)
+	buffer := make([]byte, 1024)
+	for {
+		n, err := file.Read(buffer)
+		if err != nil {
+			break
+		}
+		contentBytes = append(contentBytes, buffer[:n]...)
+	}
+
 	// Registra o template no renderer
+	gl.Debugf("Registrando template: %s", name)
 	if err := tl.renderer.RegisterTemplate(name, string(contentBytes)); err != nil {
 		return gl.Errorf("erro ao registrar template: %v", err)
 	}
 
 	// Lê os metadados (variables.json) do FS embed, se existir
-	metaBytes, err := tl.templatesFS.FS.ReadFile(filepath.Join("email", name, "variables.json"))
+	metaBytes, err := tl.templatesFS.ReadFile(filepath.Join(name, "variables.json"))
 	if err == nil {
 		var metadata TemplateMetadata
 		if err := json.Unmarshal(metaBytes, &metadata); err != nil {
@@ -83,7 +107,7 @@ func (tl *TemplateLoader) loadTemplate(name string, path string) error {
 // Render renderiza um template pelo nome
 func (tl *TemplateLoader) Render(templateName string, data TemplateData) (string, string, error) {
 	// Obtém o subject do metadata
-	subject := "Notificação - Kubex PRM"
+	subject := "Notificação - Kubex Ecosystem"
 	if meta, exists := tl.metadata[templateName]; exists {
 		subject = meta.Subject
 		// Substitui variáveis no subject
@@ -139,7 +163,7 @@ func replaceSubjectVars(subject string, data TemplateData) string {
 
 // GetDefaultTemplateLoader retorna um loader com templates do diretório padrão
 func GetDefaultTemplateLoader() (*TemplateLoader, error) {
-	loader := NewTemplateLoader("templates/email")
+	loader := NewTemplateLoader(kbxGet.EnvOr("INVITE_TEMPLATES_DIR", kbxMod.DefaultTemplatesDir))
 	if err := loader.LoadAll(); err != nil {
 		return nil, err
 	}

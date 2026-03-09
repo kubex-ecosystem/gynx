@@ -1,4 +1,4 @@
-// Package services provides background service orchestration for the kubexbe.
+// Package services provides background service orchestration for the gnyx.
 // This enables autonomous operation independent of web interface.
 package services
 
@@ -8,15 +8,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kubex-ecosystem/gnyx/internal/types"
+	kbxTypes "github.com/kubex-ecosystem/kbx/types"
 
+	gnyxTypes "github.com/kubex-ecosystem/gnyx/internal/types"
 	gl "github.com/kubex-ecosystem/logz"
 )
 
 // DaemonService provides autonomous background operations for repository analysis,
 // scheduling, notifications, and integration with external tools like lookatni/grompt.
 type DaemonService struct {
-	config           *types.Config
+	config           *kbxTypes.SrvConfig
 	notificationSvc  *NotificationService
 	schedulerSvc     *SchedulerService
 	orchestrationSvc *OrchestrationService
@@ -29,13 +30,13 @@ type DaemonService struct {
 	mu      sync.RWMutex
 
 	// Channels for communication
-	analysisRequests  chan types.AnalysisRequest
-	notificationQueue chan types.NotificationEvent
-	orchestrateQueue  chan types.OrchestrationTask
+	analysisRequests  chan gnyxTypes.AnalysisRequest
+	notificationQueue chan gnyxTypes.NotificationEvent
+	orchestrateQueue  chan gnyxTypes.OrchestrationTask
 }
 
 // NewDaemonService creates a new daemon service instance
-func NewDaemonService(config *types.Config) *DaemonService {
+func NewDaemonService(config *kbxTypes.SrvConfig) *DaemonService {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &DaemonService{
@@ -43,9 +44,9 @@ func NewDaemonService(config *types.Config) *DaemonService {
 		running:           false,
 		ctx:               ctx,
 		cancel:            cancel,
-		analysisRequests:  make(chan types.AnalysisRequest, 100),
-		notificationQueue: make(chan types.NotificationEvent, 500),
-		orchestrateQueue:  make(chan types.OrchestrationTask, 200),
+		analysisRequests:  make(chan gnyxTypes.AnalysisRequest, 100),
+		notificationQueue: make(chan gnyxTypes.NotificationEvent, 500),
+		orchestrateQueue:  make(chan gnyxTypes.OrchestrationTask, 200),
 	}
 }
 
@@ -58,7 +59,7 @@ func (d *DaemonService) Start() error {
 		return gl.Errorf("daemon service already running")
 	}
 
-	gl.Log("info", "🚀 Starting GNyx Daemon Service...")
+	gl.Log("info", "Starting GNyx Daemon Service...")
 
 	// Initialize sub-services
 	if err := d.initializeServices(); err != nil {
@@ -69,7 +70,7 @@ func (d *DaemonService) Start() error {
 	d.startWorkers()
 
 	d.running = true
-	gl.Log("info", "✅ GNyx Daemon Service started successfully")
+	gl.Log("info", "GNyx Daemon Service started successfully")
 
 	return nil
 }
@@ -97,13 +98,13 @@ func (d *DaemonService) Stop() error {
 
 	select {
 	case <-done:
-		gl.Log("info", "✅ All workers stopped gracefully")
+		gl.Log("info", "All workers stopped gracefully")
 	case <-time.After(30 * time.Second):
-		gl.Log("warn", "⚠️ Timeout waiting for workers to stop")
+		gl.Log("warn", "Timeout waiting for workers to stop")
 	}
 
 	d.running = false
-	gl.Log("info", "✅ GNyx Daemon Service stopped")
+	gl.Log("info", "GNyx Daemon Service stopped")
 
 	return nil
 }
@@ -116,7 +117,7 @@ func (d *DaemonService) IsRunning() bool {
 }
 
 // ScheduleAnalysis adds a new analysis request to the queue
-func (d *DaemonService) ScheduleAnalysis(req types.AnalysisRequest) error {
+func (d *DaemonService) ScheduleAnalysis(req gnyxTypes.AnalysisRequest) error {
 	if req.ID == "" {
 		req.ID = fmt.Sprintf("analysis_%d", time.Now().UnixNano())
 	}
@@ -134,7 +135,7 @@ func (d *DaemonService) ScheduleAnalysis(req types.AnalysisRequest) error {
 }
 
 // SendNotification adds a notification to the queue
-func (d *DaemonService) SendNotification(event types.NotificationEvent) error {
+func (d *DaemonService) SendNotification(event gnyxTypes.NotificationEvent) error {
 	event.CreatedAt = time.Now()
 
 	select {
@@ -149,7 +150,7 @@ func (d *DaemonService) SendNotification(event types.NotificationEvent) error {
 }
 
 // OrchestrateTool adds an orchestration task to the queue
-func (d *DaemonService) OrchestrateTool(task types.OrchestrationTask) error {
+func (d *DaemonService) OrchestrateTool(task gnyxTypes.OrchestrationTask) error {
 	if task.ID == "" {
 		task.ID = fmt.Sprintf("orchestration_%d", time.Now().UnixNano())
 	}
@@ -169,14 +170,10 @@ func (d *DaemonService) OrchestrateTool(task types.OrchestrationTask) error {
 // initializeServices sets up all sub-services
 func (d *DaemonService) initializeServices() error {
 	// Initialize notification service
-	d.notificationSvc = NewNotificationService(
-		d.config,
-	)
+	d.notificationSvc = NewNotificationService(d.config)
 
 	// Initialize scheduler service
-	d.schedulerSvc = NewSchedulerService(
-		d.config,
-	)
+	d.schedulerSvc = NewSchedulerService(d.config)
 
 	// Initialize orchestration service
 	d.orchestrationSvc = NewOrchestrationService(d.config)
@@ -289,7 +286,7 @@ func (d *DaemonService) schedulerWorker() {
 }
 
 // processAnalysisRequest handles individual analysis requests
-func (d *DaemonService) processAnalysisRequest(req types.AnalysisRequest) {
+func (d *DaemonService) processAnalysisRequest(req gnyxTypes.AnalysisRequest) {
 	gl.Log("info", fmt.Sprintf("🔍 Processing analysis: %s for %s", req.Type, req.ProjectPath))
 
 	// TODO: Implement actual analysis logic
@@ -299,34 +296,34 @@ func (d *DaemonService) processAnalysisRequest(req types.AnalysisRequest) {
 	time.Sleep(2 * time.Second)
 
 	// Send completion notification
-	d.SendNotification(types.NotificationEvent{
+	d.SendNotification(gnyxTypes.NotificationEvent{
 		Type:     "discord",
 		Subject:  fmt.Sprintf("Analysis Complete: %s", req.Type),
 		Content:  fmt.Sprintf("Repository analysis completed for: %s", req.ProjectPath),
 		Priority: "medium",
 	})
 
-	gl.Log("info", fmt.Sprintf("✅ Analysis completed: %s", req.ID))
+	gl.Log("info", fmt.Sprintf("Analysis completed: %s", req.ID))
 }
 
 // processNotificationEvent handles individual notification events
-func (d *DaemonService) processNotificationEvent(event types.NotificationEvent) {
+func (d *DaemonService) processNotificationEvent(event gnyxTypes.NotificationEvent) {
 	gl.Log("info", fmt.Sprintf("📤 Sending %s notification: %s", event.Type, event.Subject))
 
 	// TODO: Implement actual notification sending
 	// This will use the notification service to send via Discord/WhatsApp/Email
 
-	gl.Log("info", fmt.Sprintf("✅ Notification sent: %s", event.Type))
+	gl.Log("info", fmt.Sprintf("Notification sent: %s", event.Type))
 }
 
 // processOrchestrationTask handles individual orchestration tasks
-func (d *DaemonService) processOrchestrationTask(task types.OrchestrationTask) {
-	gl.Log("info", fmt.Sprintf("🚀 Orchestrating: %s -> %s", task.Tool, task.Action))
+func (d *DaemonService) processOrchestrationTask(task gnyxTypes.OrchestrationTask) {
+	gl.Log("info", fmt.Sprintf("Orchestrating: %s -> %s", task.Tool, task.Action))
 
 	// TODO: Implement actual orchestration logic
 	// This will coordinate with lookatni, grompt, and other agents
 
-	gl.Log("info", fmt.Sprintf("✅ Orchestration completed: %s", task.ID))
+	gl.Log("info", fmt.Sprintf("Orchestration completed: %s", task.ID))
 }
 
 // performHealthCheck performs system health checks
@@ -336,7 +333,7 @@ func (d *DaemonService) performHealthCheck() {
 	// TODO: Implement health check logic
 	// Check system resources, external service connectivity, etc.
 
-	gl.Log("info", "✅ Health check completed")
+	gl.Log("info", "Health check completed")
 }
 
 // checkScheduledTasks checks for and executes scheduled tasks

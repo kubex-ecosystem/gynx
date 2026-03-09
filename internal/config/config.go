@@ -2,6 +2,8 @@
 package config
 
 import (
+	"net"
+	"net/url"
 	"os"
 	"path/filepath"
 	"time"
@@ -17,6 +19,7 @@ import (
 
 // Config agrega todas as dependências externas necessárias para inicializar os serviços do backend.
 type Config struct {
+	ID           string        `json:"id,omitempty" yaml:"id,omitempty" toml:"id,omitempty" mapstructure:"id,omitempty"`
 	ServerConfig *ServerConfig `json:"server_config,omitempty" yaml:"server_config,omitempty" toml:"server_config,omitempty" mapstructure:"server_config,omitempty"`
 	AuthConfig   *AuthConfig   `json:"auth_config,omitempty" yaml:"auth_config,omitempty" toml:"auth_config,omitempty" mapstructure:"auth_config,omitempty"`
 
@@ -24,8 +27,8 @@ type Config struct {
 	DataService          *DataServiceConfig `json:"data_service,omitempty" yaml:"data_service,omitempty" toml:"data_service,omitempty" mapstructure:"data_service,omitempty"`
 	MailerConfigFilePath string             `json:"mailer_config_file_path,omitempty" yaml:"mailer_config_file_path,omitempty" toml:"mailer_config_file_path,omitempty" mapstructure:"mailer_config_file_path,omitempty"`
 	MailerConfig         *kbx.MailConfig    `json:"mailer_config,omitempty" yaml:"mailer_config,omitempty" toml:"mailer_config,omitempty" mapstructure:"mailer_config,omitempty"`
-	TemplatesDir         string             `json:"templates_dir,omitempty" yaml:"templates_dir,omitempty" toml:"templates_dir,omitempty" mapstructure:"templates_dir,omitempty"`
-	Invite               *InviteConfig      `json:"invite,omitempty" yaml:"invite,omitempty" toml:"invite,omitempty" mapstructure:"invite,omitempty"`
+	// TemplatesDir         string             `json:"templates_dir,omitempty" yaml:"templates_dir,omitempty" toml:"templates_dir,omitempty" mapstructure:"templates_dir,omitempty"`
+	Invite *InviteConfig `json:"invite,omitempty" yaml:"invite,omitempty" toml:"invite,omitempty" mapstructure:"invite,omitempty"`
 }
 
 // InviteConfig controla opções de envio e branding.
@@ -73,52 +76,53 @@ type DataServiceConfig struct {
 
 // LoadConfig carrega a configuração a partir das variáveis de ambiente.
 func LoadConfig() *Config {
-	ref := types.NewReference("github.com/kubex-ecosystem/gnyx").GetReference()
-	// Base URL para links públicos (convites, etc.)
-	baseURL := kbxGet.EnvOr("GNYX_PUBLIC_URL", "")
-	if baseURL == "" {
-		baseURL = kbxGet.EnvOr("INVITE_BASE_URL", "")
-	}
-	if baseURL == "" {
-		baseURL = kbxGet.ValueOrIf(kbxGet.EnvOr("KUBEX_ENV", "development") == "production",
-			"https://api.gnyx.app",
-			"http://localhost:4000",
-		)
-	}
-	defaultTTL := kbxGet.EnvOrType("INVITE_EXPIRATION", 7*24*time.Hour)
-	configPath := os.ExpandEnv(kbxGet.EnvOr("GNYX_CONFIG_PATH", kbxMod.DefaultGNyxConfigPath))
+	ref := types.NewReference("gnyx").GetReference()
+
+	scheme := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_GNYX_SCHEME", "http"))
+	host := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_GNYX_HOST", kbxMod.DefaultServerHost))
+	addr := net.JoinHostPort(host, kbxMod.GetEnvOrDefault("KUBEX_GNYX_PORT", "5000"))
+	url := url.URL{Scheme: scheme, Host: addr}
+	baseURL := kbxGet.ValueOrIf(kbxMod.GetEnvOrDefault("KUBEX_GNYX_ENV", "development") == "production",
+		"https://api.kubex.world",
+		url.String(),
+	)
+
+	defaultTTL := kbxGet.EnvOrType("KUBEX_GNYX_INVITE_EXPIRATION", 7*24*time.Hour)
+	configPath := os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_CONFIG_PATH", kbxMod.DefaultGNyxConfigPath))
 	dataServiceConfig := &DataServiceConfig{
-		ConfigPath: os.ExpandEnv(kbxGet.EnvOr("KUBEX_DS_CONFIG_PATH", kbxMod.DefaultKubexDomusConfigPath)),
-		DBName:     kbxGet.EnvOr("KUBEX_DS_DB_NAME", "postgres"),
+		ConfigPath: os.ExpandEnv(kbxGet.EnvOr("KUBEX_DOMUS_CONFIG_PATH", kbxMod.DefaultKubexDomusConfigPath)),
+		DBName:     kbxGet.EnvOr("KUBEX_DOMUS_DB_NAME", "postgres"),
 	}
-	pubKeyPath := os.ExpandEnv(kbxGet.EnvOr("GNYX_PUBLIC_KEY_PATH", kbxMod.DefaultGNyxCertPath))
-	privKeyPath := os.ExpandEnv(kbxGet.EnvOr("GNYX_PRIVATE_KEY_PATH", kbxMod.DefaultGNyxKeyPath))
+	pubKeyPath := os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_KEY_PATH", kbxMod.DefaultGNyxCertPath))
+	privKeyPath := os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PRIVATE_KEY_PATH", kbxMod.DefaultGNyxKeyPath))
 	InitArgs := kbxMod.NewInitArgs(
 		os.ExpandEnv(configPath),
 		filepath.Ext(configPath)[1:],
 		os.ExpandEnv(dataServiceConfig.ConfigPath),
 		filepath.Ext(dataServiceConfig.ConfigPath)[1:],
-		os.ExpandEnv(kbxGet.EnvOr("GNYX_ENV_PATH", kbxMod.DefaultGNyxEnvPath)),
-		os.ExpandEnv(kbxGet.EnvOr("GNYX_LOG_FILE_PATH", kbxMod.DefaultGNyxLogPath)),
+		os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_ENV_PATH", kbxMod.DefaultGNyxEnvPath)),
+		os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_LOG_FILE_PATH", kbxMod.DefaultGNyxLogPath)),
 		ref.GetName(),
-		kbxGet.EnvOrType("GNYX_DEBUG_MODE", false),
-		kbxGet.EnvOrType("GNYX_RELEASE_MODE", false),
-		kbxGet.EnvOrType("GNYX_CONFIDENCIAL_MODE", false),
-		kbxGet.EnvOrType("GNYX_PORT", "4000"),
-		kbxGet.EnvOrType("GNYX_HOST", "localhost"),
+		kbxGet.EnvOrType("KUBEX_GNYX_DEBUG_MODE", false),
+		kbxGet.EnvOrType("KUBEX_GNYX_RELEASE_MODE", false),
+		kbxGet.EnvOrType("KUBEX_GNYX_CONFIDENCIAL_MODE", false),
+		kbxGet.EnvOrType("KUBEX_GNYX_PORT", "5000"),
+		kbxGet.EnvOrType("KUBEX_GNYX_HOST", "localhost"),
 		pubKeyPath,
 		privKeyPath,
-		kbxGet.EnvOr("GNYX_PRIVATE_KEY_PASSWORD", ""),
+		kbxGet.EnvOr("KUBEX_GNYX_PRIVATE_KEY_PASSWORD", ""),
+		kbxGet.EnvOr("KUBEX_GNYX_TEMPLATES_DIR", kbxMod.DefaultTemplatesDir),
+		kbxGet.EnvOrType("KUBEX_GNYX_DISABLE_UI", false),
 	)
 
 	glgAuthConfig := loadGoogleAuthConfig(InitArgs)
 
 	authCfg := &AuthConfig{
-		AccessTokenTTL:        kbxGet.ValOrType(InitArgs.AccessTokenTTL, kbxGet.EnvOrType("KUBEX_AUTH_ACCESS_TTL", 15*time.Minute)),
-		RefreshTokenTTL:       kbxGet.ValOrType(InitArgs.RefreshTokenTTL, kbxGet.EnvOrType("KUBEX_AUTH_REFRESH_TTL", 30*24*time.Hour)),
-		AccessTokenPrivateKey: kbxGet.ValOrType(InitArgs.PrivKeyPath, kbxGet.EnvOr("KUBEX_AUTH_PRIVATE_KEY", "kubex_dev_rsa")),
-		AccessTokenPublicKey:  kbxGet.ValOrType(InitArgs.PubCertKeyPath, kbxGet.EnvOr("KUBEX_AUTH_PUBLIC_KEY", kbxGet.ValOrType(os.ExpandEnv("$HOME/.gnyx/certs/be_rsa.pub"), ""))),
-		Issuer:                kbxGet.ValOrType(InitArgs.Issuer, kbxGet.EnvOr("KUBEX_AUTH_ISSUER", "gnyx")),
+		AccessTokenTTL:        kbxGet.ValOrType(InitArgs.AccessTokenTTL, kbxGet.EnvOrType("KUBEX_GNYX_AUTH_ACCESS_TTL", 15*time.Minute)),
+		RefreshTokenTTL:       kbxGet.ValOrType(InitArgs.RefreshTokenTTL, kbxGet.EnvOrType("KUBEX_GNYX_AUTH_REFRESH_TTL", 30*24*time.Hour)),
+		AccessTokenPrivateKey: kbxGet.ValOrType(InitArgs.PrivKeyPath, kbxGet.EnvOr("KUBEX_GNYX_AUTH_PRIVATE_KEY", "kubex_dev_rsa")),
+		AccessTokenPublicKey:  kbxGet.ValOrType(InitArgs.PubCertKeyPath, kbxGet.EnvOr("KUBEX_GNYX_AUTH_PUBLIC_KEY", kbxGet.ValOrType(os.ExpandEnv("$HOME/.gnyx/certs/be_rsa.pub"), ""))),
+		Issuer:                kbxGet.ValOrType(InitArgs.Issuer, kbxGet.EnvOr("KUBEX_GNYX_AUTH_ISSUER", "gnyx")),
 		AuthProvidersConfig: AuthProvidersConfig{
 			Google: AuthClientConfig{
 				Web: *glgAuthConfig,
@@ -137,17 +141,20 @@ func LoadConfig() *Config {
 		ServerConfig: &ServerConfig{
 			SrvConfig: srvConfig,
 			InitArgs:  InitArgs,
+			ProvidersConfig: os.ExpandEnv(kbxGet.ValOrType(
+				InitArgs.ProvidersConfig,
+				kbxGet.EnvOr("KUBEX_GNYX_PROVIDERS_CONFIG_PATH", kbxMod.DefaultProvidersConfig),
+			)),
 		},
 		AuthConfig:           authCfg,
 		Database:             ConfigFromEnv(),
 		DataService:          dataServiceConfig,
-		MailerConfigFilePath: kbxGet.EnvOr("MAILER_CONFIG_PATH", ""),
-		TemplatesDir:         kbxGet.EnvOr("INVITE_TEMPLATES_DIR", "./templates"),
+		MailerConfigFilePath: kbxGet.EnvOr("KUBEX_GNYX_MAILER_CONFIG_PATH", ""),
 		Invite: &InviteConfig{
 			BaseURL:     baseURL,
-			SenderName:  kbxGet.EnvOr("INVITE_SENDER_NAME", "Equipe Kubex"),
-			SenderEmail: kbxGet.EnvOr("INVITE_SENDER_EMAIL", "convites@gnyx"),
-			CompanyName: kbxGet.EnvOr("INVITE_COMPANY_NAME", "Kubex PRM"),
+			SenderName:  kbxGet.EnvOr("KUBEX_GNYX_INVITE_SENDER_NAME", "Equipe Kubex"),
+			SenderEmail: kbxGet.EnvOr("KUBEX_GNYX_INVITE_SENDER_EMAIL", "convites@kubex.world"),
+			CompanyName: kbxGet.EnvOr("KUBEX_GNYX_INVITE_COMPANY_NAME", "Kubex Ecosystem"),
 			DefaultTTL:  defaultTTL,
 		},
 	}
@@ -156,7 +163,7 @@ func LoadConfig() *Config {
 // loadGoogleAuthConfig carrega ClientID/Secret/Redirect a partir de env ou do
 // client_secret.json padrão do OAuth da Google.
 func loadGoogleAuthConfig(initArgs *kbxMod.InitArgs) *AuthOAuthClientConfig {
-	cfg, err := kbx.LoadConfigOrDefault[kbx.VendorAuthConfig](kbxGet.EnvOr("KUBEX_GOOGLE_CREDENTIALS_PATH", os.ExpandEnv(kbxMod.DefaultGoogleAuthClientPath)), true)
+	cfg, err := kbx.LoadConfigOrDefault[kbx.VendorAuthConfig](kbxGet.EnvOr("KUBEX_GNYX_GOOGLE_CREDENTIALS_PATH", os.ExpandEnv(kbxMod.DefaultGoogleAuthClientPath)), true)
 	if err != nil && cfg == nil {
 		gl.Debugf("google oauth config load failed: %v", err)
 		return nil

@@ -1,1 +1,152 @@
-{}
+{
+  "id": "722431fd-d2f4-43ea-9361-7bd0df8b5233",
+  "Basic": {
+    "debug": false,
+    "release_mode": false,
+    "is_confidential": false,
+    "enable_cors": false,
+    "trusted_proxies": null
+  },
+  "Files": {},
+  "Runtime": {},
+  "Advanced": {},
+  "Flags": {},
+  "Performance": {},
+  "auth": {
+    "invite": {},
+    "auth_providers_config": {
+      "google": {
+        "web": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "mobile": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "api": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "internal": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        }
+      },
+      "microsoft": {
+        "web": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "mobile": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "api": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "internal": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        }
+      },
+      "facebook": {
+        "web": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "mobile": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "api": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "internal": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        }
+      },
+      "linkedin": {
+        "web": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "mobile": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "api": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "internal": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        }
+      },
+      "twitter": {
+        "web": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "mobile": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "api": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "internal": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        }
+      },
+      "github": {
+        "web": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "mobile": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "api": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        },
+        "internal": {
+          "auth_uri": "",
+          "token_uri": "",
+          "auth_provider_x509_cert_url": ""
+        }
+      }
+    }
+  }
+}

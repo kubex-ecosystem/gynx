@@ -84,6 +84,7 @@ func RegisterAuthHTTP(r *gin.RouterGroup, container types.IContainer) (gin.IRout
 		"POST /auth/refresh":     h.refresh,
 		"POST /sign-out":         h.signOut,
 		"GET /me":                h.me,
+		"GET /auth/me":           h.me,
 		"GET /auth/google/start": h.googleStart,
 		"GET /auth/v1/callback":  h.handleGoogleCallback,
 		// "GET /auth/google/oauth2/callback": h.googleCallback,
@@ -388,10 +389,10 @@ func defineRedirectURL(r *http.Request, redirectURIs []string, vList []string) (
 	var err error
 
 	origin, err = url.Parse(
-		kbxGet.ValueOrIf[string](
+		kbxGet.ValueOrIf(
 			len(r.Header.Get("Origin")) > 0,
 			r.Header.Get("Origin"),
-			"http://"+kbxGet.ValOrType(r.Host, "localhost:4000"),
+			"http://"+kbxGet.ValOrType(r.Host, "localhost:5000"),
 		),
 	)
 	if err != nil {
@@ -555,10 +556,10 @@ func resolveFrontendBaseURL() string {
 		base = strings.TrimSpace(kbxGet.EnvOr("KUBEX_PUBLIC_URL", ""))
 	}
 	if base == "" {
-		base = strings.TrimSpace(kbxGet.EnvOr("KUBEX_BE_PUBLIC_URL", ""))
+		base = strings.TrimSpace(kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_URL", ""))
 	}
 	if base == "" {
-		base = kbxGet.ValueOrIf(env == "production", "https://app.gnyx.app", "http://localhost:3000")
+		base = kbxGet.ValueOrIf(env == "production", "https://app.kubex.world", "http://localhost:5000")
 	}
 	return strings.TrimRight(base, "/")
 }
