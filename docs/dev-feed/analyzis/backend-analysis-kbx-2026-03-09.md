@@ -16,6 +16,16 @@ In practice, it provides:
 
 It behaves less like a generic utilities dump and more like an ecosystem services library.
 
+## 1.1 Current Scope Reality
+
+User context clarifies an important scope constraint:
+
+- the provider architecture in `Kbx` was introduced extremely recently
+- it has not yet been broadly tested
+- its intent is near-future multi-provider support across the ecosystem and beyond `GNyx`
+
+This means the provider layer should be interpreted as strategic infrastructure under active formation, not as mature settled platform behavior.
+
 ## 2. AI / Provider Layer
 
 The most strategically important part observed here is:
@@ -64,6 +74,11 @@ Practical implication:
 
 - issues that surface in `GNyx` as "provider instability" may actually originate in `Kbx` registry semantics
 - this package should be treated as a likely hotspot in the future backend scope
+
+Scope nuance:
+
+- these fragilities do not necessarily mean the broader Kbx utility layer is unstable
+- they are concentrated mainly in the newly introduced provider subsystem
 
 ## 2.2 Provider Types
 

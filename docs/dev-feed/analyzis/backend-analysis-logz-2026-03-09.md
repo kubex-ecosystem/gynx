@@ -16,6 +16,15 @@ It is not a thin wrapper. It contains:
 
 This makes it a platform dependency, not only a utility package.
 
+## 1.1 Scope Position For The Current Initiative
+
+User context makes the intended handling of `Logz` explicit:
+
+- `Logz` should not be treated as a specific change target of the current `GNyx + Domus + Kbx` backend initiative
+- it is shared by other projects beyond this ecosystem slice
+
+So its relevance here is architectural dependency mapping, not planned intervention.
+
 ## 2. Core Logger Layer
 
 Observed in `internal/core/logger.go`:
@@ -93,6 +102,7 @@ Risk:
 2. Review all upstream consumers before changing logger setup or manager semantics.
 3. Preserve stage ordering unless there is a deliberate ecosystem-wide migration plan.
 4. Document behavioral changes because they may alter runtime observability for every other project.
+5. For the current backend scope, prefer not modifying `Logz` at all unless a blocking issue leaves no other option.
 
 ## 8. Bottom Line
 

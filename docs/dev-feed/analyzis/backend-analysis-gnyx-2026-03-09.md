@@ -25,6 +25,20 @@ Observed startup path:
 
 This matters because backend modifications that look local often are not local. Most meaningful changes affect this chain.
 
+## 2.1 Real Local Entrypoint In Current Use
+
+The code-level startup path is reinforced by the real local command currently used in practice:
+
+`go fmt ./... && go vet ./... && go build -v ./... && go mod tidy && make build-dev && gnyx gateway up -e ./config/.env.local -D`
+
+Operational conclusions:
+
+- the actively used runtime entrypoint is `gnyx gateway up`
+- frontend embedding is part of the real startup path because `make build-dev` runs the pre-build script that builds the frontend and moves assets into `internal/features/ui/web`
+- local execution depends on externalized runtime material under `~/.kubex/gnyx`, including config, JWT certs, secrets, mail config and provider config
+
+This operational path should be treated as more important than alternative server stacks that exist in the repository.
+
 ## 3. Bootstrap Structure
 
 ## 3.1 `cmd/main.go`
@@ -55,6 +69,11 @@ Important reading:
 
 - `server.go` is where runtime composition becomes concrete
 - changes to providers, middleware or route exposure should be reviewed here first
+
+Operational nuance:
+
+- although `internal/app/server.go` is architecturally important, the real example provided by the user indicates that the actively exercised server path in local usage is centered on `gnyx gateway up`
+- this lowers the priority of alternate server stacks for immediate intervention unless they are proven to be part of the real boot path
 
 ## 3.3 `internal/app/container.go`
 
@@ -129,6 +148,11 @@ Assessment:
 - route exposure is not only in the API package; wiring and middleware policy are defined above it
 - any security or API-surface change should review this file together with route registration
 
+Operational correction:
+
+- based on the real command currently used, the highest-confidence active runtime path is still the gateway path, not every alternate HTTP stack present in code
+- this file remains architecturally relevant, but changes should be validated first against the actually used `gateway up` path
+
 ## 5.2 `internal/api/routes/router.go`
 
 Observed route families:
@@ -179,6 +203,13 @@ Implication:
 
 - provider problems may look like GNyx problems while actually originating in Kbx
 
+Real startup evidence adds one more important point:
+
+- there are signs of configuration divergence in the provider layer during actual startup
+- the real log shows providers being loaded successfully from `~/.kubex/gnyx/config/providers.yaml`, then later another provider configuration is loaded from the repository path `config/providers_config.yaml`, which yields an empty registry
+
+That makes provider configuration precedence and duplication a real operational hotspot, not only a theoretical code smell.
+
 ## 8. Architectural Strengths
 
 - bootstrap is centralized
@@ -225,6 +256,22 @@ Risk:
 - environments can differ subtly in behavior
 - debugging missing routes may require checking bootstrap state, not only route code
 
+## 9.4 Config Path Divergence In Real Usage
+
+The real local startup example shows multiple config origins involved at boot:
+
+- `./config/.env.local`
+- `~/.kubex/gnyx/config/providers.yaml`
+- repository-local `config/providers_config.yaml`
+- `~/.kubex/gnyx/secrets`
+- `~/.kubex/gnyx/*.crt|*.key`
+
+Risk:
+
+- configuration precedence may be inconsistent across subsystems
+- a component may appear healthy because one config source is valid while another later source overrides or empties state
+- debugging provider issues may require tracing both repo-local and home-directory runtime material
+
 ## 10. Direct Guidance Before Modifying GNyx Backend
 
 1. Treat `internal/app/container.go` as the primary change-control point.
@@ -232,6 +279,8 @@ Risk:
 3. When changing auth, invites, or email, inspect route registration and bootstrap together.
 4. When changing providers, inspect Kbx rather than assuming logic lives in GNyx.
 5. When changing deployment/runtime assumptions, inspect embedded UI routing too.
+6. Treat `gnyx gateway up -e ./config/.env.local -D` as the reference local runtime until a different operational path is explicitly adopted.
+7. Audit provider config precedence before changing provider-related behavior.
 
 ## 11. Bottom Line
 

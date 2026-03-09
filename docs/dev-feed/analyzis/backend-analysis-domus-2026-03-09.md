@@ -18,6 +18,21 @@ Observed responsibilities:
 - adapter factory for store/repository/ORM combinations
 - provider abstraction for service startup, health and migrations
 
+## 1.1 Real Local Entrypoint In Current Use
+
+The real local command currently used in practice is:
+
+`go fmt ./... && go vet ./... && go build -v ./... && go mod tidy && make build-dev && domus database migrate -C ./configs/config.json`
+
+Operational conclusions:
+
+- the most important exercised path today is `domus database migrate`
+- `Domus` is actively being used as provisioning and migration runtime for the existing data stack
+- current practical scope is centered on already existing stores and migrations, not on active expansion of new store families
+- runtime state also materializes under `~/.kubex/domus`, especially config and volume data
+
+This strongly suggests that the migration/provisioning path is more critical than unexercised extensibility seams.
+
 ## 2. Public Surface Used by Consumers
 
 The main public integration surface is:
@@ -26,6 +41,13 @@ The main public integration surface is:
 - `domus/client/stores.go`
 
 This is important because consumers such as `GNyx` should depend on this public client layer, not on Domus internals.
+
+Operational nuance from user context:
+
+- the current SIP between `GNyx` and `Domus` is explicitly not intended to be permanent architecture
+- it is a speed-oriented integration layer that was sufficient to make the system functional with the current store surface
+
+That makes it strategically important to preserve in the short term, but not to treat as sacred long-term architecture.
 
 ## 3. `client/client.go`
 
@@ -124,6 +146,13 @@ This is a meaningful architectural decision.
 
 Domus is not only a datastore library. It also wants to orchestrate backing services.
 
+Operational correction:
+
+- in current real usage, that orchestration is not just aspirational
+- the real logs show `Domus` initializing Docker service, DockerStack provider, starting migration pipeline, waiting for DB readiness and skipping migrations when schema already exists
+
+So for the present scope, DockerStack-backed migration orchestration is part of the active runtime contract.
+
 ## 7. Dockerstack Backend
 
 `internal/backends/dockerstack/adapter.go` shows a concrete backend implementation.
@@ -148,6 +177,7 @@ Assessment:
 - store factory model is explicit
 - typed stores and generic stores coexist coherently
 - provider abstractions are formalized instead of hidden in scripts
+- real local operations confirm that the provisioning/migration path is already functional for the currently supported store surface
 
 ## 9. Architectural Risks
 
@@ -184,6 +214,18 @@ Risk:
 
 - backend changes that seem internal may affect consumer expectations unexpectedly
 
+## 9.4 Expansion Ambiguity
+
+User context clarifies that:
+
+- the current store surface is functional
+- there is no tested or planned expansion yet beyond the stores that already exist
+
+Risk:
+
+- it is easy to over-design new abstractions around future extensibility that the system does not currently need
+- analysis and intervention should stay anchored to the existing store set and migration flow unless a deliberate expansion initiative starts
+
 ## 10. Guidance Before Modifying Domus
 
 1. Distinguish carefully between public client API and internal runtime implementation.
@@ -191,6 +233,8 @@ Risk:
 3. Treat `internal/engine/*` as runtime core.
 4. Treat `internal/provider/*` and `internal/backends/*` as infrastructure orchestration layer.
 5. Any change to store creation should be validated against both typed helpers and generic factory paths.
+6. Treat `domus database migrate -C ./configs/config.json` as the primary real-world reference flow.
+7. Optimize for correctness of the existing supported stores before optimizing for hypothetical new ones.
 
 ## 11. Bottom Line
 

@@ -33,6 +33,20 @@ The most important architectural rule that is already reflected in the code is:
 
 That rule is mostly respected.
 
+## 1.1 Operational Reality Observed In Current Local Usage
+
+The code analysis was complemented by real command examples currently used for local testing.
+
+That operational evidence changes the interpretation in a few important ways:
+
+- the ecosystem is not only structurally CLI-first; it is operationally exercised through CLI commands in everyday use
+- `Domus` is effectively used today as a migration/provisioning runner around existing stores, not as an actively expanding data platform
+- `GNyx` is effectively used today as the gateway runtime that embeds the frontend and exposes backend features, but the backend-to-frontend integration is still mostly limited to authentication
+- `Kbx` provider infrastructure is present in the real boot path of `GNyx`, but the user clarified it is extremely recent and not yet battle-tested
+- `Logz` should be treated as external shared platform infrastructure, not as a target for change in the next scope
+
+This means the next backend phase should prioritize the actually exercised runtime paths over dormant or alternate architectural paths.
+
 ## 2. Real Dependency Graph
 
 ## 2.1 Module-Level Dependencies
@@ -152,6 +166,11 @@ Assessment:
 - `GNyx` is operationally dependent on `Kbx`, especially for AI/provider and utility behavior
 - provider behavior changes in `Kbx` can directly affect `GNyx` runtime semantics
 
+Operational nuance from real usage:
+
+- provider loading is not merely theoretical; it appears directly in the real `gnyx gateway up` startup sequence
+- however, the provider subsystem should still be treated as newly introduced shared infrastructure rather than a mature stable contract
+
 ## 4.3 GNyx <-> Logz
 
 Observed code facts:
@@ -163,6 +182,11 @@ Assessment:
 
 - logging is not an optional cross-cutting concern here; it is deeply structural
 - major logging contract changes would ripple through all projects
+
+Scope nuance from user context:
+
+- despite deep usage, `Logz` should not currently be treated as a change target for the `GNyx + Domus + Kbx` evolution track
+- it is better treated as an external shared platform dependency during this phase
 
 ## 4.4 Domus <-> Kbx
 
@@ -247,6 +271,10 @@ Risk:
 - adding or changing providers is likely to have ecosystem-level impact
 - `GNyx` inherits those inconsistencies because it delegates rather than wraps deeply
 
+Operational nuance:
+
+- because provider infrastructure is very recent and still untested, issues found here should be interpreted more as frontier-risk than as evidence that the existing production path is generally broken
+
 ## 6.4 Logging Is Deeply Coupled
 
 `Logz` is used at startup, runtime, and infrastructure layers.
@@ -273,6 +301,8 @@ These should be treated as operating constraints for the next phase.
 4. Treat `Logz` changes as platform changes with cross-repo impact.
 5. When modifying bootstrap flows, review `cmd`, `module`, `container`, and `runtime/wire` together. They form one startup chain.
 6. When modifying data behavior, review both DS client usage and GORM fallback paths together.
+7. Prioritize the real local commands and boot flows currently used in testing over alternate server stacks that exist only in code.
+8. Exclude `Logz` from the near-term modification scope unless a change is strictly unavoidable.
 
 ## 8. Priority Questions for the Next Backend Analysis Iteration
 
