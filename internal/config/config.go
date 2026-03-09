@@ -19,6 +19,7 @@ import (
 
 // Config agrega todas as dependências externas necessárias para inicializar os serviços do backend.
 type Config struct {
+	ID           string        `json:"id,omitempty" yaml:"id,omitempty" toml:"id,omitempty" mapstructure:"id,omitempty"`
 	ServerConfig *ServerConfig `json:"server_config,omitempty" yaml:"server_config,omitempty" toml:"server_config,omitempty" mapstructure:"server_config,omitempty"`
 	AuthConfig   *AuthConfig   `json:"auth_config,omitempty" yaml:"auth_config,omitempty" toml:"auth_config,omitempty" mapstructure:"auth_config,omitempty"`
 

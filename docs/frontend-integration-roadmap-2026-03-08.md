@@ -116,10 +116,12 @@ No `App.tsx`, os módulos abaixo são renderizados sem handlers de backend:
 ### 3.3 Lógica que ainda deveria sair da camada de componente
 
 1. `src/components/features/DataAnalyzer.tsx`
+
 - Continua executando código gerado por IA via `new Function(...)` no browser.
 - Precisa migrar execução para backend/sandbox controlada.
 
-2. `src/components/features/PromptCrafter.tsx`
+1. `src/components/features/PromptCrafter.tsx`
+
 - Mantém múltiplas responsabilidades no componente (draft, histórico, share, geração, config).
 - Alto custo de manutenção e teste.
 
@@ -147,26 +149,31 @@ No `App.tsx`, os módulos abaixo são renderizados sem handlers de backend:
 ## HIGH ROI
 
 1. **Completar a consolidação da camada HTTP (fase 1 em andamento)**
+
 - Problema: base já existe, mas ainda há sobreposição de contratos e namespaces.
 - Oportunidade: fechar `core/http` com `endpoints`, `errors`, `auth` e migração final de contratos.
 - Impacto esperado: redução de regressão cross-módulo e aceleração de integração backend.
 
-2. **Conectar chat + creative modules no App com handlers reais**
+1. **Conectar chat + creative modules no App com handlers reais**
+
 - Problema: 4 módulos seguem UI-only no fluxo principal.
 - Oportunidade: ligar handlers padronizados com `unifiedAIService`/façade de domínio.
 - Impacto esperado: entrega funcional imediata em áreas de alto valor visível.
 
-3. **Hardening de segurança no Analyzer**
+1. **Hardening de segurança no Analyzer**
+
 - Problema: execução dinâmica no cliente (`new Function`).
 - Oportunidade: mover execução para backend/sandbox.
 - Impacto esperado: redução de risco crítico de segurança/compliance.
 
-4. **Corrigir consistência de auth/onboarding (invite route guard)**
+1. **Corrigir consistência de auth/onboarding (invite route guard)**
+
 - Problema: fluxo de convite pode ser interceptado por proteção de rota atual.
 - Oportunidade: alinhar allowlist pública e contratos de sessão.
 - Impacto esperado: onboarding previsível e menor atrito de aquisição.
 
-5. **Unificar estratégia de mock por domínio**
+1. **Unificar estratégia de mock por domínio**
+
 - Problema: simulação distribuída em componentes e serviços.
 - Oportunidade: centralizar feature flags/cenários em `src/mocks/*`.
 - Impacto esperado: troca mock->real com menor custo de QA.
