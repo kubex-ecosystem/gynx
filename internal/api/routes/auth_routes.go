@@ -17,6 +17,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kubex-ecosystem/gnyx/internal/auth/tokens"
 	"github.com/kubex-ecosystem/gnyx/internal/config"
+	auth "github.com/kubex-ecosystem/gnyx/internal/domain/auth"
 	"github.com/kubex-ecosystem/gnyx/internal/dsclient"
 	"github.com/kubex-ecosystem/gnyx/internal/dsclient/datastore"
 	"github.com/kubex-ecosystem/gnyx/internal/features/cookies"
@@ -43,6 +44,44 @@ type authHTTP struct {
 	jwt      tokens.JWTService
 	userRepo userstore.UserRepository
 	authCfg  *config.Config
+}
+
+type accessScopePayload struct {
+	HasAccess        bool                  `json:"has_access"`
+	HasPendingAccess bool                  `json:"has_pending_access"`
+	ActiveTenantID   string                `json:"active_tenant_id,omitempty"`
+	ActiveTenantName string                `json:"active_tenant_name,omitempty"`
+	ActiveTenantSlug string                `json:"active_tenant_slug,omitempty"`
+	ActiveRoleCode   string                `json:"active_role_code,omitempty"`
+	ActiveRoleName   string                `json:"active_role_name,omitempty"`
+	TeamMemberships  int                   `json:"team_memberships"`
+	PendingAccess    *pendingAccessPayload `json:"pending_access,omitempty"`
+}
+
+type pendingAccessPayload struct {
+	ID         string  `json:"id"`
+	Provider   string  `json:"provider"`
+	Status     string  `json:"status"`
+	TenantID   *string `json:"tenant_id,omitempty"`
+	RoleCode   *string `json:"role_code,omitempty"`
+	CreatedAt  string  `json:"created_at"`
+	ReviewedAt string  `json:"reviewed_at,omitempty"`
+}
+
+type mePayload struct {
+	ID              string                `json:"id"`
+	Email           string                `json:"email"`
+	Name            string                `json:"name"`
+	LastName        string                `json:"last_name,omitempty"`
+	Status          string                `json:"status"`
+	Memberships     []auth.Membership     `json:"memberships"`
+	TeamMemberships []auth.TeamMembership `json:"team_memberships"`
+	AccessScope     accessScopePayload    `json:"access_scope"`
+	Phone           string                `json:"phone,omitempty"`
+	AvatarURL       string                `json:"avatar_url,omitempty"`
+	LastLogin       *time.Time            `json:"last_login,omitempty"`
+	CreatedAt       time.Time             `json:"created_at"`
+	UpdatedAt       time.Time             `json:"updated_at"`
 }
 
 type input struct {
@@ -327,20 +366,109 @@ func (h *authHTTP) me(c *gin.Context) {
 	}
 
 	memberships, _ := h.userRepo.ListMemberships(c.Request.Context(), user.ID)
+	teamMemberships, _ := h.userRepo.ListTeamMemberships(c.Request.Context(), user.ID)
+	scope := h.resolveAccessScope(c.Request.Context(), user, memberships, teamMemberships)
 
-	writeJSON(c.Writer, http.StatusOK, map[string]any{
-		"id":          user.ID.String(),
-		"email":       user.Email,
-		"name":        user.Name,
-		"last_name":   user.LastName,
-		"status":      user.Status,
-		"memberships": memberships,
-		"phone":       user.Phone,
-		"avatar_url":  user.AvatarURL,
-		"last_login":  user.LastLogin,
-		"created_at":  user.CreatedAt,
-		"updated_at":  user.UpdatedAt,
+	writeJSON(c.Writer, http.StatusOK, mePayload{
+		ID:              user.ID.String(),
+		Email:           user.Email,
+		Name:            user.Name,
+		LastName:        user.LastName,
+		Status:          user.Status,
+		Memberships:     memberships,
+		TeamMemberships: teamMemberships,
+		AccessScope:     scope,
+		Phone:           user.Phone,
+		AvatarURL:       user.AvatarURL,
+		LastLogin:       user.LastLogin,
+		CreatedAt:       user.CreatedAt,
+		UpdatedAt:       user.UpdatedAt,
 	})
+}
+
+func (h *authHTTP) resolveAccessScope(
+	ctx context.Context,
+	user *auth.User,
+	memberships []auth.Membership,
+	teamMemberships []auth.TeamMembership,
+) accessScopePayload {
+	scope := accessScopePayload{
+		HasAccess:       len(memberships) > 0,
+		TeamMemberships: len(teamMemberships),
+	}
+
+	if active := pickActiveMembership(memberships); active != nil {
+		scope.ActiveTenantID = active.TenantID.String()
+		scope.ActiveTenantName = active.TenantName
+		scope.ActiveTenantSlug = active.TenantSlug
+		scope.ActiveRoleCode = active.RoleCode
+		scope.ActiveRoleName = active.RoleName
+	}
+
+	if scope.HasAccess || user == nil || strings.TrimSpace(user.Email) == "" {
+		return scope
+	}
+
+	pending, err := loadPendingAccessByEmail(ctx, strings.TrimSpace(user.Email))
+	if err != nil || pending == nil {
+		return scope
+	}
+
+	scope.HasPendingAccess = true
+	scope.PendingAccess = pending
+	return scope
+}
+
+func pickActiveMembership(memberships []auth.Membership) *auth.Membership {
+	for i := range memberships {
+		if memberships[i].IsActive {
+			return &memberships[i]
+		}
+	}
+	if len(memberships) == 0 {
+		return nil
+	}
+	return &memberships[0]
+}
+
+func loadPendingAccessByEmail(ctx context.Context, email string) (*pendingAccessPayload, error) {
+	store, err := datastore.PendingAccessStore(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := store.List(ctx, &dsclient.PendingAccessFilters{
+		Email: optionalString(strings.ToLower(strings.TrimSpace(email))),
+		Page:  1,
+		Limit: 10,
+	})
+	if err != nil || res == nil || len(res.Data) == 0 {
+		return nil, err
+	}
+
+	var item *dsclient.PendingAccessRequest
+	for i := range res.Data {
+		if string(res.Data[i].Status) == "pending" {
+			item = &res.Data[i]
+			break
+		}
+	}
+	if item == nil {
+		return nil, nil
+	}
+
+	payload := &pendingAccessPayload{
+		ID:        item.ID,
+		Provider:  item.Provider,
+		Status:    string(item.Status),
+		TenantID:  item.TenantID,
+		RoleCode:  item.RoleCode,
+		CreatedAt: item.CreatedAt.UTC().Format(time.RFC3339),
+	}
+	if item.ReviewedAt != nil {
+		payload.ReviewedAt = item.ReviewedAt.UTC().Format(time.RFC3339)
+	}
+	return payload, nil
 }
 
 // --- Helpers ----------------------------------------------------------------

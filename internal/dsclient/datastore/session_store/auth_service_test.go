@@ -37,6 +37,10 @@ func (s *stubUserRepo) ListMemberships(ctx context.Context, userID uuid.UUID) ([
 	return nil, nil
 }
 
+func (s *stubUserRepo) ListTeamMemberships(ctx context.Context, userID uuid.UUID) ([]models.TeamMembership, error) {
+	return nil, nil
+}
+
 type stubJWT struct{}
 
 func (s *stubJWT) GenerateAccessToken(userID string) (string, time.Time, error) {

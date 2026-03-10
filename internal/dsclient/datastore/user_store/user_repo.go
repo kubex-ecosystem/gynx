@@ -16,6 +16,7 @@ type UserRepository interface {
 	FindByID(ctx context.Context, id uuid.UUID) (*models.User, error)
 	Create(ctx context.Context, u *models.User) error
 	ListMemberships(ctx context.Context, userID uuid.UUID) ([]models.Membership, error)
+	ListTeamMemberships(ctx context.Context, userID uuid.UUID) ([]models.TeamMembership, error)
 }
 
 type userRepository struct {
@@ -63,6 +64,10 @@ func (r *userRepository) Create(ctx context.Context, u *models.User) error {
 // ListMemberships retorna os vínculos do usuário com tenants e roles.
 func (r *userRepository) ListMemberships(ctx context.Context, userID uuid.UUID) ([]models.Membership, error) {
 	return r.bridge.ListMemberships(ctx, userID)
+}
+
+func (r *userRepository) ListTeamMemberships(ctx context.Context, userID uuid.UUID) ([]models.TeamMembership, error) {
+	return r.bridge.ListTeamMemberships(ctx, userID)
 }
 
 // NewUserRepository cria repositório baseado no UserStore do DS.
