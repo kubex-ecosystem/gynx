@@ -7,6 +7,8 @@ import (
 	"github.com/kubex-ecosystem/gnyx/internal/auth/middlewares"
 	"github.com/kubex-ecosystem/gnyx/internal/auth/tokens"
 	"github.com/kubex-ecosystem/gnyx/internal/config"
+	"github.com/kubex-ecosystem/gnyx/internal/features/providers/registry"
+	runtimeMW "github.com/kubex-ecosystem/gnyx/internal/runtime/middlewares"
 	"github.com/kubex-ecosystem/gnyx/internal/services/mailer"
 	"github.com/kubex-ecosystem/gnyx/internal/types"
 
@@ -15,6 +17,19 @@ import (
 )
 
 func RegisterRoutes(r *gin.RouterGroup, container types.IContainer) gin.IRoutes {
+	return RegisterRoutesWithProviders(r, container, nil, nil)
+}
+
+func RegisterRoutesWithProviders(
+	r *gin.RouterGroup,
+	container types.IContainer,
+	reg *registry.Registry,
+	prod *runtimeMW.ProductionMiddleware,
+) gin.IRoutes {
+	if reg != nil {
+		registerRuntimeAIRoutes(r, container, reg, prod)
+	}
+
 	if _, err := RegisterAuthHTTP(r, container); err != nil {
 		gl.Fatalf("failed to register auth routes: %v", err)
 	}

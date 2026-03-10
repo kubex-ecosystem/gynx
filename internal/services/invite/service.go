@@ -49,15 +49,16 @@ type Config struct {
 
 // Service implementa api.Service usando o banco do DataService.
 type Service struct {
-	repo        domain.Adapter           `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
-	mailer      MailSender               `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
-	templates   TemplateEngine           `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
-	baseURL     string                   `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
-	senderName  string                   `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
-	senderEmail string                   `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
-	companyName string                   `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
-	defaultTTL  time.Duration            `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
-	userRepo    userstore.UserRepository `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	repo        domain.Adapter                                                      `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	mailer      MailSender                                                          `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	templates   TemplateEngine                                                      `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	baseURL     string                                                              `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	senderName  string                                                              `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	senderEmail string                                                              `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	companyName string                                                              `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	defaultTTL  time.Duration                                                       `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	userRepo    userstore.UserRepository                                            `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	rawLookup   func(ctx context.Context, token string) (*domain.Invitation, error) `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 }
 
 func NewAdapter(store dsclient.InviteStore) (domain.Adapter, error) {
@@ -228,7 +229,7 @@ func (s *Service) AcceptInvite(ctx context.Context, token string, req api.Accept
 		return nil, errors.New("token is required")
 	}
 
-	inv, err := s.repo.GetByToken(ctx, token)
+	inv, alreadyAccepted, err := s.loadInvitationForAcceptance(ctx, token)
 	if err != nil {
 		return nil, err
 	}
@@ -242,9 +243,11 @@ func (s *Service) AcceptInvite(ctx context.Context, token string, req api.Accept
 		return nil, err
 	}
 
-	inv, err = s.repo.Accept(ctx, token)
-	if err != nil {
-		return nil, err
+	if !alreadyAccepted {
+		inv, err = s.repo.Accept(ctx, token)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	result := &api.AcceptResult{
@@ -456,6 +459,45 @@ func (s *Service) findPendingInvite(ctx context.Context, req api.CreateInviteReq
 }
 
 func ptr[T any](v T) *T { return &v }
+
+func (s *Service) loadInvitationForAcceptance(ctx context.Context, token string) (*domain.Invitation, bool, error) {
+	var (
+		inv *domain.Invitation
+		err error
+	)
+
+	if s.rawLookup != nil {
+		inv, err = s.rawLookup(ctx, token)
+	} else {
+		store, storeErr := datastore.GetInviteStore(ctx)
+		if storeErr != nil {
+			return nil, false, storeErr
+		}
+		rawInv, lookupErr := store.GetByToken(ctx, strings.TrimSpace(token))
+		if lookupErr != nil {
+			return nil, false, lookupErr
+		}
+		inv = toDomain(rawInv)
+		err = nil
+	}
+
+	if err != nil {
+		return nil, false, err
+	}
+	if inv == nil {
+		return nil, false, dsclient.ErrNotFound
+	}
+
+	if inv.Status == domain.StatusAccepted {
+		return inv, true, nil
+	}
+
+	if err := validateInvite(inv); err != nil {
+		return nil, false, err
+	}
+
+	return inv, false, nil
+}
 
 func toDTO(inv *domain.Invitation) *api.InviteDTO {
 	if inv == nil {

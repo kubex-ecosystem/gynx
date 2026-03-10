@@ -4,6 +4,7 @@ package router
 import (
 	"context"
 	"crypto/rsa"
+	"time"
 
 	"github.com/kubex-ecosystem/gnyx/internal/app"
 	"github.com/kubex-ecosystem/gnyx/internal/auth/controllers"
@@ -45,7 +46,11 @@ func RegisterAuthRoutes(r *gin.Engine, priv *rsa.PrivateKey, pub *rsa.PublicKey,
 		return
 	}
 
-	authSvc := services.NewAuthService(userRepo, sessRepo, jwtSvc, logger)
+	var refreshTTL time.Duration
+	if cfg.AuthConfig != nil {
+		refreshTTL = cfg.AuthConfig.RefreshTokenTTL
+	}
+	authSvc := services.NewAuthService(userRepo, sessRepo, jwtSvc, logger, refreshTTL)
 	controller := controllers.NewAuthController(authSvc, userBridge)
 	authMW := middlewares.NewAuthMiddleware(jwtSvc)
 

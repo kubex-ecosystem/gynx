@@ -59,7 +59,7 @@ func NewHTTPWire(container Container, routeRegistrar RouteRegistrar) (*HTTPWire,
 	}
 
 	// Load providers registry
-	reg, err := registry.Load(cfg.ServerConfig.ProvidersConfig)
+	reg, err := registry.LoadResolved(cfg.ServerConfig)
 	if err != nil {
 		return nil, gl.Errorf("failed to load providers registry: %v", err)
 	}
@@ -69,8 +69,10 @@ func NewHTTPWire(container Container, routeRegistrar RouteRegistrar) (*HTTPWire,
 	prodMiddleware := middlewares.NewProductionMiddleware(prodConfig)
 
 	// Register all providers with production middleware
-	for _, providerName := range reg.ListProviders() {
-		prodMiddleware.RegisterProvider(providerName)
+	if reg != nil {
+		for _, providerName := range reg.ListProviders() {
+			prodMiddleware.RegisterProvider(providerName)
+		}
 	}
 
 	return &HTTPWire{
@@ -160,7 +162,7 @@ func (w *HTTPWire) Wire() (*gin.Engine, error) {
 
 	// Register routes using the provided registrar function
 	if w.routeRegistrar != nil {
-		w.routeRegistrar(w.engine.Group("/api/v1"), w.container)
+		w.routeRegistrar(w.engine.Group("/api/v1"), w.container, w.registry, w.prodMiddleware)
 	} else {
 		gl.Warn("No route registrar provided, routes not registered")
 	}

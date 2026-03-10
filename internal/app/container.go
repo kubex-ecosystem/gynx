@@ -172,14 +172,13 @@ func (c *Container) Bootstrap(ctx context.Context) error {
 		gl.Noticef("🔐 JWT certificates loaded successfully. PrivKey Decrypted: %v", (rsaPrivKey != nil))
 	}
 
-	db := dsclient.NewDSClient(ctx, c.cfg, gl.GetLoggerZ("gateway.routes"))
-	if db == nil {
-		return gl.Errorf("failed to create dsclient")
+	if c.db == nil {
+		db, err := ds.Init(ctx, c.cfg)
+		if err != nil {
+			return gl.Errorf("failed to init dsclient during bootstrap: %v", err)
+		}
+		c.db = db
 	}
-	if err := db.Init(ctx); err != nil {
-		return gl.Errorf("failed to init dsclient: %v", err)
-	}
-	c.db = db
 	// gl.Debug("DSClient initialized successfully.")
 	gormDB, err := c.initGORM(ctx)
 	if err != nil {
@@ -192,7 +191,7 @@ func (c *Container) Bootstrap(ctx context.Context) error {
 
 	// AdapterFactory creation
 	// gl.Debug("Creating AdapterFactory...")
-	factory, err := db.NewAdapterFactory(ctx, "domus", c.gormDB, nil)
+	factory, err := c.db.NewAdapterFactory(ctx, "domus", c.gormDB, nil)
 	if err != nil {
 		return gl.Errorf("failed to create adapter factory: %v", err)
 	}
@@ -211,11 +210,7 @@ func (c *Container) Bootstrap(ctx context.Context) error {
 // initGORM inicializa GORM DB para fallback ORM.
 // Temporário enquanto migra para Stores.
 func (c *Container) initGORM(ctx context.Context) (*dsclient.BackendConnection, error) {
-	client := dsclient.NewDSClient(ctx, c.cfg, gl.GetLoggerZ("gorm.init"))
-	if client == nil {
-		return nil, gl.Errorf("failed to create dsclient for gorm")
-	}
-	gormDBConn, err := client.GetConn(ctx, c.cfg.DataService.DBName)
+	gormDBConn, err := ds.Connection(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -227,7 +222,7 @@ func (c *Container) createAdaptersAndControllers(ctx context.Context) error {
 	gl.Debug("Creating generic controllers...")
 
 	// User Controller (usando UserStore do DS)
-	userConn, err := c.db.GetConn(ctx, "domus")
+	userConn, err := ds.Connection(ctx)
 	if err != nil {
 		return gl.Errorf("failed to get connection: %v", err)
 	}
