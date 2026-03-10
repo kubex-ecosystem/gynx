@@ -39,3 +39,18 @@ type Membership struct {
 	IsActive   bool      `json:"is_active"`
 	CreatedAt  time.Time `json:"created_at"`
 }
+
+// TeamMembership traz o vínculo do usuário com um team e role.
+type TeamMembership struct {
+	TeamID      uuid.UUID `json:"team_id"`
+	TeamName    string    `json:"team_name,omitempty"`
+	TenantID    uuid.UUID `json:"tenant_id"`
+	TenantName  string    `json:"tenant_name,omitempty"`
+	RoleID      uuid.UUID `json:"role_id"`
+	RoleCode    string    `json:"role_code,omitempty"`
+	RoleName    string    `json:"role_name,omitempty"`
+	IsActive    bool      `json:"is_active"`
+	IsDefault   bool      `json:"is_default,omitempty"`
+	Description string    `json:"description,omitempty"`
+	CreatedAt   time.Time `json:"created_at"`
+}

@@ -141,6 +141,69 @@ func (b *UserBridge) ListMemberships(ctx context.Context, userID uuid.UUID) ([]m
 	return result, nil
 }
 
+// ListTeamMemberships retorna os vínculos do usuário com teams e roles.
+func (b *UserBridge) ListTeamMemberships(ctx context.Context, userID uuid.UUID) ([]models.TeamMembership, error) {
+	conn, err := datastore.Connection(ctx)
+	if err != nil {
+		return nil, err
+	}
+	pgExec, err := ds.GetPGExecutor(ctx, conn)
+	if err != nil {
+		return nil, err
+	}
+
+	const q = `
+		SELECT
+			tm.team_id,
+			t.name,
+			t.tenant_id,
+			tenant.name,
+			tm.role_id,
+			COALESCE(r.code, ''),
+			COALESCE(r.display_name, ''),
+			tm.is_active,
+			COALESCE(t.is_default, false),
+			COALESCE(t.description, ''),
+			tm.created_at
+		FROM team_membership tm
+		JOIN team t ON t.id = tm.team_id
+		JOIN tenant ON tenant.id = t.tenant_id
+		LEFT JOIN role r ON r.id = tm.role_id
+		WHERE tm.user_id = $1
+		ORDER BY tm.created_at DESC`
+
+	rows, err := pgExec.Query(ctx, q, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []models.TeamMembership
+	for rows.Next() {
+		var m models.TeamMembership
+		if err := rows.Scan(
+			&m.TeamID,
+			&m.TeamName,
+			&m.TenantID,
+			&m.TenantName,
+			&m.RoleID,
+			&m.RoleCode,
+			&m.RoleName,
+			&m.IsActive,
+			&m.IsDefault,
+			&m.Description,
+			&m.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		result = append(result, m)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 func (b *UserBridge) Update(ctx context.Context, m *models.User) error {
 	if m == nil {
 		return gl.Errorf("nil user")
