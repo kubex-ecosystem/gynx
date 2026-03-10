@@ -63,6 +63,9 @@ func (s *stubUserRepo) Create(ctx context.Context, user *auth.User) error {
 func (s *stubUserRepo) ListMemberships(ctx context.Context, userID uuid.UUID) ([]auth.Membership, error) {
 	return nil, nil
 }
+func (s *stubUserRepo) ListTeamMemberships(ctx context.Context, userID uuid.UUID) ([]auth.TeamMembership, error) {
+	return nil, nil
+}
 
 func (s *stubAdapter) GetByToken(ctx context.Context, token string) (*domain.Invitation, error) {
 	return nil, dsclient.ErrNotFound
