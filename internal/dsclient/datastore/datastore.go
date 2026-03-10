@@ -96,11 +96,7 @@ func Connection(ctx context.Context) (*ds.BackendConnection, error) {
 
 // UserStore retorna o store de usuários do DS.
 func UserStore(ctx context.Context) (ds.UserStore, error) {
-	c, err := Client(ctx)
-	if err != nil {
-		return nil, err
-	}
-	conn, err := c.GetConn(ctx, dbKey)
+	conn, err := Connection(ctx)
 	if err != nil {
 		return nil, gl.Errorf("failed to get user store: %v", err)
 	}
@@ -113,11 +109,7 @@ func UserStore(ctx context.Context) (ds.UserStore, error) {
 
 // PendingAccessStore retorna o store de solicitações de acesso pendentes do DS.
 func PendingAccessStore(ctx context.Context) (ds.PendingAccessStore, error) {
-	c, err := Client(ctx)
-	if err != nil {
-		return nil, err
-	}
-	conn, err := c.GetConn(ctx, dbKey)
+	conn, err := Connection(ctx)
 	if err != nil {
 		return nil, gl.Errorf("failed to get pending access store: %v", err)
 	}
@@ -130,17 +122,26 @@ func PendingAccessStore(ctx context.Context) (ds.PendingAccessStore, error) {
 
 // GetInviteStore retorna o store de convites do DS.
 func GetInviteStore(ctx context.Context) (ds.InviteStore, error) {
-	c, err := Client(ctx)
-	if err != nil {
-		return nil, err
-	}
-	conn, err := c.GetConn(ctx, dbKey)
+	conn, err := Connection(ctx)
 	if err != nil {
 		return nil, gl.Errorf("failed to get invite store: %v", err)
 	}
 	store, err := ds.NewInviteStore(ctx, conn)
 	if err != nil {
 		return nil, gl.Errorf("failed to get invite store: %v", err)
+	}
+	return store, nil
+}
+
+// CompanyStore retorna o store de empresas do DS usando a conexão efetiva resolvida.
+func CompanyStore(ctx context.Context) (ds.CompanyStore, error) {
+	conn, err := Connection(ctx)
+	if err != nil {
+		return nil, gl.Errorf("failed to get company store: %v", err)
+	}
+	store, err := ds.NewCompanyStore(ctx, conn)
+	if err != nil {
+		return nil, gl.Errorf("failed to get company store: %v", err)
 	}
 	return store, nil
 }
