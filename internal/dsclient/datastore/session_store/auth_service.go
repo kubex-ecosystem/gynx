@@ -32,10 +32,11 @@ type AuthService interface {
 }
 
 type authService struct {
-	users    userstore.UserRepository
-	sessions userstore.SessionRepository
-	jwt      tokens.JWTService
-	logger   *gl.LoggerZ
+	users      userstore.UserRepository
+	sessions   userstore.SessionRepository
+	jwt        tokens.JWTService
+	logger     *gl.LoggerZ
+	refreshTTL time.Duration
 }
 
 func NewAuthService(
@@ -43,15 +44,20 @@ func NewAuthService(
 	sessions userstore.SessionRepository,
 	jwt tokens.JWTService,
 	logger *gl.LoggerZ,
+	refreshTTL time.Duration,
 ) AuthService {
 	if logger == nil {
 		logger = gl.GetLoggerZ("auth_service")
 	}
+	if refreshTTL <= 0 {
+		refreshTTL = 30 * 24 * time.Hour
+	}
 	return &authService{
-		users:    users,
-		sessions: sessions,
-		jwt:      jwt,
-		logger:   logger,
+		users:      users,
+		sessions:   sessions,
+		jwt:        jwt,
+		logger:     logger,
+		refreshTTL: refreshTTL,
 	}
 }
 
@@ -96,7 +102,7 @@ func (s *authService) Login(ctx context.Context, email, password, ua, ip string)
 		return "", time.Time{}, "", time.Time{}, err
 	}
 
-	plainRefresh, hash, exp, err := tokens.GenerateRefreshToken()
+	plainRefresh, hash, exp, err := tokens.GenerateRefreshTokenWithTTL(s.refreshTTL)
 	if err != nil {
 		return "", time.Time{}, "", time.Time{}, err
 	}
@@ -126,8 +132,9 @@ func (s *authService) Refresh(ctx context.Context, refreshToken string, ua, ip s
 	if err != nil {
 		return "", time.Time{}, "", time.Time{}, ErrInvalidToken
 	}
-
-	// Codex: pode validar expiração e revoked_at aqui.
+	if err := s.validateSession(sess); err != nil {
+		return "", time.Time{}, "", time.Time{}, err
+	}
 	user, err := s.users.FindByID(ctx, sess.UserID)
 	if err != nil {
 		return "", time.Time{}, "", time.Time{}, ErrInvalidToken
@@ -141,13 +148,13 @@ func (s *authService) Refresh(ctx context.Context, refreshToken string, ua, ip s
 		return "", time.Time{}, "", time.Time{}, err
 	}
 
-	plainRefresh, newHash, exp, err := tokens.GenerateRefreshToken()
+	plainRefresh, newHash, exp, err := tokens.GenerateRefreshTokenWithTTL(s.refreshTTL)
 	if err != nil {
 		return "", time.Time{}, "", time.Time{}, err
 	}
 
 	// revoga antigo e cria novo
-	if err := s.sessions.Revoke(ctx, sess.ID); err != nil {
+	if err := s.revokeSession(ctx, sess); err != nil {
 		s.logger.Warn("failed to revoke old session", "err", err)
 		gl.Warn("performing fallback: revoking all sessions for user", "user_id", user.ID)
 		// Fallback para ambientes sem auth_sessions: revoga tudo do usuário
@@ -181,8 +188,11 @@ func (s *authService) Logout(ctx context.Context, refreshToken string) error {
 	if err != nil {
 		return ErrInvalidToken
 	}
+	if err := s.validateSession(sess); err != nil {
+		return err
+	}
 
-	if err := s.sessions.Revoke(ctx, sess.ID); err != nil {
+	if err := s.revokeSession(ctx, sess); err != nil {
 		// Em fallback, limpa todas as sessões do usuário
 		return s.sessions.RevokeByUser(ctx, sess.UserID)
 	}
@@ -192,6 +202,31 @@ func (s *authService) Logout(ctx context.Context, refreshToken string) error {
 		return s.logger.Errorf("failed to revoke sessions by user %v", err)
 	}
 
+	return nil
+}
+
+func (s *authService) revokeSession(ctx context.Context, sess *models.Session) error {
+	if sess == nil {
+		return ErrInvalidToken
+	}
+	if sess.ID != uuid.Nil {
+		return s.sessions.Revoke(ctx, sess.ID)
+	}
+	return s.sessions.RevokeByRefreshHash(ctx, sess.RefreshTokenHash)
+}
+
+func (s *authService) validateSession(sess *models.Session) error {
+	if sess == nil {
+		return ErrInvalidToken
+	}
+
+	now := time.Now().UTC()
+	if sess.RevokedAt != nil && !sess.RevokedAt.IsZero() {
+		return ErrInvalidToken
+	}
+	if !sess.ExpiresAt.IsZero() && !now.Before(sess.ExpiresAt) {
+		return ErrInvalidToken
+	}
 	return nil
 }
 

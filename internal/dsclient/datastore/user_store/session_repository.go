@@ -15,6 +15,7 @@ type SessionRepository interface {
 	Create(ctx context.Context, s *models.Session) error
 	FindByRefreshHash(ctx context.Context, hash string) (*models.Session, error)
 	Revoke(ctx context.Context, id uuid.UUID) error
+	RevokeByRefreshHash(ctx context.Context, hash string) error
 	RevokeByUser(ctx context.Context, userID uuid.UUID) error
 }
 
@@ -119,7 +120,7 @@ func (r *sessionRepository) FindByRefreshHash(ctx context.Context, hash string) 
 		return nil, err
 	}
 
-	s.ID = uuid.New()
+	s.ID = uuid.Nil
 	s.UserID, _ = uuid.Parse(userID)
 	s.RefreshTokenHash = tokenID
 	return &s, nil
@@ -139,6 +140,39 @@ func (r *sessionRepository) Revoke(ctx context.Context, id uuid.UUID) error {
 
 	const alt = `DELETE FROM refresh_tokens WHERE token_id = $1`
 	res, err := r.exec.Exec(ctx, alt, id.String())
+	if err != nil {
+		return err
+	}
+	if res.RowsAffected() == 0 {
+		return pgx.ErrNoRows
+	}
+	return nil
+}
+
+func (r *sessionRepository) RevokeByRefreshHash(ctx context.Context, hash string) error {
+	if hash == "" {
+		return pgx.ErrNoRows
+	}
+
+	now := time.Now().UTC()
+	if r.tableExists(ctx, "auth_sessions") {
+		const q = `
+			UPDATE auth_sessions
+			SET revoked_at = $2
+			WHERE refresh_token_hash = $1 AND revoked_at IS NULL;
+		`
+		res, err := r.exec.Exec(ctx, q, hash, now)
+		if err != nil {
+			return err
+		}
+		if res.RowsAffected() == 0 {
+			return pgx.ErrNoRows
+		}
+		return nil
+	}
+
+	const alt = `DELETE FROM refresh_tokens WHERE token_id = $1`
+	res, err := r.exec.Exec(ctx, alt, hash)
 	if err != nil {
 		return err
 	}

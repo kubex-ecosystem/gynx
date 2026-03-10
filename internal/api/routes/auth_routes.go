@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"cloud.google.com/go/auth/credentials/idtoken"
 	"github.com/gin-gonic/gin"
@@ -69,7 +70,11 @@ func RegisterAuthHTTP(r *gin.RouterGroup, container types.IContainer) (gin.IRout
 	if err != nil {
 		return nil, err
 	}
-	authSvc := services.NewAuthService(userRepo, sessRepo, jwtSvc, gl.GetLoggerZ("auth.service"))
+	var refreshTTL time.Duration
+	if cfg.AuthConfig != nil {
+		refreshTTL = cfg.AuthConfig.RefreshTokenTTL
+	}
+	authSvc := services.NewAuthService(userRepo, sessRepo, jwtSvc, gl.GetLoggerZ("auth.service"), refreshTTL)
 	h := &authHTTP{
 		authSvc:  authSvc,
 		jwt:      jwtSvc,

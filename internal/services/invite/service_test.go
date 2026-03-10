@@ -339,6 +339,78 @@ func TestValidateInvite(t *testing.T) {
 	}
 }
 
+func TestLoadInvitationForAcceptance(t *testing.T) {
+	tests := []struct {
+		name         string
+		inv          *domain.Invitation
+		err          error
+		wantAccepted bool
+		wantErr      error
+	}{
+		{
+			name: "accepted invitation is allowed for resume flow",
+			inv: &domain.Invitation{
+				Invitation: dsclient.Invitation{
+					Status:    dsclient.StatusAccepted,
+					ExpiresAt: time.Now().Add(-24 * time.Hour),
+				},
+			},
+			wantAccepted: true,
+		},
+		{
+			name: "pending invitation is allowed",
+			inv: &domain.Invitation{
+				Invitation: dsclient.Invitation{
+					Status:    dsclient.StatusPending,
+					ExpiresAt: time.Now().Add(time.Hour),
+				},
+			},
+			wantAccepted: false,
+		},
+		{
+			name: "expired pending invitation is rejected",
+			inv: &domain.Invitation{
+				Invitation: dsclient.Invitation{
+					Status:    dsclient.StatusPending,
+					ExpiresAt: time.Now().Add(-time.Hour),
+				},
+			},
+			wantErr: dsclient.ErrExpired,
+		},
+		{
+			name:    "nil invitation maps to not found",
+			inv:     nil,
+			wantErr: dsclient.ErrNotFound,
+		},
+		{
+			name:    "lookup error is propagated",
+			err:     dsclient.ErrNotFound,
+			wantErr: dsclient.ErrNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				rawLookup: func(ctx context.Context, token string) (*domain.Invitation, error) {
+					return tt.inv, tt.err
+				},
+			}
+
+			got, accepted, err := svc.loadInvitationForAcceptance(context.Background(), "token")
+			if err != tt.wantErr {
+				t.Fatalf("loadInvitationForAcceptance() error = %v, want %v", err, tt.wantErr)
+			}
+			if accepted != tt.wantAccepted {
+				t.Fatalf("loadInvitationForAcceptance() accepted = %v, want %v", accepted, tt.wantAccepted)
+			}
+			if tt.wantErr == nil && got == nil {
+				t.Fatalf("loadInvitationForAcceptance() returned nil invitation")
+			}
+		})
+	}
+}
+
 // --- Testes de safeString ---
 // Previne: Valores vazios onde esperamos fallback
 

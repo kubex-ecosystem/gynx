@@ -12,6 +12,7 @@ package tokens
 import (
 	"strings"
 	"testing"
+	"time"
 )
 
 // --- Testes de GenerateRefreshToken ---
@@ -47,6 +48,18 @@ func TestGenerateRefreshToken(t *testing.T) {
 		// Default é 30 dias no futuro
 		if exp.IsZero() {
 			t.Error("expiration time should not be zero")
+		}
+	})
+
+	t.Run("uses provided ttl when configured explicitly", func(t *testing.T) {
+		ttl := 2 * time.Hour
+		_, _, exp, err := GenerateRefreshTokenWithTTL(ttl)
+		if err != nil {
+			t.Fatalf("GenerateRefreshTokenWithTTL() error = %v", err)
+		}
+		got := exp.Sub(time.Now().UTC())
+		if got < ttl-time.Minute || got > ttl+time.Minute {
+			t.Fatalf("expiration drift = %v, want around %v", got, ttl)
 		}
 	})
 

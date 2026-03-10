@@ -96,9 +96,17 @@ func (s *jwtService) ValidateAccessToken(tokenStr string) (*Claims, error) {
 	return claims, nil
 }
 
-// GenerateRefreshToken gera um refresh token randômico + hash SHA-256.
+// GenerateRefreshToken gera um refresh token randômico usando o TTL default legado.
 func GenerateRefreshToken() (plain string, hash string, exp time.Time, err error) {
-	exp = time.Now().UTC().Add(30 * 24 * time.Hour) // Codex: pode usar cfg.RefreshTokenTTL
+	return GenerateRefreshTokenWithTTL(30 * 24 * time.Hour)
+}
+
+// GenerateRefreshTokenWithTTL gera um refresh token randômico + hash SHA-256 com TTL configurável.
+func GenerateRefreshTokenWithTTL(ttl time.Duration) (plain string, hash string, exp time.Time, err error) {
+	if ttl <= 0 {
+		ttl = 30 * 24 * time.Hour
+	}
+	exp = time.Now().UTC().Add(ttl)
 	b := make([]byte, 64)
 
 	if _, err = rand.Read(b); err != nil {
