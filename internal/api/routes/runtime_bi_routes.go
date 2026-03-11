@@ -120,13 +120,27 @@ func (ctl *runtimeBIController) generateBoard(c *gin.Context) {
 	generationMode := "llm"
 	fallbackReason := ""
 	if parseErr != nil {
-		generationMode = "fallback_template"
-		fallbackReason = parseErr.Error()
-		plan = bi.FallbackSalesOverviewPlan(req.Prompt, grounding, fallbackReason)
+		recovered, recoverErr := bi.RecoverBoardPlan(content, req.Prompt, req.Domain, grounding)
+		if recoverErr == nil {
+			generationMode = "llm_recovered"
+			fallbackReason = parseErr.Error()
+			plan = recovered
+		} else {
+			generationMode = "fallback_template"
+			fallbackReason = parseErr.Error()
+			plan = bi.FallbackSalesOverviewPlan(req.Prompt, grounding, fallbackReason)
+		}
 	} else if validateErr := bi.ValidateBoardPlan(plan, grounding); validateErr != nil {
-		generationMode = "fallback_template"
-		fallbackReason = validateErr.Error()
-		plan = bi.FallbackSalesOverviewPlan(req.Prompt, grounding, fallbackReason)
+		recovered, recoverErr := bi.RecoverBoardPlan(content, req.Prompt, req.Domain, grounding)
+		if recoverErr == nil {
+			generationMode = "llm_recovered"
+			fallbackReason = validateErr.Error()
+			plan = recovered
+		} else {
+			generationMode = "fallback_template"
+			fallbackReason = validateErr.Error()
+			plan = bi.FallbackSalesOverviewPlan(req.Prompt, grounding, fallbackReason)
+		}
 	}
 	compiled, err := bi.CompileDashboardSchema(plan)
 	if err != nil {

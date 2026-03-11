@@ -35,6 +35,11 @@ Rules:
 10. SQL must be read-only, single-statement, and compatible with the target ERP SQL execution context.
 11. If the request is under-specified, still produce the safest possible board plan using the strongest metadata evidence.
 12. If a requested metric cannot be grounded safely, do not fake it. Emit a warning and choose a safer alternative if possible.
+13. The required top-level fields are: board_title, board_description, business_goal, domain, time_reference, filters, joins, widgets, assumptions, warnings, grounding.
+14. Every widget must contain: id, type, title, subtitle, metric_goal, size, data_source, display, grounding.
+15. data_source must contain: main_table, sql, expected_granularity.
+16. Never return a simplified legacy query object like {"query": {...}} instead of data_source.
+17. If you are unsure about some optional field, keep it simple, but never omit required fields.
 
 Return JSON only.`
 
@@ -51,13 +56,83 @@ func BuildPlanningPrompt(userRequest string, maxWidgets int, grounding *Groundin
 		"target_domain":        grounding.Domain,
 		"max_widgets":          maxWidgets,
 		"allowed_widget_types": []WidgetType{WidgetTypeKPI, WidgetTypeChartBar, WidgetTypeChartDonut, WidgetTypeDataTable},
-		"grounding_context":    grounding,
+		"required_contract":    boardPlanTemplate(),
+		"legacy_shapes_not_allowed": []string{
+			"widgets[].query",
+			"widgets[].description without widgets[].data_source",
+		},
+		"grounding_context": grounding,
 	}
 	data, err := json.Marshal(payload)
 	if err != nil {
 		return "", err
 	}
 	return string(data), nil
+}
+
+func boardPlanTemplate() map[string]any {
+	return map[string]any{
+		"board_title":       "Sales Overview",
+		"board_description": "Compact grounded commercial overview for the selected period.",
+		"business_goal":     "Describe the business goal in one sentence.",
+		"domain":            "sales",
+		"time_reference": map[string]any{
+			"table":  "TGFCAB",
+			"column": "DTNEG",
+			"reason": "Primary commercial time axis.",
+		},
+		"filters": []map[string]any{{
+			"key":          "period",
+			"label":        "Negotiation Period",
+			"table":        "TGFCAB",
+			"column":       "DTNEG",
+			"filter_group": "periodo_data",
+			"required":     true,
+		}},
+		"joins": []map[string]any{{
+			"left_table":   "TGFCAB",
+			"left_column":  "CODPARC",
+			"right_table":  "TGFPAR",
+			"right_column": "CODPARC",
+			"join_type":    "INNER",
+			"basis":        "physical_fk",
+		}},
+		"widgets": []map[string]any{{
+			"id":          "kpi-total-sales",
+			"type":        "kpi",
+			"title":       "Total Sales",
+			"subtitle":    "Selected period",
+			"metric_goal": "Sum invoice value for sales movements",
+			"size": map[string]any{
+				"cols": 3,
+				"rows": 1,
+			},
+			"data_source": map[string]any{
+				"main_table":           "TGFCAB",
+				"sql":                  "SELECT COALESCE(SUM(VLRNOTA), 0) AS value FROM TGFCAB WHERE DTNEG BETWEEN :P_PERIODO.INI AND :P_PERIODO.FIN AND CODEMP IN :P_CODEMP AND TIPMOV = '4'",
+				"expected_granularity": "single_row_metric",
+			},
+			"display": map[string]any{
+				"color": "green",
+				"unit":  "R$",
+			},
+			"grounding": map[string]any{
+				"tables_used":       []string{"TGFCAB"},
+				"fields_used":       []string{"VLRNOTA", "DTNEG", "CODEMP", "TIPMOV"},
+				"filter_columns":    []string{"DTNEG", "CODEMP"},
+				"reasoning_summary": "Grounded on TGFCAB commercial totals.",
+			},
+		}},
+		"assumptions": []string{"Use the safest grounded slice when the request is under-specified."},
+		"warnings":    []string{},
+		"grounding": []map[string]any{{
+			"table":           "TGFCAB",
+			"source":          "sankhya_catalog",
+			"description":     "Commercial header table",
+			"row_count":       0,
+			"relevant_fields": []string{"DTNEG", "CODEMP", "CODPARC", "VLRNOTA", "TIPMOV"},
+		}},
+	}
 }
 
 func ParseBoardPlan(raw string) (*BoardPlan, error) {
@@ -67,6 +142,150 @@ func ParseBoardPlan(raw string) (*BoardPlan, error) {
 		return nil, fmt.Errorf("failed to parse board plan JSON: %w", err)
 	}
 	return &plan, nil
+}
+
+type legacyBoardDraft struct {
+	BoardTitle       string              `json:"board_title"`
+	BoardDescription string              `json:"board_description"`
+	BusinessGoal     string              `json:"business_goal"`
+	Domain           string              `json:"domain"`
+	Widgets          []legacyBoardWidget `json:"widgets"`
+	Filters          []legacyBoardFilter `json:"filters"`
+}
+
+type legacyBoardWidget struct {
+	Type        WidgetType          `json:"type"`
+	Title       string              `json:"title"`
+	Description string              `json:"description"`
+	Query       legacyBoardQuery    `json:"query"`
+	Filters     []legacyBoardFilter `json:"filters"`
+}
+
+type legacyBoardQuery struct {
+	Table       string              `json:"table"`
+	Columns     []string            `json:"columns"`
+	Aggregation string              `json:"aggregation"`
+	GroupBy     []string            `json:"group_by"`
+	OrderBy     []string            `json:"order_by"`
+	Limit       int                 `json:"limit"`
+	Joins       []GroundingJoin     `json:"joins"`
+	Filters     []legacyBoardFilter `json:"filters"`
+}
+
+type legacyBoardFilter struct {
+	Table       string `json:"table"`
+	Column      string `json:"column"`
+	Label       string `json:"label"`
+	FilterGroup string `json:"filter_group"`
+}
+
+func RecoverBoardPlan(raw, userRequest, domain string, grounding *GroundingContext) (*BoardPlan, error) {
+	cleaned := sanitizeJSON(raw)
+	var draft legacyBoardDraft
+	if err := json.Unmarshal([]byte(cleaned), &draft); err != nil {
+		return nil, fmt.Errorf("failed to parse legacy board draft JSON: %w", err)
+	}
+	if len(draft.Widgets) == 0 {
+		return nil, fmt.Errorf("legacy board draft has no widgets")
+	}
+	if strings.TrimSpace(domain) == "" {
+		domain = strings.TrimSpace(draft.Domain)
+	}
+	if strings.TrimSpace(domain) == "" {
+		domain = "sales"
+	}
+	if domain != "sales" {
+		return nil, fmt.Errorf("legacy recovery currently supports only sales")
+	}
+
+	base := FallbackSalesOverviewPlan(userRequest, grounding, "recovered from legacy provider draft")
+	canonical := map[string]BoardPlanWidget{}
+	for _, widget := range base.Widgets {
+		canonical[widget.ID] = widget
+	}
+
+	recovered := make([]BoardPlanWidget, 0, len(draft.Widgets))
+	seen := map[string]struct{}{}
+	for idx, widget := range draft.Widgets {
+		candidate, ok := recoverSalesWidget(widget, idx, canonical)
+		if !ok {
+			base.Warnings = append(base.Warnings, fmt.Sprintf("Widget '%s' could not be recovered from the simplified provider draft and was skipped.", strings.TrimSpace(widget.Title)))
+			continue
+		}
+		if _, exists := seen[candidate.ID]; exists {
+			continue
+		}
+		seen[candidate.ID] = struct{}{}
+		recovered = append(recovered, candidate)
+	}
+	if len(recovered) == 0 {
+		return nil, fmt.Errorf("legacy board draft did not contain any recoverable widgets")
+	}
+
+	base.Widgets = recovered
+	base.Domain = domain
+	if value := strings.TrimSpace(draft.BoardTitle); value != "" {
+		base.BoardTitle = value
+	}
+	if value := strings.TrimSpace(draft.BoardDescription); value != "" {
+		base.BoardDescription = value
+	}
+	if value := strings.TrimSpace(draft.BusinessGoal); value != "" {
+		base.BusinessGoal = value
+	}
+	base.Assumptions = append(base.Assumptions,
+		"The provider returned a simplified draft using widgets[].query; the backend normalized it into the canonical board-plan contract.",
+	)
+	base.Grounding = buildGroundingRefs(grounding)
+	return base, nil
+}
+
+func recoverSalesWidget(widget legacyBoardWidget, index int, canonical map[string]BoardPlanWidget) (BoardPlanWidget, bool) {
+	title := strings.ToLower(strings.TrimSpace(widget.Title))
+	agg := strings.ToUpper(strings.TrimSpace(widget.Query.Aggregation))
+	hasColumn := func(target string) bool {
+		for _, column := range widget.Query.Columns {
+			if strings.EqualFold(strings.TrimSpace(column), target) {
+				return true
+			}
+		}
+		return false
+	}
+	hasJoinTable := func(target string) bool {
+		for _, join := range widget.Query.Joins {
+			if strings.EqualFold(join.LeftTable, target) || strings.EqualFold(join.RightTable, target) {
+				return true
+			}
+		}
+		return false
+	}
+	clone := func(id string) (BoardPlanWidget, bool) {
+		item, ok := canonical[id]
+		if !ok {
+			return BoardPlanWidget{}, false
+		}
+		if value := strings.TrimSpace(widget.Title); value != "" {
+			item.Title = value
+		}
+		if value := strings.TrimSpace(widget.Description); value != "" {
+			item.MetricGoal = value
+		}
+		return item, true
+	}
+
+	switch {
+	case widget.Type == WidgetTypeKPI && agg == "SUM" && hasColumn("VLRNOTA"):
+		return clone("kpi-total-sales")
+	case widget.Type == WidgetTypeKPI && (agg == "COUNT" || hasColumn("NUNOTA")):
+		return clone("kpi-order-count")
+	case widget.Type == WidgetTypeChartBar && hasColumn("DTNEG") && hasColumn("VLRNOTA"):
+		return clone("chart-sales-by-month")
+	case widget.Type == WidgetTypeDataTable && (hasColumn("CODPARC") || hasJoinTable("TGFPAR") || strings.Contains(title, "customer")):
+		return clone("table-top-customers")
+	default:
+		_ = index
+		return BoardPlanWidget{}, false
+	}
 }
 
 func FallbackSalesOverviewPlan(userRequest string, grounding *GroundingContext, fallbackReason string) *BoardPlan {
