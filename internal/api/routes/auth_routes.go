@@ -46,16 +46,55 @@ type authHTTP struct {
 	authCfg  *config.Config
 }
 
+type accessMemberPayload struct {
+	ID          string    `json:"id"`
+	Email       string    `json:"email"`
+	Name        string    `json:"name"`
+	LastName    string    `json:"last_name,omitempty"`
+	Status      string    `json:"status"`
+	TenantID    string    `json:"tenant_id"`
+	RoleID      string    `json:"role_id"`
+	RoleCode    string    `json:"role_code,omitempty"`
+	RoleName    string    `json:"role_name,omitempty"`
+	IsActive    bool      `json:"is_active"`
+	CreatedAt   time.Time `json:"created_at"`
+	Permissions []string  `json:"permissions"`
+}
+
+type accessRolePayload struct {
+	ID              string `json:"id"`
+	Code            string `json:"code"`
+	DisplayName     string `json:"display_name"`
+	Description     string `json:"description,omitempty"`
+	IsSystemRole    bool   `json:"is_system_role"`
+	PermissionCount int    `json:"permission_count"`
+}
+
+type accessMembersResponse struct {
+	TenantID           string                `json:"tenant_id"`
+	CurrentUserID      string                `json:"current_user_id"`
+	CurrentRoleCode    string                `json:"current_role_code,omitempty"`
+	CurrentPermissions []string              `json:"current_permissions"`
+	Members            []accessMemberPayload `json:"members"`
+	Roles              []accessRolePayload   `json:"roles"`
+}
+
+type accessMemberMutationResponse struct {
+	Message string              `json:"message"`
+	Member  accessMemberPayload `json:"member"`
+}
+
 type accessScopePayload struct {
-	HasAccess        bool                  `json:"has_access"`
-	HasPendingAccess bool                  `json:"has_pending_access"`
-	ActiveTenantID   string                `json:"active_tenant_id,omitempty"`
-	ActiveTenantName string                `json:"active_tenant_name,omitempty"`
-	ActiveTenantSlug string                `json:"active_tenant_slug,omitempty"`
-	ActiveRoleCode   string                `json:"active_role_code,omitempty"`
-	ActiveRoleName   string                `json:"active_role_name,omitempty"`
-	TeamMemberships  int                   `json:"team_memberships"`
-	PendingAccess    *pendingAccessPayload `json:"pending_access,omitempty"`
+	HasAccess            bool                  `json:"has_access"`
+	HasPendingAccess     bool                  `json:"has_pending_access"`
+	ActiveTenantID       string                `json:"active_tenant_id,omitempty"`
+	ActiveTenantName     string                `json:"active_tenant_name,omitempty"`
+	ActiveTenantSlug     string                `json:"active_tenant_slug,omitempty"`
+	ActiveRoleCode       string                `json:"active_role_code,omitempty"`
+	ActiveRoleName       string                `json:"active_role_name,omitempty"`
+	EffectivePermissions []string              `json:"effective_permissions,omitempty"`
+	TeamMemberships      int                   `json:"team_memberships"`
+	PendingAccess        *pendingAccessPayload `json:"pending_access,omitempty"`
 }
 
 type pendingAccessPayload struct {
@@ -123,14 +162,16 @@ func RegisterAuthHTTP(r *gin.RouterGroup, container types.IContainer) (gin.IRout
 	// a := controllers.NewAuthController(authSvc, userRepo)
 
 	routesMap := map[string]gin.HandlerFunc{
-		"POST /auth/sign-up":     h.signUp,
-		"POST /auth/sign-in":     h.signIn,
-		"POST /auth/refresh":     h.refresh,
-		"POST /sign-out":         h.signOut,
-		"GET /me":                h.me,
-		"GET /auth/me":           h.me,
-		"GET /auth/google/start": h.googleStart,
-		"GET /auth/v1/callback":  h.handleGoogleCallback,
+		"POST /auth/sign-up":                  h.signUp,
+		"POST /auth/sign-in":                  h.signIn,
+		"POST /auth/refresh":                  h.refresh,
+		"POST /sign-out":                      h.signOut,
+		"GET /me":                             h.me,
+		"GET /auth/me":                        h.me,
+		"GET /access/members":                 h.accessMembers,
+		"PATCH /access/members/:user_id/role": h.updateMemberRole,
+		"GET /auth/google/start":              h.googleStart,
+		"GET /auth/v1/callback":               h.handleGoogleCallback,
 		// "GET /auth/google/oauth2/callback": h.googleCallback,
 	}
 	// Register routes
@@ -365,7 +406,7 @@ func (h *authHTTP) me(c *gin.Context) {
 		return
 	}
 
-	memberships, _ := h.userRepo.ListMemberships(c.Request.Context(), user.ID)
+	memberships, _, _ := h.loadMembershipsWithPermissions(c.Request.Context(), user.ID)
 	teamMemberships, _ := h.userRepo.ListTeamMemberships(c.Request.Context(), user.ID)
 	scope := h.resolveAccessScope(c.Request.Context(), user, memberships, teamMemberships)
 
@@ -386,6 +427,151 @@ func (h *authHTTP) me(c *gin.Context) {
 	})
 }
 
+func (h *authHTTP) accessMembers(c *gin.Context) {
+	claims, err := h.validateAuthHeader(c.Request)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	userID, err := uuid.Parse(claims.Sub)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	memberships, currentMembership, err := h.loadMembershipsWithPermissions(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	tenantID := strings.TrimSpace(c.Query("tenant_id"))
+	if tenantID == "" && currentMembership != nil {
+		tenantID = currentMembership.TenantID.String()
+	}
+	if tenantID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing tenant scope"})
+		return
+	}
+
+	requestedMembership := pickMembershipByTenantID(memberships, tenantID)
+	if requestedMembership == nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "tenant scope not allowed"})
+		return
+	}
+	if !hasPermission(requestedMembership.Permissions, "user.read") {
+		c.JSON(http.StatusForbidden, gin.H{"error": "insufficient permissions"})
+		return
+	}
+
+	members, err := loadTenantMembers(c.Request.Context(), tenantID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to load tenant members"})
+		return
+	}
+
+	roles, err := loadAccessRoles(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to load roles"})
+		return
+	}
+
+	writeJSON(c.Writer, http.StatusOK, accessMembersResponse{
+		TenantID:           tenantID,
+		CurrentUserID:      userID.String(),
+		CurrentRoleCode:    requestedMembership.RoleCode,
+		CurrentPermissions: requestedMembership.Permissions,
+		Members:            members,
+		Roles:              roles,
+	})
+}
+
+func (h *authHTTP) updateMemberRole(c *gin.Context) {
+	claims, err := h.validateAuthHeader(c.Request)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	actorUserID, err := uuid.Parse(claims.Sub)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	targetUserID := strings.TrimSpace(c.Param("user_id"))
+	if targetUserID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing target user"})
+		return
+	}
+
+	var req struct {
+		TenantID string `json:"tenant_id"`
+		RoleCode string `json:"role_code"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload"})
+		return
+	}
+
+	req.TenantID = strings.TrimSpace(req.TenantID)
+	req.RoleCode = strings.TrimSpace(req.RoleCode)
+	if req.TenantID == "" || req.RoleCode == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "tenant_id and role_code are required"})
+		return
+	}
+	if actorUserID.String() == targetUserID {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "self role changes are not allowed in this slice"})
+		return
+	}
+
+	memberships, _, err := h.loadMembershipsWithPermissions(c.Request.Context(), actorUserID)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	requestedMembership := pickMembershipByTenantID(memberships, req.TenantID)
+	if requestedMembership == nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "tenant scope not allowed"})
+		return
+	}
+	if !hasPermission(requestedMembership.Permissions, "role.manage") {
+		c.JSON(http.StatusForbidden, gin.H{"error": "insufficient permissions"})
+		return
+	}
+
+	if err := updateTenantMemberRole(c.Request.Context(), targetUserID, req.TenantID, req.RoleCode); err != nil {
+		switch {
+		case strings.Contains(err.Error(), "role not found"):
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		case strings.Contains(err.Error(), "membership not found"):
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update tenant member role"})
+		}
+		return
+	}
+
+	members, err := loadTenantMembers(c.Request.Context(), req.TenantID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "role updated but member reload failed"})
+		return
+	}
+
+	for _, member := range members {
+		if member.ID == targetUserID {
+			writeJSON(c.Writer, http.StatusOK, accessMemberMutationResponse{
+				Message: "member role updated",
+				Member:  member,
+			})
+			return
+		}
+	}
+
+	c.JSON(http.StatusNotFound, gin.H{"error": "updated member not found"})
+}
+
 func (h *authHTTP) resolveAccessScope(
 	ctx context.Context,
 	user *auth.User,
@@ -403,6 +589,7 @@ func (h *authHTTP) resolveAccessScope(
 		scope.ActiveTenantSlug = active.TenantSlug
 		scope.ActiveRoleCode = active.RoleCode
 		scope.ActiveRoleName = active.RoleName
+		scope.EffectivePermissions = active.Permissions
 	}
 
 	if scope.HasAccess || user == nil || strings.TrimSpace(user.Email) == "" {
@@ -429,6 +616,42 @@ func pickActiveMembership(memberships []auth.Membership) *auth.Membership {
 		return nil
 	}
 	return &memberships[0]
+}
+
+func pickMembershipByTenantID(memberships []auth.Membership, tenantID string) *auth.Membership {
+	for i := range memberships {
+		if memberships[i].TenantID.String() == tenantID {
+			return &memberships[i]
+		}
+	}
+	return nil
+}
+
+func (h *authHTTP) loadMembershipsWithPermissions(
+	ctx context.Context,
+	userID uuid.UUID,
+) ([]auth.Membership, *auth.Membership, error) {
+	memberships, err := h.userRepo.ListMemberships(ctx, userID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if permissionMap, err := h.userRepo.ListMembershipPermissions(ctx, userID); err == nil {
+		for i := range memberships {
+			memberships[i].Permissions = permissionMap[memberships[i].TenantID]
+		}
+	}
+
+	return memberships, pickActiveMembership(memberships), nil
+}
+
+func hasPermission(permissions []string, permission string) bool {
+	for _, current := range permissions {
+		if current == "*" || current == permission {
+			return true
+		}
+	}
+	return false
 }
 
 func loadPendingAccessByEmail(ctx context.Context, email string) (*pendingAccessPayload, error) {
@@ -469,6 +692,157 @@ func loadPendingAccessByEmail(ctx context.Context, email string) (*pendingAccess
 		payload.ReviewedAt = item.ReviewedAt.UTC().Format(time.RFC3339)
 	}
 	return payload, nil
+}
+
+func loadTenantMembers(ctx context.Context, tenantID string) ([]accessMemberPayload, error) {
+	conn, err := datastore.Connection(ctx)
+	if err != nil {
+		return nil, err
+	}
+	pgExec, err := dsclient.GetPGExecutor(ctx, conn)
+	if err != nil {
+		return nil, err
+	}
+
+	const q = `
+		SELECT
+			u.id,
+			u.email,
+			COALESCE(u.name, ''),
+			COALESCE(u.last_name, ''),
+			COALESCE(u.status, ''),
+			tm.tenant_id,
+			tm.role_id,
+			COALESCE(r.code, ''),
+			COALESCE(r.display_name, ''),
+			tm.is_active,
+			tm.created_at,
+			COALESCE(
+				array_agg(DISTINCT p.code ORDER BY p.code)
+					FILTER (WHERE rp.value = true AND p.code IS NOT NULL),
+				ARRAY[]::text[]
+			) AS permissions
+		FROM tenant_membership tm
+		JOIN "user" u ON u.id = tm.user_id
+		JOIN role r ON r.id = tm.role_id
+		LEFT JOIN role_permission rp ON rp.role_id = r.id
+		LEFT JOIN permission p ON p.id = rp.permission_id
+		WHERE tm.tenant_id = $1
+		GROUP BY
+			u.id, u.email, u.name, u.last_name, u.status,
+			tm.tenant_id, tm.role_id, r.code, r.display_name, tm.is_active, tm.created_at
+		ORDER BY tm.created_at ASC, u.email ASC`
+
+	rows, err := pgExec.Query(ctx, q, tenantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []accessMemberPayload
+	for rows.Next() {
+		var item accessMemberPayload
+		if err := rows.Scan(
+			&item.ID,
+			&item.Email,
+			&item.Name,
+			&item.LastName,
+			&item.Status,
+			&item.TenantID,
+			&item.RoleID,
+			&item.RoleCode,
+			&item.RoleName,
+			&item.IsActive,
+			&item.CreatedAt,
+			&item.Permissions,
+		); err != nil {
+			return nil, err
+		}
+		result = append(result, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func loadAccessRoles(ctx context.Context) ([]accessRolePayload, error) {
+	conn, err := datastore.Connection(ctx)
+	if err != nil {
+		return nil, err
+	}
+	pgExec, err := dsclient.GetPGExecutor(ctx, conn)
+	if err != nil {
+		return nil, err
+	}
+
+	const q = `
+		SELECT
+			r.id,
+			r.code,
+			r.display_name,
+			COALESCE(r.description, ''),
+			COALESCE(r.is_system_role, false),
+			COUNT(rp.permission_id) FILTER (WHERE rp.value = true) AS permission_count
+		FROM role r
+		LEFT JOIN role_permission rp ON rp.role_id = r.id
+		GROUP BY r.id, r.code, r.display_name, r.description, r.is_system_role
+		ORDER BY r.code ASC`
+
+	rows, err := pgExec.Query(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []accessRolePayload
+	for rows.Next() {
+		var item accessRolePayload
+		if err := rows.Scan(
+			&item.ID,
+			&item.Code,
+			&item.DisplayName,
+			&item.Description,
+			&item.IsSystemRole,
+			&item.PermissionCount,
+		); err != nil {
+			return nil, err
+		}
+		result = append(result, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func updateTenantMemberRole(ctx context.Context, userID, tenantID, roleCode string) error {
+	conn, err := datastore.Connection(ctx)
+	if err != nil {
+		return err
+	}
+	pgExec, err := dsclient.GetPGExecutor(ctx, conn)
+	if err != nil {
+		return err
+	}
+
+	var roleID string
+	if err := pgExec.QueryRow(ctx, `SELECT id FROM role WHERE code = $1`, roleCode).Scan(&roleID); err != nil {
+		return gl.Errorf("role not found: %s", roleCode)
+	}
+
+	tag, err := pgExec.Exec(ctx, `
+		UPDATE tenant_membership
+		SET role_id = $1, updated_at = now()
+		WHERE user_id = $2 AND tenant_id = $3
+	`, roleID, userID, tenantID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return gl.Errorf("membership not found for user %s in tenant %s", userID, tenantID)
+	}
+	return nil
 }
 
 // --- Helpers ----------------------------------------------------------------

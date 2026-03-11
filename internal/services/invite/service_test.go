@@ -60,10 +60,14 @@ func (s *stubUserRepo) FindByID(ctx context.Context, id uuid.UUID) (*auth.User, 
 func (s *stubUserRepo) Create(ctx context.Context, user *auth.User) error {
 	return nil
 }
+
 func (s *stubUserRepo) ListMemberships(ctx context.Context, userID uuid.UUID) ([]auth.Membership, error) {
 	return nil, nil
 }
 func (s *stubUserRepo) ListTeamMemberships(ctx context.Context, userID uuid.UUID) ([]auth.TeamMembership, error) {
+	return nil, nil
+}
+func (s *stubUserRepo) ListMembershipPermissions(ctx context.Context, userID uuid.UUID) (map[uuid.UUID][]string, error) {
 	return nil, nil
 }
 

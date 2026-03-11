@@ -30,14 +30,15 @@ func (u *User) IsActive() bool {
 
 // Membership traz o vínculo do usuário com um tenant e role.
 type Membership struct {
-	TenantID   uuid.UUID `json:"tenant_id"`
-	TenantName string    `json:"tenant_name,omitempty"`
-	TenantSlug string    `json:"tenant_slug,omitempty"`
-	RoleID     uuid.UUID `json:"role_id"`
-	RoleCode   string    `json:"role_code,omitempty"`
-	RoleName   string    `json:"role_name,omitempty"`
-	IsActive   bool      `json:"is_active"`
-	CreatedAt  time.Time `json:"created_at"`
+	TenantID    uuid.UUID `json:"tenant_id"`
+	TenantName  string    `json:"tenant_name,omitempty"`
+	TenantSlug  string    `json:"tenant_slug,omitempty"`
+	RoleID      uuid.UUID `json:"role_id"`
+	RoleCode    string    `json:"role_code,omitempty"`
+	RoleName    string    `json:"role_name,omitempty"`
+	Permissions []string  `json:"permissions,omitempty"`
+	IsActive    bool      `json:"is_active"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 // TeamMembership traz o vínculo do usuário com um team e role.
