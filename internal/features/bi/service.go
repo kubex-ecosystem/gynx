@@ -4,12 +4,41 @@ import (
 	"context"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/kubex-ecosystem/gnyx/internal/dsclient"
 	"github.com/kubex-ecosystem/gnyx/internal/dsclient/datastore"
 )
 
 const DefaultCatalogSchema = "sankhya_catalog"
+
+const (
+	DefaultCatalogSourceSystem = "sankhya"
+	DefaultCatalogDomain       = "bi_catalog"
+)
+
+type CatalogDatasetStatus struct {
+	DatasetName  string     `json:"dataset_name"`
+	TableName    string     `json:"table_name"`
+	Status       string     `json:"status"`
+	RowCount     int64      `json:"row_count"`
+	LastLoadedAt *time.Time `json:"last_loaded_at,omitempty"`
+}
+
+type CatalogStatus struct {
+	SourceSystem       string                 `json:"source_system"`
+	Domain             string                 `json:"domain"`
+	SchemaName         string                 `json:"schema_name"`
+	Available          bool                   `json:"available"`
+	TotalDatasets      int                    `json:"total_datasets"`
+	ReadyDatasets      int                    `json:"ready_datasets"`
+	EmptyDatasets      int                    `json:"empty_datasets"`
+	FailedDatasets     int                    `json:"failed_datasets"`
+	LastLoadedAt       *time.Time             `json:"last_loaded_at,omitempty"`
+	Datasets           []CatalogDatasetStatus `json:"datasets"`
+	SyncCommandExample string                 `json:"sync_command_example"`
+	Message            string                 `json:"message"`
+}
 
 type Service struct {
 	catalogSchema string
@@ -21,6 +50,72 @@ func NewService(catalogSchema string) *Service {
 		catalogSchema = DefaultCatalogSchema
 	}
 	return &Service{catalogSchema: catalogSchema}
+}
+
+func (s *Service) GetCatalogStatus(ctx context.Context) (*CatalogStatus, error) {
+	conn, err := datastore.Connection(ctx)
+	if err != nil {
+		return nil, err
+	}
+	pgExec, err := dsclient.GetPGExecutor(ctx, conn)
+	if err != nil {
+		return nil, err
+	}
+
+	const q = `
+		SELECT dataset_name, table_name, status, COALESCE(row_count, 0), last_loaded_at
+		FROM public.external_metadata_registry
+		WHERE source_system = $1 AND domain = $2 AND schema_name = $3
+		ORDER BY dataset_name
+	`
+	rows, err := pgExec.Query(ctx, q, DefaultCatalogSourceSystem, DefaultCatalogDomain, s.catalogSchema)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	status := &CatalogStatus{
+		SourceSystem:       DefaultCatalogSourceSystem,
+		Domain:             DefaultCatalogDomain,
+		SchemaName:         s.catalogSchema,
+		Datasets:           []CatalogDatasetStatus{},
+		SyncCommandExample: `gnyx metadata sankhya sync --env-file ./config/.env.local --pg-dsn "$DOMUS_PG_DSN"`,
+		Message:            "Sankhya BI metadata catalog is not ready yet.",
+	}
+
+	for rows.Next() {
+		var item CatalogDatasetStatus
+		if err := rows.Scan(&item.DatasetName, &item.TableName, &item.Status, &item.RowCount, &item.LastLoadedAt); err != nil {
+			return nil, err
+		}
+		status.Datasets = append(status.Datasets, item)
+		status.TotalDatasets++
+		switch strings.ToLower(strings.TrimSpace(item.Status)) {
+		case "ready":
+			status.ReadyDatasets++
+		case "empty":
+			status.EmptyDatasets++
+		default:
+			status.FailedDatasets++
+		}
+		if item.LastLoadedAt != nil && (status.LastLoadedAt == nil || item.LastLoadedAt.After(*status.LastLoadedAt)) {
+			loadedAt := *item.LastLoadedAt
+			status.LastLoadedAt = &loadedAt
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	status.Available = status.ReadyDatasets > 0
+	if status.Available {
+		status.Message = "Sankhya BI metadata catalog is available for grounded board generation."
+	}
+	if status.TotalDatasets == 0 {
+		status.Message = "No Sankhya BI metadata datasets were registered in Domus yet."
+	}
+
+	return status, nil
 }
 
 func (s *Service) BuildSalesCommercialContext(ctx context.Context) (*GroundingContext, error) {

@@ -1,8 +1,13 @@
 package routes
 
 import (
+	"archive/zip"
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kubex-ecosystem/gnyx/internal/config"
@@ -27,6 +32,19 @@ type boardGenerateRequest struct {
 	MaxWidgets int    `json:"max_widgets"`
 }
 
+type boardExportRequest struct {
+	Prompt          string               `json:"prompt"`
+	Domain          string               `json:"domain"`
+	Provider        string               `json:"provider"`
+	Model           string               `json:"model"`
+	GenerationMode  string               `json:"generation_mode"`
+	FallbackReason  string               `json:"fallback_reason"`
+	Usage           map[string]any       `json:"usage"`
+	Grounding       *bi.GroundingContext `json:"grounding_context"`
+	Plan            *bi.BoardPlan        `json:"plan"`
+	DashboardSchema *bi.DashboardSchema  `json:"dashboard_schema"`
+}
+
 func registerRuntimeBIRoutes(
 	r *gin.RouterGroup,
 	container types.IContainer,
@@ -41,6 +59,17 @@ func registerRuntimeBIRoutes(
 	}
 
 	r.POST("/bi/boards/generate", ctl.generateBoard)
+	r.GET("/bi/catalog/status", ctl.catalogStatus)
+	r.POST("/bi/boards/export", ctl.exportBoardBundle)
+}
+
+func (ctl *runtimeBIController) catalogStatus(c *gin.Context) {
+	status, err := ctl.grounding.GetCatalogStatus(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to load catalog status", "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, status)
 }
 
 func (ctl *runtimeBIController) generateBoard(c *gin.Context) {
@@ -161,6 +190,136 @@ func (ctl *runtimeBIController) generateBoard(c *gin.Context) {
 		"dashboard_schema":  compiled,
 		"raw_provider_json": content,
 	})
+}
+
+func (ctl *runtimeBIController) exportBoardBundle(c *gin.Context) {
+	var req boardExportRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload", "message": err.Error()})
+		return
+	}
+	if req.Plan == nil || req.DashboardSchema == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "plan and dashboard_schema are required"})
+		return
+	}
+
+	filename := buildBoardBundleFilename(req.Plan.BoardTitle)
+	archiveData, err := buildBoardBundleArchive(req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to build board bundle", "message": err.Error()})
+		return
+	}
+
+	c.Header("Content-Type", "application/zip")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
+	c.Data(http.StatusOK, "application/zip", archiveData)
+}
+
+func buildBoardBundleFilename(title string) string {
+	base := strings.TrimSpace(title)
+	if base == "" {
+		base = "generated-board"
+	}
+	return fmt.Sprintf("%s-%s.zip", slugifyBundleName(base), time.Now().UTC().Format("20060102150405"))
+}
+
+func slugifyBundleName(value string) string {
+	value = strings.ToLower(strings.TrimSpace(value))
+	replacer := strings.NewReplacer(" ", "-", "_", "-", "/", "-", "\\", "-", ":", "-", ".", "-")
+	value = replacer.Replace(value)
+	value = strings.Trim(value, "-")
+	if value == "" {
+		return "generated-board"
+	}
+	return value
+}
+
+func buildBoardBundleArchive(req boardExportRequest) ([]byte, error) {
+	var buffer bytes.Buffer
+	zw := zip.NewWriter(&buffer)
+
+	metadata := map[string]any{
+		"prompt":          req.Prompt,
+		"domain":          req.Domain,
+		"provider":        req.Provider,
+		"model":           req.Model,
+		"generation_mode": req.GenerationMode,
+		"fallback_reason": req.FallbackReason,
+		"usage":           req.Usage,
+		"exported_at":     time.Now().UTC().Format(time.RFC3339),
+	}
+
+	if err := writeZipJSON(zw, "dashboard-schema.json", req.DashboardSchema); err != nil {
+		return nil, err
+	}
+	if err := writeZipJSON(zw, "board-plan.json", req.Plan); err != nil {
+		return nil, err
+	}
+	if req.Grounding != nil {
+		if err := writeZipJSON(zw, "grounding-context.json", req.Grounding); err != nil {
+			return nil, err
+		}
+	}
+	if err := writeZipJSON(zw, "generation-metadata.json", metadata); err != nil {
+		return nil, err
+	}
+	if err := writeZipText(zw, "README.md", buildBoardBundleREADME(req)); err != nil {
+		return nil, err
+	}
+
+	if err := zw.Close(); err != nil {
+		return nil, err
+	}
+	return buffer.Bytes(), nil
+}
+
+func writeZipJSON(zw *zip.Writer, name string, payload any) error {
+	data, err := json.MarshalIndent(payload, "", "  ")
+	if err != nil {
+		return err
+	}
+	return writeZipText(zw, name, string(data)+"\n")
+}
+
+func writeZipText(zw *zip.Writer, name string, content string) error {
+	w, err := zw.Create(name)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write([]byte(content))
+	return err
+}
+
+func buildBoardBundleREADME(req boardExportRequest) string {
+	title := "Generated BI Board Bundle"
+	if req.Plan != nil && strings.TrimSpace(req.Plan.BoardTitle) != "" {
+		title = req.Plan.BoardTitle
+	}
+	return strings.Join([]string{
+		"# " + title,
+		"",
+		"This archive was exported by GNyx UI as a portable BI board proof-of-concept bundle.",
+		"",
+		"## Contents",
+		"- `dashboard-schema.json`: final SKW Dynamic UI-compatible renderer contract",
+		"- `board-plan.json`: intermediate grounded board plan",
+		"- `grounding-context.json`: metadata context used for grounding",
+		"- `generation-metadata.json`: provider/model/runtime generation details",
+		"",
+		"## Generation Summary",
+		"- Domain: " + strings.TrimSpace(req.Domain),
+		"- Provider: " + strings.TrimSpace(req.Provider),
+		"- Model: " + strings.TrimSpace(req.Model),
+		"- Generation mode: " + strings.TrimSpace(req.GenerationMode),
+		"- Fallback reason: " + strings.TrimSpace(req.FallbackReason),
+		"",
+		"## Prompt",
+		strings.TrimSpace(req.Prompt),
+		"",
+		"## Notes",
+		"- This bundle is intended for demonstration and proof-of-concept flows.",
+		"- It does not require a live Sankhya runtime to be inspected or shared.",
+	}, "\n") + "\n"
 }
 
 func firstProvider(items []string) string {
