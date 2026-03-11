@@ -3,6 +3,7 @@
 !grompt/
 .venv/
 .notes/
+.kubex/
 bkp
 
 # Build outputs
