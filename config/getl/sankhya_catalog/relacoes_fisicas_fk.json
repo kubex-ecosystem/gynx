@@ -1,0 +1,9 @@
+{
+  "sourceType": "csv",
+  "sourceConnectionString": "${KUBEX_SANKHYA_CATALOG_SOURCE_DIR}/relacoes_fisicas_fk.csv",
+  "destinationType": "postgres",
+  "destinationConnectionString": "${KUBEX_SANKHYA_CATALOG_DSN}",
+  "destinationTable": "sankhya_catalog.relacoes_fisicas_fk",
+  "needCheck": false,
+  "checkMethod": ""
+}

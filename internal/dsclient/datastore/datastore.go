@@ -146,6 +146,19 @@ func CompanyStore(ctx context.Context) (ds.CompanyStore, error) {
 	return store, nil
 }
 
+// ExternalMetadataStore retorna o store de registry de metadados externos do DS.
+func ExternalMetadataStore(ctx context.Context) (ds.ExternalMetadataStore, error) {
+	conn, err := Connection(ctx)
+	if err != nil {
+		return nil, gl.Errorf("failed to get external metadata store: %v", err)
+	}
+	store, err := ds.NewExternalMetadataStore(ctx, conn)
+	if err != nil {
+		return nil, gl.Errorf("failed to get external metadata store: %v", err)
+	}
+	return store, nil
+}
+
 // GetPGExecutor retorna o executor PG associado à conexão padrão.
 func GetPGExecutor(ctx context.Context, conn *ds.BackendConnection) (PGExecutor, error) {
 	return ds.GetPGExecutor(ctx, conn)

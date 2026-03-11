@@ -1,0 +1,9 @@
+{
+  "sourceType": "csv",
+  "sourceConnectionString": "${KUBEX_SANKHYA_CATALOG_SOURCE_DIR}/volumetria_tabelas.csv",
+  "destinationType": "postgres",
+  "destinationConnectionString": "${KUBEX_SANKHYA_CATALOG_DSN}",
+  "destinationTable": "sankhya_catalog.volumetria_tabelas",
+  "needCheck": false,
+  "checkMethod": ""
+}

@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "source_system": "sankhya",
+  "domain": "bi_catalog",
+  "schema": "sankhya_catalog",
+  "source_manifest": "${KUBEX_SANKHYA_CATALOG_SOURCE_DIR}/_manifest.json",
+  "datasets": [
+    {"name": "ad_tabelas", "config": "ad_tabelas.json"},
+    {"name": "campos_filtro_candidatos", "config": "campos_filtro_candidatos.json"},
+    {"name": "colunas_data", "config": "colunas_data.json"},
+    {"name": "dominios_filtro_opcoes", "config": "dominios_filtro_opcoes.json"},
+    {"name": "i18n_labels", "config": "i18n_labels.json"},
+    {"name": "max_data_por_tabela", "config": "max_data_por_tabela.json"},
+    {"name": "relacoes_fisicas_fk", "config": "relacoes_fisicas_fk.json"},
+    {"name": "tdd_campos", "config": "tdd_campos.json"},
+    {"name": "tdd_instancias", "config": "tdd_instancias.json"},
+    {"name": "tdd_ligacoes", "config": "tdd_ligacoes.json"},
+    {"name": "tdd_opcoes", "config": "tdd_opcoes.json"},
+    {"name": "tdd_tabelas", "config": "tdd_tabelas.json"},
+    {"name": "volumetria_tabelas", "config": "volumetria_tabelas.json"}
+  ]
+}
