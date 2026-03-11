@@ -191,6 +191,8 @@ func RegisterAuthHTTP(r *gin.RouterGroup, container types.IContainer) (gin.IRout
 			r.PUT(path, handler)
 		case "DELETE":
 			r.DELETE(path, handler)
+		case "PATCH":
+			r.PATCH(path, handler)
 		default:
 			return nil, gl.Errorf("unsupported HTTP method: %s", method)
 		}
