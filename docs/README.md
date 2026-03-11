@@ -1,3 +1,0 @@
-# 📚 Documentation Site - GNyx
-
-
