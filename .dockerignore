@@ -30,6 +30,7 @@ Thumbs.db
 
 # Build artifacts
 dist/
+frontend/
 frontend/dist/
 frontend/node_modules/
 *.log
