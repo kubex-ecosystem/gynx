@@ -33,14 +33,14 @@ type Server struct {
 	container  *Container                        `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 	httpWire   *wire.HTTPWire                    `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 	engine     *gin.Engine                       `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
-	config     *config.Config                    `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+	config     *config.MainConfig                `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 
 	// handler    http.Handler                      `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 }
 
 // NewServer creates a new application server instance.
 // This is the main entry point for starting the Kubex BE application.
-func NewServer(cfg *config.Config) (*Server, error) {
+func NewServer(cfg *config.MainConfig) (*Server, error) {
 	gl.Info("Initializing Kubex BE Server...")
 
 	// Create and bootstrap container
@@ -200,8 +200,8 @@ func (s *Server) Shutdown() error {
 func setupJWTCertificates(container *Container) error {
 	cfg := container.GetConfig().ServerConfig.Runtime
 
-	cfg.PubCertKeyPath = os.ExpandEnv(kbxGet.ValOrType(cfg.PubCertKeyPath, kbx.GetEnvOrDefault("KUBEX_GNYX_PUBLIC_KEY_PATH", kbx.DefaultGNyxCertPath)))
-	cfg.PrivKeyPath = os.ExpandEnv(kbxGet.ValOrType(cfg.PrivKeyPath, kbx.GetEnvOrDefault("KUBEX_GNYX_PRIVATE_KEY_PATH", kbx.DefaultGNyxKeyPath)))
+	cfg.PubCertKeyPath = os.ExpandEnv(kbxGet.ValOrType(cfg.PubCertKeyPath, kbx.GetEnvOrDefault("KUBEX_GNYX_PUBLIC_KEY_PATH", kbx.DefaultCertPath)))
+	cfg.PrivKeyPath = os.ExpandEnv(kbxGet.ValOrType(cfg.PrivKeyPath, kbx.GetEnvOrDefault("KUBEX_GNYX_PRIVATE_KEY_PATH", kbx.DefaultKeyPath)))
 
 	return nil
 }

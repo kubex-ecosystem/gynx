@@ -19,7 +19,7 @@ import (
 )
 
 type runtimeBIController struct {
-	cfg       *config.Config
+	cfg       *config.MainConfig
 	ai        *runtimeAIController
 	grounding *bi.Service
 }
@@ -51,7 +51,7 @@ func registerRuntimeBIRoutes(
 	reg *registry.Registry,
 	prod *runtimeMW.ProductionMiddleware,
 ) {
-	cfg, _ := container.Config().(*config.Config)
+	cfg, _ := container.Config().(*config.MainConfig)
 	ctl := &runtimeBIController{
 		cfg:       cfg,
 		ai:        &runtimeAIController{cfg: cfg, reg: reg, prod: prod},

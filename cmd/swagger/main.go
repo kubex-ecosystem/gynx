@@ -43,23 +43,25 @@ func SwaggerMain(dbService services.Service[any], _ error) {
 	gl.Log("info", "Initializing Swagger...")
 
 	serverConfig := &config.ServerConfig{
-		SrvConfig: kbx.SrvConfig{
-			Runtime: kbxTypes.SrvRuntimeParams{
-				Host: "localhost",
-				Port: "8080",
-				Bind: net.JoinHostPort("localhost", "8080"),
-			},
-			Files: kbxTypes.SrvFilesParams{
-				EnvFile:         os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_ENV_FILE", "./.env")),
-				DBConfigFile:    os.ExpandEnv(kbxGet.EnvOr("KUBEX_DOMUS_CONFIG_FILE", "./config/db_config.yaml")),
-				ProvidersConfig: os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PROVIDERS_CONFIG_PATH", kbxMod.DefaultProvidersConfig)),
-			},
-			Basic: kbxTypes.SrvBasicParams{
-				Debug:          kbxGet.EnvOrType("KUBEX_GNYX_DEBUG_MODE", false),
-				ReleaseMode:    kbxGet.EnvOrType("KUBEX_GNYX_RELEASE_MODE", false),
-				IsConfidential: kbxGet.EnvOrType("KUBEX_GNYX_CONFIDENTIAL_MODE", false),
-				CORSEnabled:    kbxGet.EnvOrType("KUBEX_GNYX_ENABLE_CORS", true),
-				UIDisabled:     kbxGet.EnvOrType("KUBEX_GNYX_DISABLE_UI", false),
+		InitArgs: &kbxMod.InitArgs{
+			SrvConfig: &kbx.SrvConfig{
+				Runtime: kbxTypes.SrvRuntimeParams{
+					Host: "localhost",
+					Port: "8080",
+					Bind: net.JoinHostPort("localhost", "8080"),
+				},
+				Files: kbxTypes.SrvFilesParams{
+					EnvFile:         os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_ENV_FILE", "./.env")),
+					DBConfigFile:    os.ExpandEnv(kbxGet.EnvOr("KUBEX_DOMUS_CONFIG_PATH", "./config/db_config.yaml")),
+					ProvidersConfig: os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PROVIDERS_CONFIG_PATH", kbxMod.DefaultProvidersConfigPath)),
+				},
+				Basic: kbxTypes.SrvBasicParams{
+					Debug:          kbxGet.EnvOrType("KUBEX_GNYX_DEBUG_MODE", false),
+					ReleaseMode:    kbxGet.EnvOrType("KUBEX_GNYX_RELEASE_MODE", false),
+					IsConfidential: kbxGet.EnvOrType("KUBEX_GNYX_CONFIDENTIAL_MODE", false),
+					CORSEnabled:    kbxGet.EnvOrType("KUBEX_GNYX_ENABLE_CORS", true),
+					UIDisabled:     kbxGet.EnvOrType("KUBEX_GNYX_DISABLE_UI", false),
+				},
 			},
 		},
 	}

@@ -30,12 +30,13 @@ import (
 type Server struct {
 	*gin.Engine
 
-	cfg        *config.ServerConfig
+	container *app.Container
+
 	registry   *registry.Registry
 	middleware *middlewares.ProductionMiddleware
-	handler    http.Handler
-	once       sync.Once
-	container  *app.Container
+
+	handler http.Handler
+	once    sync.Once
 }
 
 // NewServer creates a new gateway server instance
@@ -60,20 +61,25 @@ func NewServer(cfg *config.ServerConfig) (*Server, error) {
 		}
 	}
 
+	mainConfig := config.LoadConfig()
+	if mainConfig == nil {
+		return nil, gl.Errorf("failed to load main config")
+	}
+
 	// Bootstrap application container
-	container, err := app.NewContainer(context.Background(), config.LoadConfig())
+	container, err := app.NewContainer(context.Background(), mainConfig)
 	if err != nil {
 		return nil, gl.Errorf("failed to bootstrap application container: %v", err)
 	}
 	if container.GetConfig().ServerConfig == nil {
 		sCfg := container.GetConfig()
 		sCfg.ServerConfig = config.NewServerConfig()
-		sCfg.ServerConfig.SrvConfig = kbxTypes.NewSrvConfig()
+		sCfg.ServerConfig.SrvConfig = kbxTypes.NewSrvCfg()
 		container, err = app.NewContainer(context.Background(), sCfg)
 	}
 
-	container.GetConfig().ServerConfig.Runtime.PubCertKeyPath = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_KEY_PATH", kbxMod.DefaultGNyxCertPath))
-	container.GetConfig().ServerConfig.Runtime.PrivKeyPath = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PRIVATE_KEY_PATH", kbxMod.DefaultGNyxKeyPath))
+	container.GetConfig().ServerConfig.Runtime.PubCertKeyPath = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_KEY_PATH", kbxMod.DefaultCertPath))
+	container.GetConfig().ServerConfig.Runtime.PrivKeyPath = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PRIVATE_KEY_PATH", kbxMod.DefaultKeyPath))
 
 	if container.GetConfig().ServerConfig.Runtime.PrivKeyPath == "" || container.GetConfig().ServerConfig.Runtime.PubCertKeyPath == "" {
 		return nil, gl.Errorf("JWT certificate paths are not set in server config")
@@ -87,7 +93,6 @@ func NewServer(cfg *config.ServerConfig) (*Server, error) {
 
 	return &Server{
 		Engine:     engine,
-		cfg:        cfg,
 		registry:   reg,
 		middleware: prodMiddleware,
 		container:  container,

@@ -29,8 +29,9 @@ import (
 
 // Container concentra as dependências necessárias para o gateway HTTP.
 type Container struct {
+	cfg *config.MainConfig `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
+
 	inviteSvc  api.Service                   `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
-	cfg        *config.Config                `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 	templates  *mailer.TemplateLoader        `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 	smtpSender invitesvc.MailSender          `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
 	db         dsclient.DSClient             `json:"-" yaml:"-" xml:"-" toml:"-" mapstructure:"-"`
@@ -46,7 +47,7 @@ type Container struct {
 }
 
 // NewContainer instancia a infraestrutura principal (DB, serviços de domínio, etc).
-func NewContainer(ctx context.Context, cfg *config.Config) (*Container, error) {
+func NewContainer(ctx context.Context, cfg *config.MainConfig) (*Container, error) {
 	db, err := ds.Init(ctx, cfg)
 	if err != nil {
 		return nil, gl.Errorf("failed to init datastore: %v", err)
@@ -124,7 +125,7 @@ func (c *Container) InviteService() any { return c.inviteSvc }
 func (c *Container) Config() any { return c.cfg }
 
 // GetConfig retorna a configuração tipada (para uso interno no pacote app).
-func (c *Container) GetConfig() *config.Config { return c.cfg }
+func (c *Container) GetConfig() *config.MainConfig { return c.cfg }
 
 func (c *Container) Bootstrap(ctx context.Context) error {
 	gl.Debug("Bootstrapping BE...")
@@ -142,8 +143,8 @@ func (c *Container) Bootstrap(ctx context.Context) error {
 		}
 
 		certService := crt.NewCertServiceType(
-			os.ExpandEnv(kbxGet.ValOrType(c.cfg.ServerConfig.Runtime.PrivKeyPath, kbxGet.EnvOr("KUBEX_GNYX_PRIVATE_KEY_PATH", kbxMod.DefaultGNyxKeyPath))),
-			os.ExpandEnv(kbxGet.ValOrType(c.cfg.ServerConfig.Runtime.PubCertKeyPath, kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_KEY_PATH", kbxMod.DefaultGNyxCertPath))),
+			os.ExpandEnv(kbxGet.ValOrType(c.cfg.ServerConfig.Runtime.PrivKeyPath, kbxGet.EnvOr("KUBEX_GNYX_PRIVATE_KEY_PATH", kbxMod.DefaultKeyPath))),
+			os.ExpandEnv(kbxGet.ValOrType(c.cfg.ServerConfig.Runtime.PubCertKeyPath, kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_KEY_PATH", kbxMod.DefaultCertPath))),
 		)
 
 		var rsaPrivKey *rsa.PrivateKey

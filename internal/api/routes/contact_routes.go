@@ -19,7 +19,7 @@ func RegisterContactRoutes(r *gin.RouterGroup, container types.IContainer) (gin.
 		return r, fmt.Errorf("container or config is nil")
 	}
 
-	cfg, ok := container.Config().(*config.Config)
+	cfg, ok := container.Config().(*config.MainConfig)
 	if !ok || cfg == nil {
 		return r, fmt.Errorf("invalid config type")
 	}

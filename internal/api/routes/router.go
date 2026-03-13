@@ -56,7 +56,7 @@ func RegisterRoutesWithProviders(
 			inviteCtl := invite.NewController(svc)
 
 			// Auth middleware para rotas protegidas (create/list)
-			cfg, ok := container.Config().(*config.Config)
+			cfg, ok := container.Config().(*config.MainConfig)
 			if !ok {
 				gl.Warn("missing config for auth middleware; skipping invite protection")
 				return r

@@ -32,8 +32,8 @@ func LoadConfig(initArgs *config.ServerConfig) *config.AuthConfig {
 	accessTokenTTL = kbxGet.ValOrType(initArgs.Runtime.AccessTokenTTL, kbxGet.EnvOrType("KUBEX_AUTH_ACCESS_TTL", 15*time.Minute))
 	refreshTokenTTL = kbxGet.ValOrType(initArgs.Runtime.RefreshTokenTTL, kbxGet.EnvOrType("KUBEX_AUTH_REFRESH_TTL", 30*24*time.Hour))
 
-	accessTokenPrivateKey = os.ExpandEnv(kbxGet.ValOrType(initArgs.Runtime.PrivKeyPath, kbxGet.EnvOr("KUBEX_AUTH_PRIVATE_KEY", kbx.DefaultGNyxKeyPath)))
-	accessTokenPublicKey = os.ExpandEnv(kbxGet.ValOrType(initArgs.Runtime.PubCertKeyPath, kbxGet.EnvOr("KUBEX_AUTH_PUBLIC_KEY", kbx.DefaultGNyxCertPath)))
+	accessTokenPrivateKey = os.ExpandEnv(kbxGet.ValOrType(initArgs.Runtime.PrivKeyPath, kbxGet.EnvOr("KUBEX_AUTH_PRIVATE_KEY", kbx.DefaultKeyPath)))
+	accessTokenPublicKey = os.ExpandEnv(kbxGet.ValOrType(initArgs.Runtime.PubCertKeyPath, kbxGet.EnvOr("KUBEX_AUTH_PUBLIC_KEY", kbx.DefaultCertPath)))
 	issuer = kbxGet.ValOrType(initArgs.Runtime.Issuer, kbxGet.EnvOr("KUBEX_AUTH_ISSUER", "gnyx"))
 
 	googleCfg := kbxLoad.NewVendorAuthConfig(initArgs.ProvidersConfig)

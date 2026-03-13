@@ -22,7 +22,7 @@ func ResolvePath(cfg *config.ServerConfig) string {
 	}
 	candidates = append(candidates,
 		os.Getenv("KUBEX_GNYX_PROVIDERS_CONFIG_PATH"),
-		kbxMod.DefaultProvidersConfig,
+		kbxMod.DefaultProvidersConfigPath,
 	)
 
 	for _, candidate := range candidates {
@@ -33,7 +33,7 @@ func ResolvePath(cfg *config.ServerConfig) string {
 		return os.ExpandEnv(candidate)
 	}
 
-	return os.ExpandEnv(kbxMod.DefaultProvidersConfig)
+	return os.ExpandEnv(kbxMod.DefaultProvidersConfigPath)
 }
 
 // LoadResolved loads the provider registry using the effective runtime config path

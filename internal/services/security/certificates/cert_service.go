@@ -47,12 +47,12 @@ func (c *CertService) GenerateCertificate(certPath, keyPath string, password []b
 	c.ensureCrypto()
 
 	if certPath == "" {
-		certPath = os.ExpandEnv(kbx.DefaultGNyxCertPath)
+		certPath = os.ExpandEnv(kbx.DefaultCertPath)
 	} else {
 		certPath = os.ExpandEnv(certPath)
 	}
 	if keyPath == "" {
-		keyPath = os.ExpandEnv(kbx.DefaultGNyxKeyPath)
+		keyPath = os.ExpandEnv(kbx.DefaultKeyPath)
 	} else {
 		keyPath = os.ExpandEnv(keyPath)
 	}
@@ -297,12 +297,12 @@ func (c *CertService) GetCertAndKeyFromFile() ([]byte, []byte, error) {
 		c = new(CertService)
 	}
 	if c.certPath == "" {
-		c.certPath = os.ExpandEnv(kbx.DefaultGNyxCertPath)
+		c.certPath = os.ExpandEnv(kbx.DefaultCertPath)
 	} else {
 		c.certPath = os.ExpandEnv(c.certPath)
 	}
 	if c.keyPath == "" {
-		c.keyPath = os.ExpandEnv(kbx.DefaultGNyxKeyPath)
+		c.keyPath = os.ExpandEnv(kbx.DefaultKeyPath)
 	} else {
 		c.keyPath = os.ExpandEnv(c.keyPath)
 	}
@@ -350,7 +350,7 @@ func (c *CertService) VerifyCert() error {
 	}
 	certPath := c.certPath
 	if certPath == "" {
-		certPath = os.ExpandEnv(kbx.DefaultGNyxCertPath)
+		certPath = os.ExpandEnv(kbx.DefaultCertPath)
 	}
 	certPath = resolvePathWithFallbacks(certPath, ".crt", ".pem")
 
@@ -392,7 +392,7 @@ func (c *CertService) GetPublicKey() (*rsa.PublicKey, error) {
 	}
 	certPath := c.certPath
 	if certPath == "" {
-		certPath = os.ExpandEnv(kbx.DefaultGNyxCertPath)
+		certPath = os.ExpandEnv(kbx.DefaultCertPath)
 	}
 	certPath = resolvePathWithFallbacks(certPath, ".crt", ".pem")
 
@@ -436,10 +436,10 @@ func (c *CertService) GetPrivateKey() (*rsa.PrivateKey, error) {
 // Returns: A pointer to a CertService instance.
 func newCertService(keyPath, certPath string) *CertService {
 	if keyPath == "" {
-		keyPath = os.ExpandEnv(kbx.DefaultGNyxKeyPath)
+		keyPath = os.ExpandEnv(kbx.DefaultKeyPath)
 	}
 	if certPath == "" {
-		certPath = os.ExpandEnv(kbx.DefaultGNyxCertPath)
+		certPath = os.ExpandEnv(kbx.DefaultCertPath)
 	}
 	crtService := &CertService{
 		keyPath:  os.ExpandEnv(keyPath),

@@ -125,7 +125,7 @@ func syncSankhyaCatalogCommand() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&opts.debug, "debug", "D", false, "Enable debug logging")
-	cmd.Flags().StringVarP(&opts.envFile, "env-file", "e", os.ExpandEnv(kbxMod.DefaultGNyxEnvPath), "Path to the env file used by GNyx runtime")
+	cmd.Flags().StringVarP(&opts.envFile, "env-file", "e", os.ExpandEnv(kbxMod.DefaultEnvPath), "Path to the env file used by GNyx runtime")
 	cmd.Flags().StringVar(&opts.catalogDir, "catalog-dir", defaultSankhyaCatalogDir, "Directory containing Sankhya catalog CSV files")
 	cmd.Flags().StringVar(&opts.configDir, "config-dir", defaultSankhyaConfigDir, "Directory containing GETL config files for Sankhya catalog datasets")
 	cmd.Flags().StringVar(&opts.syncManifestPath, "sync-manifest", defaultSankhyaSyncManifest, "Path to the dataset sync manifest file")

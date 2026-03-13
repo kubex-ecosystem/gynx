@@ -2,14 +2,10 @@
 package config
 
 import (
-	"net"
-	"net/url"
 	"os"
-	"path/filepath"
 	"time"
 
 	"cloud.google.com/go/auth/credentials/idtoken"
-	"github.com/kubex-ecosystem/gnyx/internal/types"
 	"github.com/kubex-ecosystem/kbx"
 
 	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
@@ -17,8 +13,8 @@ import (
 	gl "github.com/kubex-ecosystem/logz"
 )
 
-// Config agrega todas as dependências externas necessárias para inicializar os serviços do backend.
-type Config struct {
+// MainConfig agrega todas as dependências externas necessárias para inicializar os serviços do backend.
+type MainConfig struct {
 	ID           string        `json:"id,omitempty" yaml:"id,omitempty" toml:"id,omitempty" mapstructure:"id,omitempty"`
 	ServerConfig *ServerConfig `json:"server_config,omitempty" yaml:"server_config,omitempty" toml:"server_config,omitempty" mapstructure:"server_config,omitempty"`
 	AuthConfig   *AuthConfig   `json:"auth_config,omitempty" yaml:"auth_config,omitempty" toml:"auth_config,omitempty" mapstructure:"auth_config,omitempty"`
@@ -75,87 +71,57 @@ type DataServiceConfig struct {
 }
 
 // LoadConfig carrega a configuração a partir das variáveis de ambiente.
-func LoadConfig() *Config {
-	ref := types.NewReference("gnyx").GetReference()
+func LoadConfig() *MainConfig {
+	InitArgs := kbxMod.NewArgs("gnyx")
+	kbxMod.InitArgsDefaults()
 
-	scheme := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_GNYX_SCHEME", "http"))
-	host := os.ExpandEnv(kbxMod.GetEnvOrDefault("KUBEX_GNYX_HOST", kbxMod.DefaultServerHost))
-	addr := net.JoinHostPort(host, kbxMod.GetEnvOrDefault("KUBEX_GNYX_PORT", "5000"))
-	url := url.URL{Scheme: scheme, Host: addr}
-	baseURL := kbxGet.ValueOrIf(kbxMod.GetEnvOrDefault("KUBEX_GNYX_ENV", "development") == "production",
-		"https://api.kubex.world",
-		url.String(),
-	)
-
-	defaultTTL := kbxGet.EnvOrType("KUBEX_GNYX_INVITE_EXPIRATION", 7*24*time.Hour)
-	configPath := os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_CONFIG_PATH", kbxMod.DefaultGNyxConfigPath))
-	dataServiceConfig := &DataServiceConfig{
-		ConfigPath: os.ExpandEnv(kbxGet.EnvOr("KUBEX_DOMUS_CONFIG_PATH", kbxMod.DefaultKubexDomusConfigPath)),
-		DBName:     kbxGet.EnvOr("KUBEX_DOMUS_DB_NAME", "postgres"),
+	var srvConfig kbx.SrvConfig
+	srvConfigPtr, _ := kbx.LoadConfigOrDefault[kbx.SrvConfig](InitArgs.Files.ConfigFile, true)
+	if srvConfigPtr == nil {
+		srvConfig = kbx.NewSrvArgs()
 	}
-	pubKeyPath := os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_KEY_PATH", kbxMod.DefaultGNyxCertPath))
-	privKeyPath := os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PRIVATE_KEY_PATH", kbxMod.DefaultGNyxKeyPath))
-	InitArgs := kbxMod.NewInitArgs(
-		os.ExpandEnv(configPath),
-		filepath.Ext(configPath)[1:],
-		os.ExpandEnv(dataServiceConfig.ConfigPath),
-		filepath.Ext(dataServiceConfig.ConfigPath)[1:],
-		os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_ENV_PATH", kbxMod.DefaultGNyxEnvPath)),
-		os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_LOG_FILE_PATH", kbxMod.DefaultGNyxLogPath)),
-		ref.GetName(),
-		kbxGet.EnvOrType("KUBEX_GNYX_DEBUG_MODE", false),
-		kbxGet.EnvOrType("KUBEX_GNYX_RELEASE_MODE", false),
-		kbxGet.EnvOrType("KUBEX_GNYX_CONFIDENCIAL_MODE", false),
-		kbxGet.EnvOrType("KUBEX_GNYX_PORT", "5000"),
-		kbxGet.EnvOrType("KUBEX_GNYX_HOST", "localhost"),
-		pubKeyPath,
-		privKeyPath,
-		kbxGet.EnvOr("KUBEX_GNYX_PRIVATE_KEY_PASSWORD", ""),
-		kbxGet.EnvOr("KUBEX_GNYX_TEMPLATES_DIR", kbxMod.DefaultTemplatesDir),
-		kbxGet.EnvOrType("KUBEX_GNYX_DISABLE_UI", false),
-	)
-
-	glgAuthConfig := loadGoogleAuthConfig(InitArgs)
+	InitArgs.SrvConfig = kbxGet.ValOrType(srvConfigPtr, &srvConfig)
 
 	authCfg := &AuthConfig{
-		AccessTokenTTL:        kbxGet.ValOrType(InitArgs.AccessTokenTTL, kbxGet.EnvOrType("KUBEX_GNYX_AUTH_ACCESS_TTL", 15*time.Minute)),
-		RefreshTokenTTL:       kbxGet.ValOrType(InitArgs.RefreshTokenTTL, kbxGet.EnvOrType("KUBEX_GNYX_AUTH_REFRESH_TTL", 30*24*time.Hour)),
-		AccessTokenPrivateKey: kbxGet.ValOrType(InitArgs.PrivKeyPath, kbxGet.EnvOr("KUBEX_GNYX_AUTH_PRIVATE_KEY", "kubex_dev_rsa")),
-		AccessTokenPublicKey:  kbxGet.ValOrType(InitArgs.PubCertKeyPath, kbxGet.EnvOr("KUBEX_GNYX_AUTH_PUBLIC_KEY", kbxGet.ValOrType(os.ExpandEnv("$HOME/.gnyx/certs/be_rsa.pub"), ""))),
-		Issuer:                kbxGet.ValOrType(InitArgs.Issuer, kbxGet.EnvOr("KUBEX_GNYX_AUTH_ISSUER", "gnyx")),
+		AccessTokenTTL:        InitArgs.Runtime.AccessTokenTTL,
+		RefreshTokenTTL:       InitArgs.Runtime.RefreshTokenTTL,
+		AccessTokenPrivateKey: InitArgs.Runtime.PrivKeyPath,
+		AccessTokenPublicKey:  InitArgs.Runtime.PubKeyPath,
+		Issuer:                InitArgs.Runtime.Issuer,
 		AuthProvidersConfig: AuthProvidersConfig{
 			Google: AuthClientConfig{
-				Web: *glgAuthConfig,
+				Web: *loadGoogleAuthConfig(InitArgs),
 			},
 		},
 	}
-	var srvConfig kbx.SrvConfig
-	srvConfigPtr, _ := kbx.LoadConfigOrDefault[kbx.SrvConfig](InitArgs.ConfigFile, true)
-	if srvConfigPtr == nil {
-		srvConfig = kbx.NewSrvArgs()
-	} else {
-		srvConfig = *srvConfigPtr
+
+	dataServiceConfig := &DataServiceConfig{
+		ConfigPath: InitArgs.Files.DBConfigFile,
+		// DBName:     InitArgs.DBName,
 	}
 
-	return &Config{
+	return &MainConfig{
 		ServerConfig: &ServerConfig{
-			SrvConfig: srvConfig,
-			InitArgs:  InitArgs,
+			InitArgs: InitArgs,
 			ProvidersConfig: os.ExpandEnv(kbxGet.ValOrType(
-				InitArgs.ProvidersConfig,
-				kbxGet.EnvOr("KUBEX_GNYX_PROVIDERS_CONFIG_PATH", kbxMod.DefaultProvidersConfig),
+				InitArgs.Files.ProvidersConfig,
+				kbxGet.EnvOr("KUBEX_GNYX_PROVIDERS_CONFIG_PATH", kbxMod.DefaultProvidersConfigPath),
 			)),
+			LLMConfig: &kbx.LLMConfig{
+				Providers:   make(map[string]*kbx.LLMProviderConfig),
+				Development: kbx.LLMDevelopmentConfig{},
+			},
 		},
 		AuthConfig:           authCfg,
 		Database:             ConfigFromEnv(),
 		DataService:          dataServiceConfig,
 		MailerConfigFilePath: kbxGet.EnvOr("KUBEX_GNYX_MAILER_CONFIG_PATH", ""),
 		Invite: &InviteConfig{
-			BaseURL:     baseURL,
+			BaseURL:     kbxGet.EnvOr("KUBEX_GNYX_INVITE_BASE_URL", "https://gnyx.kubex.world"),
 			SenderName:  kbxGet.EnvOr("KUBEX_GNYX_INVITE_SENDER_NAME", "Equipe Kubex"),
 			SenderEmail: kbxGet.EnvOr("KUBEX_GNYX_INVITE_SENDER_EMAIL", "convites@kubex.world"),
 			CompanyName: kbxGet.EnvOr("KUBEX_GNYX_INVITE_COMPANY_NAME", "Kubex Ecosystem"),
-			DefaultTTL:  defaultTTL,
+			DefaultTTL:  kbxGet.EnvOrType("KUBEX_GNYX_INVITE_DEFAULT_TTL", 60*time.Minute),
 		},
 	}
 }

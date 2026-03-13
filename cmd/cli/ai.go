@@ -121,14 +121,14 @@ Examples:
   grompt ask --prompt "Explain REST APIs" --provider openai --model gpt-4
   grompt ask --prompt "Write a poem about code" --provider claude --max-tokens 500`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			gl.SetDebugMode(initArgs.Debug)
+			gl.SetDebugMode(initArgs.Basic.Debug)
 
 			if len(prompt) == 0 {
 				return gl.Error("Prompt cannot be empty. Use --prompt flag")
 			}
 
 			// Setup configuration
-			cfg, err := setupConfig(initArgs.ConfigFile, provider, apiKey, ollamaEndpoint)
+			cfg, err := setupConfig(initArgs.Files.ConfigFile, provider, apiKey, ollamaEndpoint)
 			if err != nil {
 				return gl.Errorf("error setting up configuration: %v", err)
 			}
@@ -193,12 +193,12 @@ Examples:
 		},
 	}
 
-	cmd.Flags().BoolVarP(&initArgs.Debug, "debug", "D", false, "Enable debug mode")
+	cmd.Flags().BoolVarP(&initArgs.Basic.Debug, "debug", "D", false, "Enable debug mode")
 	cmd.Flags().StringVarP(&prompt, "prompt", "p", "", "The prompt to send to AI (required)")
 	cmd.Flags().StringVarP(&provider, "provider", "P", "", "AI provider (openai, claude, gemini, deepseek, ollama)")
 	cmd.Flags().StringVarP(&model, "model", "m", "", "Model to use (provider specific)")
 	cmd.Flags().IntVarP(&maxTokens, "max-tokens", "t", 1000, "Maximum tokens in response")
-	cmd.Flags().StringVarP(&initArgs.ConfigFile, "config", "c", "", "Config file path")
+	cmd.Flags().StringVarP(&initArgs.Files.ConfigFile, "config", "c", "", "Config file path")
 
 	// API Key flags
 	cmd.Flags().StringVar(&apiKey, "apikey", "", "API key")
@@ -244,7 +244,7 @@ Examples:
 			ctx := context.Background()
 
 			// Setup configuration
-			cfg, err := setupConfig(initArgs.ConfigFile, provider, apiKey, ollamaEndpoint)
+			cfg, err := setupConfig(initArgs.Files.ConfigFile, provider, apiKey, ollamaEndpoint)
 			if err != nil {
 				return gl.Errorf("error setting up configuration: %v", err)
 			}
@@ -326,7 +326,7 @@ Examples:
 		},
 	}
 
-	cmd.Flags().BoolVarP(&initArgs.Debug, "debug", "D", false, "Enable debug mode")
+	cmd.Flags().BoolVarP(&initArgs.Basic.Debug, "debug", "D", false, "Enable debug mode")
 	cmd.Flags().StringSliceVarP(&ideas, "ideas", "i", []string{}, "Raw ideas (comma-separated or multiple flags)")
 	cmd.Flags().StringVarP(&purpose, "purpose", "p", "", "Specific purpose description")
 	cmd.Flags().StringVar(&purposeType, "purpose-type", "code", "Purpose type category")
@@ -334,7 +334,7 @@ Examples:
 	cmd.Flags().IntVarP(&maxTokens, "max-tokens", "t", 2048, "Maximum tokens in response")
 	cmd.Flags().StringVarP(&provider, "provider", "P", "", "AI provider")
 	cmd.Flags().StringVarP(&model, "model", "m", "", "Model to use")
-	cmd.Flags().StringVarP(&initArgs.ConfigFile, "config", "c", "", "Config file path")
+	cmd.Flags().StringVarP(&initArgs.Files.ConfigFile, "config", "c", "", "Config file path")
 	cmd.Flags().StringVarP(&output, "output", "o", "", "Output file (default: stdout)")
 
 	// API Key flags
@@ -367,13 +367,13 @@ Examples:
   grompt chat --provider openai --model gpt-4
   grompt chat --provider claude --max-tokens 500`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			gl.SetDebugMode(initArgs.Debug)
+			gl.SetDebugMode(initArgs.Basic.Debug)
 
 			var err error
 			ctx := context.Background()
 
 			// Setup configuration
-			sCfg, err := setupConfig(initArgs.ConfigFile, provider, apiKey, ollamaEndpoint)
+			sCfg, err := setupConfig(initArgs.Files.ConfigFile, provider, apiKey, ollamaEndpoint)
 			if err != nil {
 				return gl.Errorf("error setting up configuration: %v", err)
 			}
@@ -532,11 +532,11 @@ Examples:
 		},
 	}
 
-	cmd.Flags().BoolVarP(&initArgs.Debug, "debug", "D", false, "Enable debug mode")
+	cmd.Flags().BoolVarP(&initArgs.Basic.Debug, "debug", "D", false, "Enable debug mode")
 	cmd.Flags().StringVarP(&provider, "provider", "P", "", "AI provider")
 	cmd.Flags().StringVarP(&model, "model", "m", "", "Model to use")
 	cmd.Flags().IntVarP(&maxTokens, "max-tokens", "t", 1000, "Maximum tokens per response")
-	cmd.Flags().StringVarP(&initArgs.ConfigFile, "config", "c", "", "Config file path")
+	cmd.Flags().StringVarP(&initArgs.Files.ConfigFile, "config", "c", "", "Config file path")
 
 	// API Key flags
 	cmd.Flags().StringVar(&apiKey, "apikey", "", "API key")

@@ -3,29 +3,44 @@ package kbx
 
 // Default configuration constants
 const (
-	DefaultKubexConfigDir = "$HOME/.kubex/gnyx"
+	DefaultName = "gnyx"
 
-	DefaultGNyxCAPath   = "$HOME/.kubex/gnyx/ca-cert.pem"
-	DefaultGNyxKeyPath  = "$HOME/.kubex/gnyx/gnyx.key" // Priv
-	DefaultGNyxCertPath = "$HOME/.kubex/gnyx/gnyx.crt"
+	DefaultGNyxDir = "$HOME/.kubex/gnyx"
 
-	DefaultGNyxConfigPath = "$HOME/.kubex/gnyx/config/config.json"
-	DefaultGNyxEnvPath    = "$HOME/.kubex/gnyx/config/.env"
-	DefaultGNyxLogPath    = "$HOME/.kubex/gnyx/logs/gnyx_process.log.txt"
+	DefaultServerPort = "5000"
+	DefaultServerBind = "0.0.0.0"
+	DefaultServerHost = "localhost"
 
-	DefaultKubexDomusConfigPath = "$HOME/.kubex/domus/config/config.json"
+	DefaultCAPath   = "$HOME/.kubex/gnyx/ca-cert.pem"
+	DefaultKeyPath  = "$HOME/.kubex/gnyx/gnyx.key" // Priv
+	DefaultCertPath = "$HOME/.kubex/gnyx/gnyx.crt"
 
+	DefaultConfigPath = "$HOME/.kubex/gnyx/config/config.json"
+	DefaultEnvPath    = "$HOME/.kubex/gnyx/config/.env"
+	DefaultLogPath    = "$HOME/.kubex/gnyx/logs/gnyx_process.log.txt"
+
+	DefaultDomusConfigPath      = "$HOME/.kubex/domus/config/config.json"
 	DefaultMailConfigPath       = "$HOME/.kubex/gnyx/config/mail_config.json"
 	DefaultGoogleAuthClientPath = "$HOME/.kubex/gnyx/config/google_auth_client.json"
+	DefaultScorecardPath        = "$HOME/.kubex/gnyx/scorecard.json"
+	DefaultProvidersConfigPath  = "$HOME/.kubex/gnyx/config/providers.yaml"
 
-	DefaultVaultDir = "$HOME/.kubex/gnyx/secrets"
-
-	DefaultVaultKey = "kubex_kubex-jwt_secret.secret"
-
+	DefaultVaultDir     = "$HOME/.kubex/gnyx/secrets"
+	DefaultVaultKey     = "kubex_kubex-jwt_secret.secret"
 	DefaultTemplatesDir = "templates"
-)
 
-const DefaultProvidersConfig = "$HOME/.kubex/gnyx/config/providers.yaml"
+	DefaultAccessTokenTTL      = 15 * 60 * 1000      // 15 minutes
+	DefaultRefreshTokenTTL     = 24 * 60 * 60 * 1000 // 24 hours
+	DefaultTimeoutMS           = 30 * 1000           // 30 seconds
+	DefaultMaxProcs            = 0                   // 0 means use all available processors
+	DefaultMaxRetries          = 3
+	DefaultRetryDelay          = 1 * 1000 // 1 second
+	DefaultMaxIdleConns        = 100
+	DefaultMaxIdleConnsPerHost = 100
+	DefaultIdleConnTimeout     = 90 * 1000 // 90 seconds
+
+	DefaultIssuer = "gnyx"
+)
 
 // Default General Rate Limiting Settings
 const (
@@ -47,19 +62,12 @@ const (
 )
 
 // Default Generic Retry and Connection Settings
-const (
-	DefaultMaxRetries = 3
-	DefaultRetryDelay = 1 * 1000 // 1 second
-
-	DefaultMaxIdleConns        = 100
-	DefaultMaxIdleConnsPerHost = 100
-	DefaultIdleConnTimeout     = 90 * 1000 // 90 seconds
-)
+const ()
 
 // Default LLM Settings
 const (
 	DefaultLLMProvider    = "gemini"
-	DefaultLLMModel       = "gemini-2.5-flash"
+	DefaultLLMModel       = "gemini-flash-latest"
 	DefaultLLMMaxTokens   = 1024
 	DefaultLLMTemperature = 0.3
 )
@@ -85,13 +93,6 @@ const (
 	DefaultLLMCustomKeyEnvSuffix = "_KEY_ENV"
 )
 
-// Default Server Settings
-const (
-	DefaultServerPort = "5000"
-	DefaultServerBind = "0.0.0.0"
-	DefaultServerHost = "localhost"
-)
-
 // Default HTTP Basic Header Security Keys
 const (
 	HeaderRequestIDKey = "X-Request-ID"
@@ -107,12 +108,7 @@ const (
 	AuthTypeAPIKey = "api_key" // pragma: allowlist secret
 )
 
-// Default Database Settings
-
-type DBNameKey string
-
 const (
-	ContextDBNameKey      = DBNameKey("postgres")
 	DefaultVolumesDir     = "$HOME/.kubex/domus/volumes"
 	DefaultMongoVolume    = "$HOME/.kubex/domus/volumes/mongo"
 	DefaultRedisVolume    = "$HOME/.kubex/domus/volumes/redis"

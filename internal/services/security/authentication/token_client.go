@@ -47,7 +47,7 @@ func (t *TokenClientImpl) LoadTokenCfg() (sci.TokenService, int64, int64, error)
 	}
 	if t.crtSrv == nil {
 		gl.Debug("crtService is nil, trying to create a new one")
-		t.crtSrv = crt.NewCertService(kbx.DefaultGNyxKeyPath, kbx.DefaultGNyxCertPath) // pragma: allowlist secret
+		t.crtSrv = crt.NewCertService(kbx.DefaultKeyPath, kbx.DefaultCertPath) // pragma: allowlist secret
 		if t.crtSrv == nil {
 			gl.Log("fatal", "crtService is nil, unable to create a new one") // pragma: allowlist secret
 		}

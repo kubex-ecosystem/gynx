@@ -14,7 +14,7 @@ import (
 	gl "github.com/kubex-ecosystem/logz"
 )
 
-type Config = config.Config
+type Config = config.MainConfig
 
 // HTTPWire represents the HTTP protocol wiring layer.
 // It sits ABOVE Gin and orchestrates the HTTP server setup.
@@ -38,7 +38,7 @@ func NewHTTPWire(container Container, routeRegistrar RouteRegistrar) (*HTTPWire,
 		return nil, gl.Errorf("container config cannot be nil")
 	}
 
-	cf, ok := container.Config().(*config.Config)
+	cf, ok := container.Config().(*config.MainConfig)
 	if !ok {
 		return nil, gl.Errorf("invalid config type in container")
 	}
@@ -53,7 +53,7 @@ func NewHTTPWire(container Container, routeRegistrar RouteRegistrar) (*HTTPWire,
 	engine := gin.New()
 
 	// Type assert Config to *config.Config
-	cfg, ok := container.Config().(*config.Config)
+	cfg, ok := container.Config().(*config.MainConfig)
 	if !ok {
 		return nil, gl.Errorf("invalid config type in container")
 	}

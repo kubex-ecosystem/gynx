@@ -35,14 +35,14 @@ type JWTService interface {
 
 // jwtService implementa JWTService com RSA.
 type jwtService struct {
-	cfg        *config.Config
+	cfg        *config.MainConfig
 	privateKey *rsa.PrivateKey
 	publicKey  *rsa.PublicKey
 }
 
 // NewJWTService cria um serviço JWT baseado na Config.
 // Codex: se as chaves vierem de arquivo, carregar aqui via os.ReadFile.
-func NewJWTService(cfg *config.Config, priv *rsa.PrivateKey, pub *rsa.PublicKey) JWTService {
+func NewJWTService(cfg *config.MainConfig, priv *rsa.PrivateKey, pub *rsa.PublicKey) JWTService {
 	return &jwtService{
 		cfg:        cfg,
 		privateKey: priv,

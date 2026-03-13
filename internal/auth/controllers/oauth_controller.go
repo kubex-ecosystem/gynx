@@ -2,7 +2,6 @@
 package controllers
 
 import (
-	"context"
 	"net/http"
 	"reflect"
 	"strings"
@@ -10,10 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/kubex-ecosystem/gnyx/internal/auth/oauth"
-	"github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 
 	dsclient "github.com/kubex-ecosystem/gnyx/internal/dsclient"
-	kbxGet "github.com/kubex-ecosystem/kbx/get"
 	logz "github.com/kubex-ecosystem/logz"
 )
 
@@ -238,23 +235,31 @@ func (c *OAuthController) RegisterClient(ctx *gin.Context) {
 	}
 	var dbStore dsclient.StoreType
 	var err error
-	for _, bked := range dbCfg.Backends {
-		ctxB := context.WithValue(ctx, kbx.ContextDBNameKey, bked.DBName)
-		if ctxB.Value(kbx.ContextDBNameKey) == nil {
-			continue
-		}
-		dbStore, err = dbService.GetStore(ctxB, bked.DBName, kbxGet.ValueOrIf(
-			kbxGet.TypeName(ctxB.Value(dbCfg.GetName())) == reflect.TypeFor[string]().String(),
-			ctxB.Value(dbCfg.GetName()).(string),
-			"",
-		))
 
-		if err != nil {
-			logz.Log("error", "Database backend "+bked.DBName+" is not reachable: "+err.Error())
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
-			return
-		}
-	}
+	// dnNameCtxValue := ctx.Value(kbx.ContextDBNameKey)
+	// if dnNameCtxValue == nil {
+	// 	logz.Log("error", "Database name context value is nil for OAuthRoutes")
+	// 	ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+	// 	return
+	// }
+
+	// for _, bked := range dbCfg.Backends {
+	// 	ctxB := context.WithValue(ctx, kbx.ContextDBNameKey, bked.DBName)
+	// 	if ctxB.Value(kbx.ContextDBNameKey) == nil {
+	// 		continue
+	// 	}
+	// 	dbStore, err = dbService.GetStore(ctxB, bked.DBName, kbxGet.ValueOrIf(
+	// 		kbxGet.TypeName(ctxB.Value(dbCfg.GetName())) == reflect.TypeFor[string]().String(),
+	// 		ctxB.Value(dbCfg.GetName()).(string),
+	// 		"",
+	// 	))
+
+	// 	if err != nil {
+	// 		logz.Log("error", "Database backend "+bked.DBName+" is not reachable: "+err.Error())
+	// 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+	// 		return
+	// 	}
+	// }
 
 	tp, tpName, err := dbStore.GetType()
 	if err != nil {
@@ -267,20 +272,6 @@ func (c *OAuthController) RegisterClient(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
-
-	// Generate client_id
-	// clientID := generateClientID()
-
-	// // Create client model
-	// client := dsclient.NewOAuthClientModel(clientID, req.ClientName, req.RedirectURIs, req.Scopes)
-
-	// // Save to database
-	// created, err := dbStore.CreateClient(client)
-	// if err != nil {
-	// 	logz.Log("error", "Failed to register client: "+err.Error())
-	// 	ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	// 	return
-	// }
 
 	ctx.JSON(http.StatusCreated, ClientResponse{
 		// ClientID:     created.GetClientID(),

@@ -108,7 +108,7 @@ type PGExecutor interface {
 
 // Factory functions
 
-func NewDSClient(ctx context.Context, cfg *config.Config, logger *gl.LoggerZ) DSClient {
+func NewDSClient(ctx context.Context, cfg *config.MainConfig, logger *gl.LoggerZ) DSClient {
 	if cfg == nil {
 		gl.Errorf("nil config provided to DSClient")
 		return nil

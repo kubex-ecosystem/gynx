@@ -155,7 +155,7 @@ func GetDefaultConfigPath() (string, error) {
 		vprFile = filepath.Dir(vprFile)
 	}
 
-	configPath := os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_CONFIG_PATH", kbxGet.ValOrType(vprFile, kbx.DefaultGNyxConfigPath)))
+	configPath := os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_CONFIG_PATH", kbxGet.ValOrType(vprFile, kbx.DefaultConfigPath)))
 	if strings.TrimSpace(configPath) == "" || configPath == "." {
 		configPath, err = os.UserHomeDir()
 		if err != nil {

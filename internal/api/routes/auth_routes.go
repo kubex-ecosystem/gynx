@@ -43,7 +43,7 @@ type authHTTP struct {
 	authSvc  services.AuthService
 	jwt      tokens.JWTService
 	userRepo userstore.UserRepository
-	authCfg  *config.Config
+	authCfg  *config.MainConfig
 }
 
 type accessMemberPayload struct {
@@ -131,7 +131,7 @@ type input struct {
 }
 
 func RegisterAuthHTTP(r *gin.RouterGroup, container types.IContainer) (gin.IRoutes, error) {
-	cfg, ok := container.Config().(*config.Config)
+	cfg, ok := container.Config().(*config.MainConfig)
 	if !ok {
 		return nil, gl.Errorf("invalid config type")
 	}
@@ -863,7 +863,7 @@ func (h *authHTTP) validateAuthHeader(r *http.Request) (*tokens.Claims, error) {
 	return h.jwt.ValidateAccessToken(parts[1])
 }
 
-func loadOrGenerateKeys(cfg *config.Config) (*rsa.PrivateKey, *rsa.PublicKey, error) {
+func loadOrGenerateKeys(cfg *config.MainConfig) (*rsa.PrivateKey, *rsa.PublicKey, error) {
 	var (
 		// certservice;
 		certService = crt.NewCertServiceType(

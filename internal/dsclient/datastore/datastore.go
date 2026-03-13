@@ -18,7 +18,7 @@ var (
 	client       ds.DSClient
 	clientErr    error
 	cfgOnce      sync.Once
-	cfg          *cf.Config
+	cfg          *cf.MainConfig
 	cfgDBService *DBServiceConfig
 	dbKey        string
 )
@@ -30,7 +30,7 @@ type PGExecutor = ds.PGExecutor
 type DBServiceConfig = cf.DataServiceConfig
 
 // Init configura o DSClient global usando a configuração do app.
-func Init(ctx context.Context, argCfg *cf.Config) (ds.DSClient, error) {
+func Init(ctx context.Context, argCfg *cf.MainConfig) (ds.DSClient, error) {
 	if argCfg == nil {
 		argCfg = cf.LoadConfig()
 	}

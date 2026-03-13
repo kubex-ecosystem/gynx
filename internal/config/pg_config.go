@@ -68,5 +68,5 @@ func durationFromEnv(key string, fallback time.Duration) time.Duration {
 }
 
 func defaultDSN() string {
-	return "postgres://kubex_adm:2KN6uQkrGozV4XrsUoU9ZGckcfxe6uX9iBCLN0X1la8=@127.0.0.1:5432/postgres?sslmode=disable"
+	return "postgres://kubex_adm:DOMUS_DB_PASSWORD@localhost:5432/postgres?sslmode=disable"
 }

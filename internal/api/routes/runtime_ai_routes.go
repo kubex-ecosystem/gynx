@@ -21,7 +21,7 @@ import (
 )
 
 type runtimeAIController struct {
-	cfg  *config.Config
+	cfg  *config.MainConfig
 	reg  *registry.Registry
 	prod *runtimeMW.ProductionMiddleware
 }
@@ -65,7 +65,7 @@ func registerRuntimeAIRoutes(
 	reg *registry.Registry,
 	prod *runtimeMW.ProductionMiddleware,
 ) {
-	cfg, _ := container.Config().(*config.Config)
+	cfg, _ := container.Config().(*config.MainConfig)
 	ctl := &runtimeAIController{
 		cfg:  cfg,
 		reg:  reg,
