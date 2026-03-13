@@ -190,8 +190,8 @@ require (
 	gorm.io/gorm v1.31.1
 )
 
-replace github.com/kubex-ecosystem/domus => ../domus
+// replace github.com/kubex-ecosystem/domus => ../domus
 
-replace github.com/kubex-ecosystem/kbx => /projects/kubex/kbx
+// replace github.com/kubex-ecosystem/kbx => /projects/kubex/kbx
 
-replace github.com/kubex-ecosystem/getl => /projects/kubex/getl
+// replace github.com/kubex-ecosystem/getl => /projects/kubex/getl
