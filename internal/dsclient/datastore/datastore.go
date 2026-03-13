@@ -14,20 +14,17 @@ import (
 )
 
 var (
-	clientOnce   sync.Once
-	client       ds.DSClient
-	clientErr    error
-	cfgOnce      sync.Once
-	cfg          *cf.MainConfig
-	cfgDBService *DBServiceConfig
-	dbKey        string
+	clientOnce sync.Once
+	client     ds.DSClient
+	clientErr  error
+	cfgOnce    sync.Once
+	cfg        *cf.MainConfig
+	cfgDBFile  string
+	dbKey      string
 )
 
 // PGExecutor é exposto para reuso interno no BE.
 type PGExecutor = ds.PGExecutor
-
-// DBServiceConfig reduz a dependência às informações necessárias do DS.
-type DBServiceConfig = cf.DataServiceConfig
 
 // Init configura o DSClient global usando a configuração do app.
 func Init(ctx context.Context, argCfg *cf.MainConfig) (ds.DSClient, error) {
@@ -36,14 +33,13 @@ func Init(ctx context.Context, argCfg *cf.MainConfig) (ds.DSClient, error) {
 	}
 	cfgOnce.Do(func() {
 		cfg = argCfg
-		cfgDBService = argCfg.DataService
-		dbKey = argCfg.DataService.DBName
+		cfgDBFile = argCfg.DBConfigFile
 	})
 
 	clientOnce.Do(func() {
 		logger := gl.GetLoggerZ("gnyx")
 		client = ds.NewDSClient(ctx, cfg, logger)
-		if key, err := resolveDBKey(cfgDBService); err == nil && strings.TrimSpace(key) != "" {
+		if key, err := resolveDBKey(cfgDBFile); err == nil && strings.TrimSpace(key) != "" {
 			dbKey = key
 		}
 		clientErr = client.Init(ctx)
@@ -66,7 +62,7 @@ func Connection(ctx context.Context) (*ds.BackendConnection, error) {
 	if err != nil {
 		return nil, err
 	}
-	candidates := []string{dbKey, cfg.DataService.DBName, "domus"}
+	candidates := []string{dbKey, cfg.DBConfigFile, "domus"}
 	seen := map[string]bool{}
 	var conn *ds.BackendConnection
 	for _, name := range candidates {
@@ -83,7 +79,7 @@ func Connection(ctx context.Context) (*ds.BackendConnection, error) {
 	}
 	if err != nil {
 		// Fallback: tenta resolver novamente o ID e reabrir dinamicamente.
-		if key, resErr := resolveDBKey(cfgDBService); resErr == nil && strings.TrimSpace(key) != "" && !seen[key] {
+		if key, resErr := resolveDBKey(cfgDBFile); resErr == nil && strings.TrimSpace(key) != "" && !seen[key] {
 			dbKey = key
 			conn, err = c.GetConn(ctx, dbKey)
 		}
@@ -165,8 +161,7 @@ func GetPGExecutor(ctx context.Context, conn *ds.BackendConnection) (PGExecutor,
 }
 
 // resolveDBKey busca o ID habilitado correspondente ao nome/config informado.
-func resolveDBKey(c *DBServiceConfig) (string, error) {
-	path := strings.TrimSpace(c.ConfigPath)
+func resolveDBKey(path string) (string, error) {
 	if path == "" {
 		return "", gl.Errorf("config path is required")
 	}
@@ -184,7 +179,7 @@ func resolveDBKey(c *DBServiceConfig) (string, error) {
 	if err := json.Unmarshal(data, &root); err != nil {
 		return "", err
 	}
-	target := strings.TrimSpace(c.DBName)
+	target := strings.TrimSpace(dbKey)
 	for _, db := range root.Databases {
 		if !db.Enabled {
 			continue

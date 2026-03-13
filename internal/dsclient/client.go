@@ -116,7 +116,7 @@ func NewDSClient(ctx context.Context, cfg *config.MainConfig, logger *gl.LoggerZ
 	if logger == nil {
 		logger = gl.GetLoggerZ("ds_client")
 	}
-	configPath := os.ExpandEnv(cfg.DataService.ConfigPath)
+	configPath := os.ExpandEnv(cfg.DBConfigFile)
 	dsConfig := NewDSClientConfig(
 		cfg.ServerConfig.Name,
 		cfg.ServerConfig.Files.DBConfigFile,

@@ -19,10 +19,9 @@ type MainConfig struct {
 	ServerConfig *ServerConfig `json:"server_config,omitempty" yaml:"server_config,omitempty" toml:"server_config,omitempty" mapstructure:"server_config,omitempty"`
 	AuthConfig   *AuthConfig   `json:"auth_config,omitempty" yaml:"auth_config,omitempty" toml:"auth_config,omitempty" mapstructure:"auth_config,omitempty"`
 
-	Database             *PGConfig          `json:"database,omitempty" yaml:"database,omitempty" toml:"database,omitempty" mapstructure:"database,omitempty"`
-	DataService          *DataServiceConfig `json:"data_service,omitempty" yaml:"data_service,omitempty" toml:"data_service,omitempty" mapstructure:"data_service,omitempty"`
-	MailerConfigFilePath string             `json:"mailer_config_file_path,omitempty" yaml:"mailer_config_file_path,omitempty" toml:"mailer_config_file_path,omitempty" mapstructure:"mailer_config_file_path,omitempty"`
-	MailerConfig         *kbx.MailConfig    `json:"mailer_config,omitempty" yaml:"mailer_config,omitempty" toml:"mailer_config,omitempty" mapstructure:"mailer_config,omitempty"`
+	DBConfigFile         string          `json:"data_service,omitempty" yaml:"data_service,omitempty" toml:"data_service,omitempty" mapstructure:"data_service,omitempty"`
+	MailerConfigFilePath string          `json:"mailer_config_file_path,omitempty" yaml:"mailer_config_file_path,omitempty" toml:"mailer_config_file_path,omitempty" mapstructure:"mailer_config_file_path,omitempty"`
+	MailerConfig         *kbx.MailConfig `json:"mailer_config,omitempty" yaml:"mailer_config,omitempty" toml:"mailer_config,omitempty" mapstructure:"mailer_config,omitempty"`
 	// TemplatesDir         string             `json:"templates_dir,omitempty" yaml:"templates_dir,omitempty" toml:"templates_dir,omitempty" mapstructure:"templates_dir,omitempty"`
 	Invite *InviteConfig `json:"invite,omitempty" yaml:"invite,omitempty" toml:"invite,omitempty" mapstructure:"invite,omitempty"`
 }
@@ -64,12 +63,6 @@ type AuthConfig struct {
 	AuthProvidersConfig   AuthProvidersConfig `json:"auth_providers_config,omitempty" yaml:"auth_providers_config,omitempty" toml:"auth_providers_config,omitempty" mapstructure:"auth_providers_config,omitempty"`
 }
 
-// DataServiceConfig define onde está a config do DS e qual database usar.
-type DataServiceConfig struct {
-	ConfigPath string `json:"config_path,omitempty" yaml:"config_path,omitempty" toml:"config_path,omitempty" mapstructure:"config_path,omitempty"`
-	DBName     string `json:"db_name,omitempty" yaml:"db_name,omitempty" toml:"db_name,omitempty" mapstructure:"db_name,omitempty"`
-}
-
 // LoadConfig carrega a configuração a partir das variáveis de ambiente.
 func LoadConfig() *MainConfig {
 	InitArgs := kbxMod.NewArgs("gnyx")
@@ -94,11 +87,9 @@ func LoadConfig() *MainConfig {
 			},
 		},
 	}
+	mailerConfigFilePath := os.ExpandEnv(kbxGet.ValOrType(InitArgs.Files.MailerConfigFile, kbxGet.EnvOr("KUBEX_GNYX_MAILER_CONFIG_PATH", kbxMod.DefaultMailConfigPath)))
 
-	dataServiceConfig := &DataServiceConfig{
-		ConfigPath: InitArgs.Files.DBConfigFile,
-		// DBName:     InitArgs.DBName,
-	}
+	dataServiceFilePath := os.ExpandEnv(kbxGet.ValOrType(InitArgs.Files.DBConfigFile, kbxGet.EnvOr("KUBEX_DOMUS_CONFIG_PATH", kbxMod.DefaultDomusConfigPath)))
 
 	return &MainConfig{
 		ServerConfig: &ServerConfig{
@@ -113,9 +104,8 @@ func LoadConfig() *MainConfig {
 			},
 		},
 		AuthConfig:           authCfg,
-		Database:             ConfigFromEnv(),
-		DataService:          dataServiceConfig,
-		MailerConfigFilePath: kbxGet.EnvOr("KUBEX_GNYX_MAILER_CONFIG_PATH", ""),
+		DBConfigFile:         dataServiceFilePath,
+		MailerConfigFilePath: mailerConfigFilePath,
 		Invite: &InviteConfig{
 			BaseURL:     kbxGet.EnvOr("KUBEX_GNYX_INVITE_BASE_URL", "https://gnyx.kubex.world"),
 			SenderName:  kbxGet.EnvOr("KUBEX_GNYX_INVITE_SENDER_NAME", "Equipe Kubex"),

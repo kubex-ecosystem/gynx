@@ -15,8 +15,8 @@ type ServerConfig struct {
 	ProvidersConfig string
 	LLMConfig       *kbx.LLMConfig
 	// EnableCORS      bool
-	DefaultTTL        time.Duration
-	DataServiceConfig DataServiceConfig
+	DefaultTTL   time.Duration
+	DBConfigFile string
 }
 
 func NewServerConfig() *ServerConfig {
@@ -48,7 +48,7 @@ func NewServerConfig() *ServerConfig {
 	cfg.Runtime.RefreshTokenTTL = InitArgs.Runtime.RefreshTokenTTL
 
 	cfg.DefaultTTL = InitArgs.Auth.Invite.DefaultTTL
-	// cfg.DataServiceConfig = InitArgs.DBConfigFile
+	// cfg.DBConfigFile = InitArgs.DBConfigFile
 	// cfg.Mapper = types.NewMapperType(&cfg, cfg.ConfigFile)
 
 	cfg.LLMConfig = &kbx.LLMConfig{

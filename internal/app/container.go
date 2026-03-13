@@ -48,15 +48,23 @@ type Container struct {
 
 // NewContainer instancia a infraestrutura principal (DB, serviços de domínio, etc).
 func NewContainer(ctx context.Context, cfg *config.MainConfig) (*Container, error) {
-	db, err := ds.Init(ctx, cfg)
+	dsClientA, err := ds.Init(ctx, cfg)
+	if err != nil {
+		return nil, gl.Errorf("failed to get datastore client: %v", err)
+	}
+	gl.Debugf("Datastore client: %v", dsClientA)
+
+	dsClientB, err := ds.Client(ctx)
 	if err != nil {
 		return nil, gl.Errorf("failed to init datastore: %v", err)
 	}
+	gl.Debugf("Datastore client: %v", dsClientB)
 
 	templateLoader, err := loadTemplates(cfg.ServerConfig.Files.TemplatesDir)
 	if err != nil {
 		return nil, gl.Errorf("failed to load templates: %v", err)
 	}
+	gl.Debug("Templates loaded successfully.")
 
 	mlCfgFile := os.ExpandEnv(
 		kbxGet.ValOrType(
@@ -67,9 +75,14 @@ func NewContainer(ctx context.Context, cfg *config.MainConfig) (*Container, erro
 			),
 		),
 	)
+	gl.Debugf("Mailer config file path: %s", mlCfgFile)
+
 	mailSender := buildMailer(mlCfgFile)
+	gl.Debug("Mail sender initialized successfully.")
 
 	imapSvc := buildIMAPService(mlCfgFile)
+	gl.Debug("IMAP service initialized successfully.")
+
 	invStore, err := ds.GetInviteStore(ctx)
 	if err != nil {
 		return nil, gl.Errorf("failed to create invite store: %v", err)
@@ -113,7 +126,7 @@ func NewContainer(ctx context.Context, cfg *config.MainConfig) (*Container, erro
 		stores: stores,
 
 		cfg: cfg,
-		db:  db,
+		db:  dsClientB,
 	}, nil
 }
 
