@@ -28,6 +28,7 @@ func RegisterRoutesWithProviders(
 ) gin.IRoutes {
 	if reg != nil {
 		registerRuntimeAIRoutes(r, container, reg, prod)
+		registerRuntimeBIRoutes(r, container, reg, prod)
 	}
 
 	if _, err := RegisterAuthHTTP(r, container); err != nil {

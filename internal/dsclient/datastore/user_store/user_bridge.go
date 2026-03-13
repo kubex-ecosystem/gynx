@@ -141,6 +141,53 @@ func (b *UserBridge) ListMemberships(ctx context.Context, userID uuid.UUID) ([]m
 	return result, nil
 }
 
+// ListMembershipPermissions returns effective permissions for each tenant membership.
+func (b *UserBridge) ListMembershipPermissions(ctx context.Context, userID uuid.UUID) (map[uuid.UUID][]string, error) {
+	conn, err := datastore.Connection(ctx)
+	if err != nil {
+		return nil, err
+	}
+	pgExec, err := ds.GetPGExecutor(ctx, conn)
+	if err != nil {
+		return nil, err
+	}
+
+	const q = `
+		SELECT
+			tm.tenant_id,
+			COALESCE(
+				array_agg(DISTINCT p.code ORDER BY p.code)
+					FILTER (WHERE rp.value = true AND p.code IS NOT NULL),
+				ARRAY[]::text[]
+			) AS permissions
+		FROM tenant_membership tm
+		JOIN role r ON r.id = tm.role_id
+		LEFT JOIN role_permission rp ON rp.role_id = r.id
+		LEFT JOIN permission p ON p.id = rp.permission_id
+		WHERE tm.user_id = $1
+		GROUP BY tm.tenant_id`
+
+	rows, err := pgExec.Query(ctx, q, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make(map[uuid.UUID][]string)
+	for rows.Next() {
+		var tenantID uuid.UUID
+		var permissions []string
+		if err := rows.Scan(&tenantID, &permissions); err != nil {
+			return nil, err
+		}
+		result[tenantID] = permissions
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 // ListTeamMemberships retorna os vínculos do usuário com teams e roles.
 func (b *UserBridge) ListTeamMemberships(ctx context.Context, userID uuid.UUID) ([]models.TeamMembership, error) {
 	conn, err := datastore.Connection(ctx)

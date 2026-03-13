@@ -1,0 +1,9 @@
+{
+  "sourceType": "csv",
+  "sourceConnectionString": "${KUBEX_SANKHYA_CATALOG_SOURCE_DIR}/tdd_tabelas.csv",
+  "destinationType": "postgres",
+  "destinationConnectionString": "${KUBEX_SANKHYA_CATALOG_DSN}",
+  "destinationTable": "sankhya_catalog.tdd_tabelas",
+  "needCheck": false,
+  "checkMethod": ""
+}

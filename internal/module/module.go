@@ -74,6 +74,7 @@ func (m *GNyx) Command() *cobra.Command {
 	rtCmd.AddCommand(cc.NewDaemonCommand())
 	// rtCmd.AddCommand(cc.NewGuiCommand())
 	rtCmd.AddCommand(cc.MailCommand())
+	rtCmd.AddCommand(cc.MetadataCommand())
 
 	// Add more commands as needed
 	rtCmd.AddCommand(vs.CliCommand())

@@ -1,7 +1,7 @@
 {
   "name": "Kubex - GNyx",
   "application": "gnyx",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
   "published": false,
   "aliases": [
@@ -11,7 +11,7 @@
   "repository": "https://github.com/kubex-ecosystem/gnyx",
   "homepage": "https://github.com/kubex-ecosystem/gnyx",
   "description": "Kubex Backend Project",
-  "go_version": "1.26.0",
+  "go_version": "1.26.1",
   "main": "cmd/main.go",
   "bin": "gnyx",
   "author": "Rafael Mori <faelmori@gmail.com>",

@@ -26,12 +26,13 @@ type (
 
 // Type aliases para Stores
 type (
-	StoreType          = client.StoreType
-	Executor           = client.Executor
-	UserStore          = client.UserStore
-	InviteStore        = client.InviteStore
-	CompanyStore       = client.CompanyStore
-	PendingAccessStore = client.PendingAccessStore
+	StoreType             = client.StoreType
+	Executor              = client.Executor
+	UserStore             = client.UserStore
+	InviteStore           = client.InviteStore
+	CompanyStore          = client.CompanyStore
+	PendingAccessStore    = client.PendingAccessStore
+	ExternalMetadataStore = client.ExternalMetadataStore
 )
 
 // Type aliases para Adapter (Repository unificado Store + ORM)
@@ -68,6 +69,9 @@ type (
 	CreatePendingAccessRequestInput = client.CreatePendingAccessRequestInput
 	UpdatePendingAccessRequestInput = client.UpdatePendingAccessRequestInput
 	PendingAccessFilters            = client.PendingAccessFilters
+	ExternalMetadataRecord          = client.ExternalMetadataRecord
+	UpsertExternalMetadataInput     = client.UpsertExternalMetadataInput
+	ExternalMetadataFilters         = client.ExternalMetadataFilters
 )
 
 // Invitation type constants
@@ -178,6 +182,10 @@ func NewInviteStore(ctx context.Context, conn *BackendConnection) (InviteStore, 
 
 func NewPendingAccessStore(ctx context.Context, conn *BackendConnection) (PendingAccessStore, error) {
 	return client.NewPendingAccessStore(ctx, conn)
+}
+
+func NewExternalMetadataStore(ctx context.Context, conn *BackendConnection) (ExternalMetadataStore, error) {
+	return client.NewExternalMetadataStore(ctx, conn)
 }
 
 // Adapter config helpers

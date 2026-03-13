@@ -1,222 +1,180 @@
 # GNyx
 
-GNyx is the product-facing gateway and workspace application of the Kubex ecosystem. It combines a Go backend, an embedded React frontend, real AI provider integration, authentication and invitation flows, operational surfaces, and a progressive multi-tenant access model.
+Portuguese (Brazil) version: [docs/README.pt-BR.md](./docs/README.pt-BR.md)
 
 ## Table of Contents
 
-- [What GNyx Is](#what-gnyx-is)
+- [Overview](#overview)
 - [Current Product State](#current-product-state)
 - [Core Capabilities](#core-capabilities)
-- [How the Ecosystem Fits Together](#how-the-ecosystem-fits-together)
+- [Ecosystem Context](#ecosystem-context)
 - [Architecture Overview](#architecture-overview)
-- [Repository Structure](#repository-structure)
+- [Repository Layout](#repository-layout)
 - [Runtime Model](#runtime-model)
+- [Primary Commands](#primary-commands)
 - [Active HTTP Surface](#active-http-surface)
-- [Frontend Product Areas](#frontend-product-areas)
 - [Authentication and Access](#authentication-and-access)
-- [Providers and AI Runtime](#providers-and-ai-runtime)
-- [Data and Domus Boundary](#data-and-domus-boundary)
-- [Development Workflow](#development-workflow)
-- [Running GNyx Locally](#running-gnyx-locally)
+- [AI Providers and Runtime](#ai-providers-and-runtime)
+- [BI and Metadata-Driven Generation](#bi-and-metadata-driven-generation)
+- [Domus Boundary](#domus-boundary)
 - [Configuration and Runtime Home](#configuration-and-runtime-home)
+- [Development Notes](#development-notes)
 - [Documentation Map](#documentation-map)
 - [Screenshots](#screenshots)
 - [Current Focus](#current-focus)
-- [Status Notes](#status-notes)
 
-## What GNyx Is
+## Overview
 
-GNyx is not just a backend API and not just a frontend workspace.
+`GNyx` is the product-facing application layer of the Kubex ecosystem.
 
-It is the runtime product layer that currently brings together:
+It combines:
 
-- a Go gateway application
-- an embedded web UI (`GNyx-UI`)
-- real AI provider execution through a unified backend path
-- authentication, session, invitation, and user-access flows
-- operational and administrative surfaces
-- a data-service boundary into `Domus`
-- shared ecosystem capabilities supplied by `Kbx`
+- a Go gateway/backend
+- an embedded React frontend (`GNyx-UI`)
+- real AI provider execution through a unified runtime path
+- authentication, session, invitation, and access flows
+- administrative and operational surfaces
+- a typed boundary into `Domus`
+- shared infrastructure from `Kbx`
 
-In practical terms, GNyx is the application users and operators interact with directly, while other ecosystem projects provide infrastructure, shared services, or runtime support around it.
+At this point, `GNyx` is no longer just a shell or architectural proposal. It already exposes real product behavior and demonstrable runtime value.
 
 ## Current Product State
 
-The repository already supports real, demonstrable product behavior.
+Currently operational or materially consolidated:
 
-Currently functional or materially consolidated:
+- embedded frontend delivery through the backend
+- real provider runtime via the active gateway path
+- working AI-assisted frontend features through backend routes
+- hardened provider registry consumption between `Kbx` and `GNyx`
+- functional sign-in, refresh, logout, and `me` bootstrap flows
+- enriched `/me` payload with `access_scope`, memberships, and effective permissions
+- tenant-aware frontend bootstrap and route guarding
+- `Access Management` MVP for members, invites, and controlled role reassignment
+- metadata-driven BI proof of concept backed by real Sankhya catalog ingestion
+- `BI Studio` frontend page with generation, schema copy, and ZIP export
 
-- the frontend is embedded into the backend delivery flow
-- real backend routes exist for provider/runtime usage
-- real AI provider usage is working through the active gateway path
-- `Chat`, `Prompt Crafter`, `Summarizer`, `Code`, and `Image Prompt` flows are wired through the backend
-- authentication flows are operational
-- invitation acceptance is operational and has already been hardened for retry safety
-- refresh-session expiration and revocation checks were hardened recently
-- provider runtime and registry consumption were consolidated across `Kbx` and `GNyx`
+Still evolving:
 
-Still in progress or intentionally incomplete:
-
-- full frontend-to-backend coverage across every screen and business flow
-- deeper multi-tenant and RBAC consolidation
-- plans and entitlements as a fully closed access-governance layer
-- broader Domus expansion beyond the currently proven store/runtime surface
-- some areas of the frontend still rely on mock-backed or hybrid behavior
+- broader business-flow coverage across every screen
+- deeper plan and entitlement governance
+- richer multi-tenant / team-level RBAC
+- broader BI domain coverage beyond the first grounded slice
+- further Domus-backed expansion of operational areas still using hybrid or mock behavior
 
 ## Core Capabilities
 
-At the current stage, GNyx provides or partially provides:
+At the current stage, `GNyx` provides or partially provides:
 
-- unified AI provider execution
-- provider health, catalog, and runtime configuration exposure
-- browser-based AI-assisted workflows
-- authentication and session management
-- invitation and onboarding flows
-- workspace and administrative surfaces
-- mail and sync-related product areas
-- repository- and metrics-oriented runtime surfaces
-- CLI-driven gateway operation and supporting utilities
+- unified provider execution and streaming
+- provider catalog, status, config, and health exposure
+- chat, summarization, code, image-prompt, and prompt-crafting flows
+- authentication, sessions, invitation acceptance, and access bootstrap
+- tenant-aware shell behavior and RBAC-aware navigation
+- provider administration and BYOK-oriented flows
+- access management for members, invites, and role reassignment
+- metadata synchronization orchestration for Sankhya BI catalog
+- grounded BI board generation and export
 
-## How the Ecosystem Fits Together
+## Ecosystem Context
 
-GNyx lives inside a broader ecosystem, but it is the product-facing center of the current effort.
+`GNyx` operates as the orchestration and product layer across four related projects:
 
-### GNyx + GNyx UI
+- `GNyx-UI`: embedded frontend experience
+- `Domus`: data-service substrate, typed stores, migrations, and PostgreSQL runtime
+- `Kbx`: shared infrastructure such as config, crypto, mail utilities, and provider registry
+- `GETL`: ETL/sync utility now used for Sankhya catalog ingestion
 
-This repository contains:
-
-- the Go backend and gateway runtime
-- the embedded frontend application
-- business-facing routes and runtime composition
-
-The frontend lives in [frontend/README.md](./frontend/README.md) and is built into the product delivery flow.
-
-### Domus
-
-`Domus` is the data runtime and datastore platform behind the current data-service path.
-
-Today, GNyx should reach Domus through the single integration point under `internal/dsclient`. That boundary is operational and intentionally treated as the safe path until a more evolved integration model is deliberately introduced.
-
-### Kbx
-
-`Kbx` provides shared capabilities used by GNyx and other Kubex projects, especially:
-
-- AI provider registry and abstractions
-- mail and IMAP helpers
-- shared config/defaulting behavior
-- reusable operational utilities
-
-### Logz
-
-`Logz` is the logging foundation. It is important to the runtime, but it is not considered the current target for ecosystem-specific product changes.
+`Logz` also participates in the broader ecosystem, but it is intentionally treated as a shared logging foundation rather than a `GNyx`-specific evolution target.
 
 ## Architecture Overview
 
-From a product-engineering point of view, the repository currently has five major layers.
+`GNyx` currently sits across these layers:
 
-### 1. Gateway and runtime entrypoints
+1. `cmd/` and CLI entrypoints for gateway and supporting operational commands
+2. `internal/runtime/` for boot, wiring, and gateway startup
+3. `internal/api/routes/` for the active HTTP surface
+4. `internal/features/` for product-oriented runtime features such as BI
+5. `internal/services/` for domain services such as invites
+6. `internal/dsclient/` for the single integration point into `Domus`
+7. `frontend/` for the embedded product UI
 
-Main areas:
+A critical design rule remains in place:
 
-- [`cmd/`](./cmd)
-- [`internal/runtime/`](./internal/runtime)
-- [`internal/app/`](./internal/app)
+- `GNyx` should reach Domus through the `internal/dsclient` single integration point, not through arbitrary cross-repo shortcuts.
 
-These areas start and compose the active server runtime, gateway behavior, dependency wiring, and feature exposure.
-
-### 2. HTTP and API surface
-
-Main areas:
-
-- [`internal/api/`](./internal/api)
-- [`internal/features/`](./internal/features)
-- [`internal/web/`](./internal/web)
-
-This layer exposes the active HTTP routes, auth flows, invite flows, and the embedded UI.
-
-### 3. Domain and service logic
-
-Main areas:
-
-- [`internal/domain/`](./internal/domain)
-- [`internal/services/`](./internal/services)
-- [`internal/auth/`](./internal/auth)
-
-This layer holds business logic such as session/auth handling, invitation orchestration, provider-facing logic, and supporting domain services.
-
-### 4. Data-service boundary
-
-Main areas:
-
-- [`internal/dsclient/`](./internal/dsclient)
-
-This is the current safe integration point between GNyx and Domus-backed data access.
-
-### 5. Embedded frontend application
-
-Main areas:
-
-- [`frontend/`](./frontend)
-- [`ui/`](./ui)
-- runtime-serving pieces under [`internal/web/`](./internal/web)
-
-The frontend is the product UI. It is built and then served by the Go application.
-
-## Repository Structure
+## Repository Layout
 
 ```text
-.
-├── cmd/               # CLI entrypoints such as gateway and docs servers
-├── config/            # Local project config files and examples
-├── docs/              # Project documentation site sources
-├── frontend/          # GNyx-UI frontend application
-├── internal/
-│   ├── api/           # HTTP routes, controllers, invite API
-│   ├── app/           # Container/bootstrap/runtime composition
-│   ├── auth/          # JWT, auth config, auth controllers/middleware
-│   ├── domain/        # Domain contracts and models
-│   ├── dsclient/      # Domus-facing single integration point
-│   ├── features/      # Runtime features and adapters
-│   ├── runtime/       # Active gateway runtime
-│   ├── services/      # Business and supporting services
-│   ├── web/           # Embedded UI serving
-│   └── ...
-├── support/           # Build/install/documentation scripts and hooks
-├── templates/         # Email templates and other runtime templates
-├── tests/             # Project-level test assets and support
-├── ui/                # Additional UI-related assets/legacy surfaces
-├── Makefile
-└── README.md
+cmd/                    Cobra entrypoints
+config/                 local config, provider config, GETL sync manifests
+frontend/               embedded React application (GNyx-UI)
+internal/api/           HTTP routes and route wiring
+internal/auth/          token and auth-related runtime logic
+internal/dsclient/      Domus integration boundary
+internal/features/      product features such as BI generation
+internal/runtime/       gateway boot and runtime composition
+internal/services/      domain services such as invite flows
+.notes/                 task docs, context, and implementation analysis
 ```
 
 ## Runtime Model
 
-GNyx currently operates as a combined backend and product shell.
+The most used local gateway flow today is:
 
-Important runtime characteristics:
+```bash
+gnyx gateway up -e ./config/.env.local -D
+```
 
-- the gateway is the main active runtime entrypoint
-- the frontend is built and served by the backend runtime
-- provider configuration is loaded from the active runtime home when available
-- the runtime is expected to materialize safe defaults under `~/.kubex` when needed
-- existing runtime state under `~/.kubex` should not be overwritten destructively
+Equivalent source-driven flow from the repo:
 
-Operationally, the active home directory matters because GNyx is not only reading local project files. It is also designed to run against persistent runtime state outside the repository.
+```bash
+go run ./cmd/main.go gateway up -e ./config/.env.local -D
+```
+
+`GNyx` relies on:
+
+- runtime config from env files and runtime home
+- active provider config under `~/.kubex/gnyx/config/providers.yaml`
+- frontend assets built from `frontend/`
+- Domus-backed data stores through `internal/dsclient`
+
+## Primary Commands
+
+Run the gateway:
+
+```bash
+go run ./cmd/main.go gateway up -e ./config/.env.local -D
+```
+
+Build the backend:
+
+```bash
+go build ./...
+```
+
+Build the frontend:
+
+```bash
+cd frontend
+pnpm exec vite build
+```
+
+Sync Sankhya metadata catalog into PostgreSQL through the GNyx orchestration path:
+
+```bash
+go run ./cmd/main.go metadata sankhya sync \
+  --env-file ./config/.env.local \
+  --pg-dsn 'postgres://kubex_adm:admin123@localhost:5432/postgres?sslmode=disable'
+```
+
+Important note:
+
+- because `GETL` currently depends on `godror`, some build environments may require `CGO=1` when compiling code paths that import `GETL` transitively.
 
 ## Active HTTP Surface
 
-The currently relevant backend HTTP surface includes at least the following product-facing areas.
-
-### Auth and identity
-
-- `POST /api/v1/auth/sign-up`
-- `POST /api/v1/auth/sign-in`
-- `POST /api/v1/auth/refresh`
-- `POST /api/v1/sign-out`
-- `GET /api/v1/me`
-- `GET /api/v1/auth/me`
-
-### Runtime and providers
+The active gateway currently exposes, among others:
 
 - `GET /api/v1/health`
 - `GET /api/v1/healthz`
@@ -225,219 +183,165 @@ The currently relevant backend HTTP surface includes at least the following prod
 - `GET /api/v1/test?provider=...`
 - `POST /api/v1/unified`
 - `POST /api/v1/unified/stream`
+- `GET /me`
+- `GET /auth/me`
+- `GET /api/v1/access/members`
+- `PATCH /api/v1/access/members/:user_id/role`
+- `GET /api/v1/bi/catalog/status`
+- `POST /api/v1/bi/boards/generate`
+- `POST /api/v1/bi/boards/export`
 
-### Invitation and onboarding
-
-Invitation routes are active and tied into the current onboarding flow, including the public acceptance path used by the frontend.
-
-## Frontend Product Areas
-
-The embedded frontend currently includes these major user-facing areas:
-
-- landing and sign-in
-- invite acceptance
-- welcome workspace shell
-- gateway dashboard
-- prompt crafter
-- chat
-- summarizer
-- code generator
-- image prompt generator
-- providers settings
-- data sync
-- mail hub
-- workspace settings
-- agents
-- playground
-- data analyzer
-
-Not all of these are equally mature. Some are already backed by real backend/provider flows, while others are still hybrid or mock-backed.
-
-For the full frontend breakdown, see [frontend/README.md](./frontend/README.md).
+The HTTP surface is intentionally evolving from general infrastructure endpoints into feature-oriented product routes.
 
 ## Authentication and Access
 
-Authentication is already operational and recently hardened further.
+Authentication is already functional and security-sensitive paths have been hardened.
+
+Current access posture:
+
+- login, refresh, logout, and `me` are operational
+- refresh expiration and revocation checks were hardened
+- invitation acceptance was hardened for retry safety and partial-failure recovery
+- `/me` now returns `access_scope`, memberships, team memberships, pending access, and effective permissions
+- frontend route guards now depend on real authenticated access state rather than legacy mock assumptions
+- `Access Management` provides a first tenant-scoped management surface
+
+Current RBAC MVP boundary:
+
+- tenant-scoped, not team-scoped
+- effective permissions exposed for the active tenant
+- visually enforced in the frontend for high-ROI administrative areas
+- includes controlled role reassignment, but not direct permission editing
+
+## AI Providers and Runtime
+
+Providers are no longer theoretical in `GNyx`.
+
+They are actively consumed through the backend runtime and exposed to the frontend.
 
 Current practical state:
 
-- sign-in is functional
-- refresh is functional
-- `me` is functional
-- session refresh expiration and revocation checks were explicitly hardened
-- invitation acceptance is functional and more retry-safe than before
+- provider registry hardening happened in `Kbx`
+- `GNyx` now uses a single effective provider config path during boot
+- runtime catalog and config exposure are available through the active gateway
+- frontend tools can explicitly select providers per feature
+- `Groq` is currently the most reliable provider for the BI generation demo path
+- `Gemini` is supported, but tends to be slower and more likely to fall back for the BI contract shape
 
-What is not yet fully closed at the same level:
+## BI and Metadata-Driven Generation
 
-- full access-governance consolidation across multi-tenant scope, RBAC, plans, and entitlements
-- a completely explicit domain model for active access scope across all product areas
+One of the most important new fronts is now materially implemented.
 
-That is the next major domain focus for the repository.
+Current flow:
 
-## Providers and AI Runtime
+1. Sankhya BI metadata CSVs are ingested into PostgreSQL under `sankhya_catalog`
+2. `Domus` registers external metadata load state in `public.external_metadata_registry`
+3. `GNyx` uses grounded metadata queries to prepare board-generation context
+4. provider runtime generates or partially generates a board plan
+5. backend validates and compiles the result into a `DashboardSchema`
+6. frontend `BI Studio` exposes generation, inspection, copy, and ZIP export
 
-GNyx is now operating with a real provider-backed execution path rather than only UI proposal or local abstraction.
+Current BI slice status:
 
-Current state:
+- first grounded domain: `sales`
+- generation modes: `llm`, `llm_recovered`, `fallback_template`
+- ZIP export contains the generated schema, board plan, grounding context, and generation metadata
+- the frontend only exposes the feature as operational when the catalog is actually available
 
-- provider runtime was hardened in `Kbx`
-- GNyx now consumes a single effective provider path more coherently
-- the gateway exposes real config, health, and unified execution routes
-- the frontend can use real providers through backend routes
-- provider selection by tool is now supported in the frontend
+## Domus Boundary
 
-The provider stack is still evolving, but it has already crossed the line from “proposed” to “functionally demonstrable”.
+`GNyx` does not treat Domus as an incidental dependency.
 
-## Data and Domus Boundary
+It uses Domus as the active data-service boundary for:
 
-The current rule for safe integration is straightforward:
+- user and session-related runtime data
+- invitations and pending access
+- companies / tenants and memberships through mixed typed-store plus SQL composition paths
+- external metadata registry reads for BI metadata readiness
 
-- GNyx should access Domus through `internal/dsclient`
+A significant rule still applies:
 
-This boundary already backs meaningful parts of the runtime, including user/invite/company-related paths. The current integration is operational, but it is also understood to be transitional rather than the final long-term architecture.
+- data expansion should keep converging toward the single `internal/dsclient` boundary instead of creating parallel access paths.
 
-Important nuance:
+## Configuration and Runtime Home
 
-- Domus is not only a collection of stores; it is a data-runtime platform
-- GNyx is not yet fully integrated with all desirable data/business flows
-- deeper integration should proceed carefully and incrementally
+`GNyx` uses a runtime-home model under:
 
-## Development Workflow
-
-Typical local work involves:
-
-1. building and validating the Go application
-2. building the frontend when needed
-3. running the gateway with a local environment file
-4. exercising the frontend and backend together
-
-A real command sequence already used in local work has looked like this:
-
-```sh
-go fmt ./... && go vet ./... && go build -v ./... && go mod tidy && make build-dev && gnyx gateway up -e ./config/.env.local -D
+```text
+~/.kubex/gnyx/
 ```
 
-During active backend iteration inside the repo, using the source tree directly is often the clearest option:
+Important operational rule:
 
-```sh
-go run ./cmd gateway up -e ./config/.env.local -D
+- this runtime home should be treated as the active source of truth when materialized
+- missing config should be created conservatively from passed values or safe defaults
+- existing config must not be destructively overwritten in repeated or parallel runs
+
+Typical active files include:
+
+- `~/.kubex/gnyx/config/providers.yaml`
+- runtime secrets, config fragments, and generated material
+
+Repo-local config still matters for development and bootstrap, especially:
+
+- `config/.env.local`
+- `config/providers.yaml`
+- `config/getl/sankhya_catalog/*`
+
+## Development Notes
+
+Recommended backend validation:
+
+```bash
+go build ./...
+go test ./...
 ```
 
-## Running GNyx Locally
+Recommended frontend validation:
 
-### Prerequisites
-
-Recommended local prerequisites include:
-
-- Go `1.26.0`
-- Node.js compatible with the frontend toolchain
-- `pnpm`
-- `jq`
-- access to the companion projects when working on ecosystem-wide changes
-- an initialized runtime home under `~/.kubex` or permission for GNyx to materialize it safely
-
-### Frontend build
-
-The frontend can be worked on directly from `frontend/`.
-
-Typical commands:
-
-```sh
+```bash
 cd frontend
-pnpm install
 pnpm exec tsc --noEmit
 pnpm exec vite build
 ```
 
-### Gateway run
+Recommended provider/runtime smoke:
 
-From the repository root:
+- start the gateway from source
+- hit `GET /api/v1/providers`
+- hit `POST /api/v1/unified`
+- validate provider availability and returned health/config state
 
-```sh
-go run ./cmd gateway up -e ./config/.env.local -D
-```
+Recommended BI smoke:
 
-### Local health checks
-
-Useful runtime checks include:
-
-```sh
-curl http://localhost:5000/api/v1/healthz
-curl http://localhost:5000/api/v1/providers
-curl http://localhost:5000/api/v1/config
-```
-
-## Configuration and Runtime Home
-
-GNyx relies on both repository-local files and persistent runtime-home material.
-
-### Repository-local examples
-
-Important local files include:
-
-- [`config/.env.local`](./config/.env.local)
-- [`config/providers.yaml`](./config/providers.yaml)
-- files under [`config/`](./config)
-
-### Runtime-home material
-
-Typical active runtime-home paths include:
-
-- `~/.kubex/gnyx/config/config.json`
-- `~/.kubex/gnyx/config/providers.yaml`
-- `~/.kubex/gnyx/config/mail_config.json`
-- `~/.kubex/gnyx/gnyx.crt`
-- `~/.kubex/gnyx/gnyx.key`
-- `~/.kubex/gnyx/secrets/*`
-
-Expected runtime-home behavior:
-
-- if required material does not exist, the runtime may create it from provided values or defaults
-- if required material already exists, later runs should not overwrite it destructively
-- the `domus/volumes` area under `~/.kubex` is operational state and should be treated differently from normal config files
+- confirm `GET /api/v1/bi/catalog/status`
+- generate a board through `POST /api/v1/bi/boards/generate`
+- export through `POST /api/v1/bi/boards/export`
+- validate the frontend `BI Studio` path
 
 ## Documentation Map
 
-Useful project documents include:
+Important local documentation:
 
-- [frontend/README.md](./frontend/README.md)
-- [frontend/docs/README.pt-BR.md](./frontend/docs/README.pt-BR.md)
-- [docs/](./docs)
-- [.notes/analyzis/](./.notes/analyzis)
-- [.notes/analyzis/global-execution-plan/README.md](./.notes/analyzis/global-execution-plan/README.md)
-
-Important recent planning and analysis material includes:
-
-- ecosystem and project backend analysis files in `.notes/analyzis/`
-- the global execution plan under `.notes/analyzis/global-execution-plan/`
+- [`frontend/README.md`](./frontend/README.md)
+- [`docs/README.pt-BR.md`](./docs/README.pt-BR.md)
+- [`.notes/analyzis/global-execution-plan/`](./.notes/analyzis/global-execution-plan)
+- [`.notes/analyzis/gnyx-skw-dynamic-ui/`](./.notes/analyzis/gnyx-skw-dynamic-ui)
+- [`.notes/context/`](./.notes/context)
 
 ## Screenshots
 
-This README intentionally leaves product screenshots as placeholders for now.
+Placeholder suggestions:
 
-Suggested future additions:
-
-- `[Placeholder]` product shell / welcome screen
-- `[Placeholder]` providers settings showing live runtime state
-- `[Placeholder]` chat or prompt crafter using a real provider
-- `[Placeholder]` invite acceptance flow
+- `[Screenshot Placeholder: Welcome and tenant-aware shell]`
+- `[Screenshot Placeholder: Access Management]`
+- `[Screenshot Placeholder: Providers Settings with real runtime state]`
+- `[Screenshot Placeholder: BI Studio generation result]`
 
 ## Current Focus
 
-The current macro direction is already defined and tracked.
+The current baseline is strong enough to support the next major steps:
 
-Near-term focus:
-
-1. consolidate the access foundation
-2. integrate frontend and backend by vertical slices instead of trying to close everything at once
-3. expand Domus pragmatically only after the product and access model are more coherent
-
-The active plan is documented in:
-
-- [.notes/analyzis/global-execution-plan/README.md](./.notes/analyzis/global-execution-plan/README.md)
-
-## Status Notes
-
-This README describes the project as it exists now: partially consolidated, already functional in important product-facing areas, and still evolving in access governance, full backend coverage, and broader data-platform integration.
-
-It should be read as a product-facing technical README, not as a claim that every proposed capability is already complete.
+- broader frontend-to-backend consolidation on top of real access and provider runtime
+- richer BI/domain generation slices beyond the first `sales` proof of concept
+- broader Domus-backed data and governance evolution without abandoning current operational flows

@@ -501,6 +501,14 @@ func buildChatRequest(ctx context.Context, providerName, modelName string, req u
 	temp := float32(0.7)
 	headers := map[string]string{}
 	_ = ctx
+	if strings.EqualFold(strings.TrimSpace(req.PurposeType), "dashboard_schema") {
+		temp = 0.2
+	}
+	if req.Meta != nil {
+		if value, ok := req.Meta["purpose_type"].(string); ok && strings.EqualFold(strings.TrimSpace(value), "dashboard_schema") {
+			temp = 0.2
+		}
+	}
 	messages := req.Messages
 	if len(messages) == 0 {
 		content := strings.TrimSpace(req.Prompt)
