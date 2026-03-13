@@ -12,7 +12,7 @@ require (
 	github.com/emersion/go-message v0.18.2 // indirect
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/joho/godotenv v1.5.1
-	github.com/kubex-ecosystem/kbx v1.0.3
+	github.com/kubex-ecosystem/kbx v1.0.4
 	github.com/swaggo/swag v1.16.6
 	google.golang.org/genai v1.48.0 // indirect
 )
@@ -126,11 +126,11 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/arch v0.24.0 // indirect
-	golang.org/x/exp v0.0.0-20260218203240-3dfff04db8fa // indirect
-	golang.org/x/mod v0.33.0 // indirect
+	golang.org/x/exp v0.0.0-20260312153236-7ab1446f8b90 // indirect
+	golang.org/x/mod v0.34.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
-	golang.org/x/tools v0.42.0 // indirect
+	golang.org/x/tools v0.43.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260226221140-a57be14db171 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/driver/sqlite v1.6.0 // indirect
@@ -169,8 +169,8 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.12 // indirect
 	github.com/googleapis/gax-go/v2 v2.17.0 // indirect
 	github.com/hashicorp/vault/api v1.22.0
-	github.com/kubex-ecosystem/domus v0.0.0-20260310223800-5b73ba101ee4
-	github.com/kubex-ecosystem/getl v0.0.0-00010101000000-000000000000
+	github.com/kubex-ecosystem/domus v1.0.0
+	github.com/kubex-ecosystem/getl v1.2.0
 	github.com/kubex-ecosystem/logz v1.6.8
 	github.com/redis/go-redis/v9 v9.18.0
 	github.com/swaggo/files v1.0.1
@@ -180,8 +180,8 @@ require (
 	go.opentelemetry.io/otel v1.40.0 // indirect
 	go.opentelemetry.io/otel/metric v1.40.0 // indirect
 	go.opentelemetry.io/otel/trace v1.40.0 // indirect
-	golang.org/x/crypto v0.48.0
-	golang.org/x/net v0.51.0 // indirect
+	golang.org/x/crypto v0.49.0
+	golang.org/x/net v0.52.0 // indirect
 	golang.org/x/oauth2 v0.36.0
 	golang.org/x/sys v0.42.0 // indirect
 	golang.org/x/text v0.35.0

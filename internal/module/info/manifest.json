@@ -1,7 +1,7 @@
 {
   "name": "Kubex - GNyx",
   "application": "gnyx",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "private": true,
   "published": false,
   "aliases": [
