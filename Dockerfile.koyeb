@@ -1,0 +1,86 @@
+# Koyeb-optimized Dockerfile for GNYX
+FROM golang:1.26-alpine AS builder
+
+# Install build dependencies + debugging tools
+RUN apk add --no-cache \
+    git \
+    ca-certificates \
+    tzdata \
+    bash \
+    curl \
+    file
+
+WORKDIR /app
+
+# Copy go mod files first (better caching)
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
+
+# Copy source code
+COPY . .
+
+# Create dist directory for binary
+RUN mkdir -p dist
+
+# Build the application with verbose output
+RUN echo "🏗️  Building gnyx binary..." && \
+    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 \
+    go build -v -ldflags="-w -s -X main.version=$(date +%Y%m%d_%H%M%S)" \
+    -o dist/gnyx_linux_amd64 cmd/main.go
+
+# Verify and debug binary
+RUN echo "🔍 Verifying binary..." && \
+    ls -la /app/dist/ && \
+    file /app/dist/gnyx_linux_amd64 && \
+    /app/dist/gnyx_linux_amd64 --version && \
+    echo "✅ Binary verification completed!"
+
+#########################################
+# Final production stage
+#########################################
+FROM alpine:latest
+
+# Install runtime dependencies
+RUN apk --no-cache add \
+    ca-certificates \
+    curl \
+    bash \
+    tzdata \
+    && update-ca-certificates
+
+# Create non-root user with home directory
+RUN addgroup -g 1001 -S gnyx && \
+    adduser -u 1001 -S gnyx -G gnyx -h /home/gnyx
+
+# Create app directory and set permissions
+WORKDIR /app
+RUN mkdir -p /app/config /app/logs && \
+    chown -R gnyx:gnyx /app
+
+# Copy binary from builder
+COPY --from=builder /app/dist/gnyx_linux_amd64 ./gnyx
+
+# Copy configuration files
+COPY --chown=gnyx:gnyx config/ ./config/
+
+# Ensure binary is executable
+RUN chmod +x ./gnyx
+
+# Switch to non-root user
+USER gnyx
+
+# Expose port (Koyeb will map this)
+EXPOSE 5000
+
+# Add labels for better Docker management
+LABEL maintainer="Rafael Mori <faelmori@gmail.com>"
+LABEL description="GNYX - Multi-provider AI analysis platform"
+LABEL version="1.0.1"
+
+# Health check with retry logic
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=5 \
+    CMD curl -f http://localhost:5000/api/v1/health || exit 1
+
+# Command to run with better error handling
+# gnyx gateway up -e ./config/.env.local -r
+CMD ["./gnyx", "gateway", "up", "-e", "./config/.env.koyeb", "-r"]
