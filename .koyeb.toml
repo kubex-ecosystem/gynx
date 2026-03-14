@@ -33,14 +33,15 @@ path = "/api/v1/health"
 
 # Instance configuration
 [deploy.instance]
-type = "nano" # Start small, can scale up
+type = "nano"
 
 # Regions (choose one)
 [deploy.regions]
-list = ["fra"] # Frankfurt - good for EU users
+list = ["was"]
 
 # Auto-scaling
 [deploy.autoscaling]
 min = 1
 max = 3
 target_cpu_percent = 80
+
