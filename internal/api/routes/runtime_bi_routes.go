@@ -45,6 +45,20 @@ type boardExportRequest struct {
 	DashboardSchema *bi.DashboardSchema  `json:"dashboard_schema"`
 }
 
+type boardGenerateResponse struct {
+	Domain          string               `json:"domain"`
+	Provider        string               `json:"provider"`
+	Model           string               `json:"model"`
+	Usage           map[string]any       `json:"usage"`
+	Attempts        []providerAttempt    `json:"attempts"`
+	GenerationMode  string               `json:"generation_mode"`
+	FallbackReason  string               `json:"fallback_reason"`
+	Grounding       *bi.GroundingContext `json:"grounding_context"`
+	Plan            *bi.BoardPlan        `json:"plan"`
+	DashboardSchema *bi.DashboardSchema  `json:"dashboard_schema"`
+	RawProviderJSON string               `json:"raw_provider_json"`
+}
+
 func registerRuntimeBIRoutes(
 	r *gin.RouterGroup,
 	container types.IContainer,
@@ -63,6 +77,14 @@ func registerRuntimeBIRoutes(
 	r.POST("/bi/boards/export", ctl.exportBoardBundle)
 }
 
+// catalogStatus godoc
+// @Summary      Get BI catalog status
+// @Description  Returns the status of the grounded Sankhya metadata catalog used by BI generation.
+// @Tags         Runtime BI
+// @Produce      json
+// @Success      200  {object}  bi.CatalogStatus
+// @Failure      500  {object}  authErrorResponse
+// @Router       /api/v1/bi/catalog/status [get]
 func (ctl *runtimeBIController) catalogStatus(c *gin.Context) {
 	status, err := ctl.grounding.GetCatalogStatus(c.Request.Context())
 	if err != nil {
@@ -72,6 +94,18 @@ func (ctl *runtimeBIController) catalogStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, status)
 }
 
+// generateBoard godoc
+// @Summary      Generate a BI board
+// @Description  Generates a grounded BI board plan and dashboard schema for the supported domain slice.
+// @Tags         Runtime BI
+// @Accept       json
+// @Produce      json
+// @Param        payload  body      boardGenerateRequest  true  "Board generation request"
+// @Success      200      {object}  boardGenerateResponse
+// @Failure      400      {object}  authErrorResponse
+// @Failure      500      {object}  authErrorResponse
+// @Failure      502      {object}  unifiedErrorResponse
+// @Router       /api/v1/bi/boards/generate [post]
 func (ctl *runtimeBIController) generateBoard(c *gin.Context) {
 	var req boardGenerateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -192,6 +226,17 @@ func (ctl *runtimeBIController) generateBoard(c *gin.Context) {
 	})
 }
 
+// exportBoardBundle godoc
+// @Summary      Export a generated BI board bundle
+// @Description  Exports the generated board payloads as a ZIP archive for portability and demo usage.
+// @Tags         Runtime BI
+// @Accept       json
+// @Produce      application/zip
+// @Param        payload  body      boardExportRequest  true  "Board export request"
+// @Success      200      {file}    file                "ZIP archive"
+// @Failure      400      {object}  authErrorResponse
+// @Failure      500      {object}  authErrorResponse
+// @Router       /api/v1/bi/boards/export [post]
 func (ctl *runtimeBIController) exportBoardBundle(c *gin.Context) {
 	var req boardExportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

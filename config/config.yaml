@@ -230,7 +230,13 @@ provider_production:
 # Security Settings
 security:
   enable_https: true
-  allowed_origins: ["https://kubex.world"]
+  allowed_origins:
+    [
+      "https://gnyx.kubex.world",
+      "https://kubex.world",
+      "https://www.kubex.world",
+      "https://*.kubex.world",
+    ]
   jwt_secret: "your_production_jwt_secret_here"
   api_keys:
     - "your_production_api_key_1"

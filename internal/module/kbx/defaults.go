@@ -1,6 +1,14 @@
 // Package kbx has default configuration values
 package kbx
 
+import (
+	"net"
+	"strings"
+
+	kbxGet "github.com/kubex-ecosystem/kbx/get"
+	gl "github.com/kubex-ecosystem/logz"
+)
+
 // Default configuration constants
 const (
 	DefaultKubexConfigDir = "$HOME/.kubex/gnyx"
@@ -85,12 +93,23 @@ const (
 	DefaultLLMCustomKeyEnvSuffix = "_KEY_ENV"
 )
 
+var DefaultGNyxLoopbackIP string
+
 // Default Server Settings
 const (
 	DefaultServerPort = "5000"
 	DefaultServerBind = "0.0.0.0"
 	DefaultServerHost = "localhost"
 )
+
+func init() {
+	hostIps, err := net.LookupHost("localhost")
+	if err != nil {
+		gl.Warnf("Failed to lookup host localhost: %v", err)
+	}
+
+	DefaultGNyxLoopbackIP = strings.Join(kbxGet.ValOrType(hostIps, []string{"localhost", "::1"}), ",")
+}
 
 // Default HTTP Basic Header Security Keys
 const (

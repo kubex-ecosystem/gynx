@@ -162,6 +162,49 @@ type publicAccessRequestResponse struct {
 	RequestID string `json:"request_id,omitempty"`
 }
 
+type signUpRequest struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type signUpResponse struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
+}
+
+type signInRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type refreshRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
+type authTokenResponse struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	TokenType    string `json:"token_type"`
+}
+
+type authErrorResponse struct {
+	Error   string `json:"error"`
+	Message string `json:"message,omitempty"`
+}
+
+type pendingAccessReviewRequest struct {
+	Action   string `json:"action"`
+	TenantID string `json:"tenant_id"`
+	RoleCode string `json:"role_code"`
+}
+
+type accessMemberRoleUpdateRequest struct {
+	TenantID string `json:"tenant_id"`
+	RoleCode string `json:"role_code"`
+}
+
 type mePayload struct {
 	ID              string                `json:"id"`
 	Email           string                `json:"email"`
@@ -260,12 +303,18 @@ func RegisterAuthHTTP(r *gin.RouterGroup, container types.IContainer) (gin.IRout
 
 // --- Handlers ---------------------------------------------------------------
 
+// signUp godoc
+// @Summary      Sign up a local user
+// @Description  Creates a local user with email and password.
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        payload  body      signUpRequest      true  "Sign up payload"
+// @Success      201      {object}  signUpResponse
+// @Failure      400      {object}  authErrorResponse
+// @Router       /api/v1/auth/sign-up [post]
 func (h *authHTTP) signUp(c *gin.Context) {
-	var req struct {
-		Name     string `json:"name"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
+	var req signUpRequest
 	if err := c.ShouldBindJSON(&req); err != nil || strings.TrimSpace(req.Email) == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload"})
 		return
@@ -282,6 +331,18 @@ func (h *authHTTP) signUp(c *gin.Context) {
 	})
 }
 
+// publicAccessRequest godoc
+// @Summary      Register a public access request
+// @Description  Receives a public onboarding or prospect request and stores it in the pending access queue for manual review.
+// @Tags         Public Access
+// @Accept       json
+// @Produce      json
+// @Param        payload  body      publicAccessRequestPayload  true  "Access request payload"
+// @Success      202      {object}  publicAccessRequestResponse
+// @Success      200      {object}  publicAccessRequestResponse
+// @Failure      400      {object}  authErrorResponse
+// @Failure      500      {object}  authErrorResponse
+// @Router       /api/v1/public/access-request [post]
 func (h *authHTTP) publicAccessRequest(c *gin.Context) {
 	var req publicAccessRequestPayload
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -364,11 +425,19 @@ func (h *authHTTP) publicAccessRequest(c *gin.Context) {
 	})
 }
 
+// signIn godoc
+// @Summary      Sign in
+// @Description  Authenticates a user and returns access and refresh tokens.
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        payload  body      signInRequest      true  "Sign in payload"
+// @Success      200      {object}  authTokenResponse
+// @Failure      400      {object}  authErrorResponse
+// @Failure      401      {object}  authErrorResponse
+// @Router       /api/v1/auth/sign-in [post]
 func (h *authHTTP) signIn(c *gin.Context) {
-	var req struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
+	var req signInRequest
 	if err := c.ShouldBindJSON(&req); err != nil || strings.TrimSpace(req.Email) == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload"})
 		return
@@ -392,7 +461,14 @@ func (h *authHTTP) signIn(c *gin.Context) {
 	})
 }
 
-// GET /auth/google/start -> redireciona para consent
+// googleStart godoc
+// @Summary      Start Google OAuth
+// @Description  Redirects the browser to the Google consent screen.
+// @Tags         Auth
+// @Produce      plain
+// @Success      302  {string}  string  "Redirect to Google OAuth"
+// @Failure      500  {object}  authErrorResponse
+// @Router       /api/v1/auth/google/start [get]
 func (h *authHTTP) googleStart(c *gin.Context) {
 	oauthConf, err := generateOauthConfState(c, h)
 	if err != nil {
@@ -416,7 +492,18 @@ func (h *authHTTP) googleStart(c *gin.Context) {
 	c.Redirect(http.StatusFound, authURL)
 }
 
-// GET /auth/google/callback (redirect_uri)
+// handleGoogleCallback godoc
+// @Summary      Handle Google OAuth callback
+// @Description  Exchanges the Google authorization code, issues local tokens, and redirects back to the frontend.
+// @Tags         Auth
+// @Produce      plain
+// @Param        code   query     string  true   "OAuth authorization code"
+// @Param        state  query     string  false  "Frontend redirect path"
+// @Success      302    {string}  string  "Redirect back to frontend"
+// @Failure      400    {object}  authErrorResponse
+// @Failure      401    {object}  authErrorResponse
+// @Failure      500    {object}  authErrorResponse
+// @Router       /api/v1/auth/v1/callback [get]
 func (h *authHTTP) handleGoogleCallback(c *gin.Context) {
 	oauthConf, err := generateOauthConfState(c, h)
 	if err != nil {
@@ -473,6 +560,17 @@ func (h *authHTTP) handleGoogleCallback(c *gin.Context) {
 	c.Redirect(http.StatusFound, buildFrontendRedirect(next))
 }
 
+// refresh godoc
+// @Summary      Refresh tokens
+// @Description  Exchanges a valid refresh token for a new access and refresh token pair.
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        payload  body      refreshRequest     false  "Refresh payload"
+// @Success      200      {object}  authTokenResponse
+// @Failure      400      {object}  authErrorResponse
+// @Failure      401      {object}  authErrorResponse
+// @Router       /api/v1/auth/refresh [post]
 func (h *authHTTP) refresh(c *gin.Context) {
 	if c.Request.Method != http.MethodPost {
 		c.JSON(http.StatusMethodNotAllowed, gin.H{"error": "method not allowed"})
@@ -505,6 +603,17 @@ func (h *authHTTP) refresh(c *gin.Context) {
 	})
 }
 
+// signOut godoc
+// @Summary      Sign out
+// @Description  Revokes the current refresh token and clears auth cookies.
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        payload  body      refreshRequest     false  "Sign out payload"
+// @Success      204      {string}  string  "No Content"
+// @Failure      400      {object}  authErrorResponse
+// @Failure      401      {object}  authErrorResponse
+// @Router       /api/v1/sign-out [post]
 func (h *authHTTP) signOut(c *gin.Context) {
 	if c.Request.Method != http.MethodPost {
 		c.JSON(http.StatusMethodNotAllowed, gin.H{"error": "method not allowed"})
@@ -531,6 +640,16 @@ func (h *authHTTP) signOut(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// me godoc
+// @Summary      Get current user
+// @Description  Returns the authenticated user profile plus memberships, team memberships, and access scope.
+// @Tags         Auth
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Failure      401  {object}  authErrorResponse
+// @Router       /api/v1/me [get]
+// @Router       /api/v1/auth/me [get]
 func (h *authHTTP) me(c *gin.Context) {
 	claims, err := h.validateAuthHeader(c.Request)
 	if err != nil {
@@ -569,6 +688,19 @@ func (h *authHTTP) me(c *gin.Context) {
 	})
 }
 
+// accessMembers godoc
+// @Summary      List tenant access members
+// @Description  Returns members, effective permissions, and role catalog for the active tenant scope.
+// @Tags         Access
+// @Security     BearerAuth
+// @Produce      json
+// @Param        tenant_id  query     string  false  "Tenant ID"
+// @Success      200        {object}  accessMembersResponse
+// @Failure      400        {object}  authErrorResponse
+// @Failure      401        {object}  authErrorResponse
+// @Failure      403        {object}  authErrorResponse
+// @Failure      500        {object}  authErrorResponse
+// @Router       /api/v1/access/members [get]
 func (h *authHTTP) accessMembers(c *gin.Context) {
 	claims, err := h.validateAuthHeader(c.Request)
 	if err != nil {
@@ -629,6 +761,19 @@ func (h *authHTTP) accessMembers(c *gin.Context) {
 	})
 }
 
+// accessPending godoc
+// @Summary      List pending access requests
+// @Description  Returns the pending access queue for the active tenant scope.
+// @Tags         Access
+// @Security     BearerAuth
+// @Produce      json
+// @Param        tenant_id  query     string  false  "Tenant ID"
+// @Success      200        {object}  accessPendingListResponse
+// @Failure      400        {object}  authErrorResponse
+// @Failure      401        {object}  authErrorResponse
+// @Failure      403        {object}  authErrorResponse
+// @Failure      500        {object}  authErrorResponse
+// @Router       /api/v1/access/pending [get]
 func (h *authHTTP) accessPending(c *gin.Context) {
 	claims, err := h.validateAuthHeader(c.Request)
 	if err != nil {
@@ -682,6 +827,22 @@ func (h *authHTTP) accessPending(c *gin.Context) {
 	})
 }
 
+// reviewPendingAccess godoc
+// @Summary      Review a pending access request
+// @Description  Approves or rejects a pending access request for the target tenant.
+// @Tags         Access
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        request_id  path      string                       true   "Pending request ID"
+// @Param        payload     body      pendingAccessReviewRequest   true   "Review payload"
+// @Success      200         {object}  accessPendingReviewResponse
+// @Failure      400         {object}  authErrorResponse
+// @Failure      401         {object}  authErrorResponse
+// @Failure      403         {object}  authErrorResponse
+// @Failure      404         {object}  authErrorResponse
+// @Failure      500         {object}  authErrorResponse
+// @Router       /api/v1/access/pending/{request_id} [patch]
 func (h *authHTTP) reviewPendingAccess(c *gin.Context) {
 	claims, err := h.validateAuthHeader(c.Request)
 	if err != nil {
@@ -701,11 +862,7 @@ func (h *authHTTP) reviewPendingAccess(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		Action   string `json:"action"`
-		TenantID string `json:"tenant_id"`
-		RoleCode string `json:"role_code"`
-	}
+	var req pendingAccessReviewRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload"})
 		return
@@ -800,6 +957,22 @@ func (h *authHTTP) reviewPendingAccess(c *gin.Context) {
 	})
 }
 
+// updateMemberRole godoc
+// @Summary      Update a tenant member role
+// @Description  Reassigns the role of a member inside the active tenant scope.
+// @Tags         Access
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        user_id  path      string                         true  "Member user ID"
+// @Param        payload  body      accessMemberRoleUpdateRequest  true  "Role mutation payload"
+// @Success      200      {object}  accessMemberMutationResponse
+// @Failure      400      {object}  authErrorResponse
+// @Failure      401      {object}  authErrorResponse
+// @Failure      403      {object}  authErrorResponse
+// @Failure      404      {object}  authErrorResponse
+// @Failure      500      {object}  authErrorResponse
+// @Router       /api/v1/access/members/{user_id}/role [patch]
 func (h *authHTTP) updateMemberRole(c *gin.Context) {
 	claims, err := h.validateAuthHeader(c.Request)
 	if err != nil {
@@ -819,10 +992,7 @@ func (h *authHTTP) updateMemberRole(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		TenantID string `json:"tenant_id"`
-		RoleCode string `json:"role_code"`
-	}
+	var req accessMemberRoleUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload"})
 		return

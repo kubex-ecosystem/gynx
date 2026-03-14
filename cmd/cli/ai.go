@@ -39,10 +39,10 @@ func getProviderAPIKey(targetProvider, currentProvider, apiKey string) string {
 
 // setupConfig creates configuration with proper API key distribution
 func setupConfig(configFile, provider, apiKey, ollamaEndpoint string) (*kbxTypes.SrvConfig, error) {
-	var cfg *kbxTypes.SrvConfig
+	// var cfg *kbxTypes.SrvConfig
 	// var err error
 
-	// if configFile != "" {
+	// if confsigFile != "" {
 	// 	cfg, err = loadConfigFile(configFile)
 	// 	if err != nil {
 	// 		return nil, fmt.Errorf("error loading configuration file: %v", err)
@@ -52,11 +52,11 @@ func setupConfig(configFile, provider, apiKey, ollamaEndpoint string) (*kbxTypes
 	// 	cfg = getDefaultConfig(initArgs)
 	// }
 
-	if cfg == nil {
-		return nil, fmt.Errorf("configuration not loaded")
-	}
+	// if cfg == nil {
+	return nil, fmt.Errorf("configuration not loaded")
+	// }
 
-	return cfg, nil
+	// return cfg, nil
 }
 
 // setupProvider initializes and validates the AI provider

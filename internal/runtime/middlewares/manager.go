@@ -8,8 +8,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+
+	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
+	kbxGet "github.com/kubex-ecosystem/kbx/get"
 	gl "github.com/kubex-ecosystem/logz"
-	"github.com/spf13/viper"
 )
 
 var wasLoggedEntFeat bool
@@ -448,7 +450,14 @@ func (pm *ProductionMiddleware) SecureServerInit(r *gin.Engine, fullBindAddress 
 }
 
 func (pm *ProductionMiddleware) GetTrustedProxies() ([]string, error) {
-	trustedProxies := viper.GetStringSlice("trustedProxies")
+	// trustedProxies := viper.GetStringSlice("trustedProxies")
+
+	tpxStr := kbxGet.EnvOr("KUBEX_GNYX_TRUSTED_PROXIES", kbxGet.EnvOr("KUBEX_TRUSTED_PROXIES", kbxMod.DefaultGNyxLoopbackIP))
+	trustedProxies := []string{}
+	if len(tpxStr) > 0 {
+		trustedProxies = strings.Split(tpxStr, ",")
+	}
+
 	if len(trustedProxies) == 0 {
 		interfaces, err := net.Interfaces()
 		if err != nil {
@@ -479,26 +488,46 @@ func (pm *ProductionMiddleware) GetTrustedProxies() ([]string, error) {
 }
 
 func (pm *ProductionMiddleware) ValidateExpectedHosts(fullBindAddress string, c *gin.Context) bool {
-	// TODO: ENABLE THIS WHEN RUNNING WITH ANY PUBLISHED ADDRESS/PORT
 
-	// if c.Request.Host == fullBindAddress ||
-	// 	c.Request.URL.Host == fullBindAddress {
-	// 	return true
-	// }
+	// Check if the environment is production
+	envMode := kbxGet.EnvOr("BUILD_MODE", kbxGet.EnvOr("KUBEX_ENV", kbxGet.EnvOr("ENV", "development")))
+	if envMode == "production" {
+		return true
+	}
 
-	// bindPort := strings.Split(fullBindAddress, ":")[1]
-	// trustedLocalList := []string{"localhost", "127.0.0.1", "localhost:" + bindPort, "127.0.0.1:" + bindPort}
-	// for _, trustedLocal := range trustedLocalList {
-	// 	if c.Request.Host == trustedLocal ||
-	// 		c.Request.URL.Host == trustedLocal {
-	// 		return true
-	// 	}
-	// }
+	// Check if the host is the full bind address
+	if c.Request.Host == fullBindAddress ||
+		c.Request.URL.Host == fullBindAddress {
+		return true
+	}
 
-	//c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Unauthorized host: " + c.Request.Host})
-	// return false
+	// Get the bind port
+	_, bindPort, err := net.SplitHostPort(fullBindAddress)
+	if err != nil {
+		return false
+	}
 
-	return true
+	// Create a list of trusted local addresses with the bind port
+	trustedLocalList := []string{}
+	for loopbackAddress := range strings.SplitSeq(kbxMod.DefaultGNyxLoopbackIP, ",") {
+		trustedLocalList = append(trustedLocalList, loopbackAddress)
+		trustedLocalList = append(trustedLocalList, loopbackAddress+":"+bindPort)
+	}
+
+	// Ensure localhost is in the trusted local list, with and without port
+	trustedLocalList = append(trustedLocalList, "localhost")
+	trustedLocalList = append(trustedLocalList, "localhost:"+bindPort)
+
+	// Check if the host is in the trusted local lists
+	for _, trustedLocal := range trustedLocalList {
+		if c.Request.Host == trustedLocal ||
+			c.Request.URL.Host == trustedLocal {
+			return true
+		}
+	}
+
+	c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Unauthorized host: " + c.Request.Host})
+	return false
 }
 
 // func max(a, b int) int {

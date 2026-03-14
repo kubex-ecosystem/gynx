@@ -4,8 +4,6 @@ package invite
 import (
 	"context"
 	"time"
-
-	t "github.com/kubex-ecosystem/gnyx/internal/types"
 )
 
 type Service interface {
@@ -89,6 +87,12 @@ type UserDTO struct {
 	CreatedAt string `json:"created_at"`
 }
 
-type ErrorResponse = t.ErrorResponse
+type ErrorResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
 
-type MessageResponse = t.MessageResponse
+type MessageResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}

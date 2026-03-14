@@ -30,16 +30,30 @@ type CookieOptions struct {
 func ResolveCookieOptions() CookieOptions {
 	env := strings.ToLower(
 		kbxGet.ValueOrIf(
-			kbxGet.EnvOr("GIN_MODE", "debug") == "release", // Confere se está em modo release
-			kbxGet.EnvOr("KUBEX_GNYX_ENV", "production"),   // Se estiver em release, prioriza produção caso variável não esteja setada
-			kbxGet.EnvOr("KUBEX_GNYX_ENV", "development"),  // Senão, assume development como padrão, caso variável não esteja setada
+			// Verifico se o roteador está em DEBUG, porque se estiver, nem vou considerar nada além da variável própria da kubex e fallback em dev direto.
+			kbxGet.EnvOr("GIN_MODE", "debug") != "release",
+
+			// Se estiver em release, prioriza produção caso variável não esteja setada
+			kbxGet.EnvOr("KUBEX_GNYX_ENV", "development"),
+
+			// Caso contrário, iremos considerar qualquer cenário das variáveis abaixo como fonte do valor e usar production como fallback.
+			kbxGet.EnvOr("BUILD_MODE",
+				kbxGet.EnvOr("KUBEX_ENV",
+					kbxGet.EnvOr("ENV",
+						kbxGet.EnvOr("KUBEX_GNYX_ENV", "production"),
+					),
+				),
+			),
 		),
 	)
 	publicDomain := strings.TrimSpace(
 		kbxGet.ValueOrIf(
-			env == "production", // Confere se está em produção
-			kbxGet.EnvOr("PUBLIC_DOMAIN", ".gnyx.kubex.world"), // Se estiver em produção, prioriza domínio oficial caso variável não esteja setada
-			kbxGet.EnvOr("PUBLIC_DOMAIN", "localhost"),         // Senão, assume localhost como padrão, caso variável não esteja setada
+			// Confere se não está em desenvolvimento
+			env != "development",
+			// Se não estiver em desenvolvimento, insere o domínio oficial como fallback
+			kbxGet.EnvOr("PUBLIC_DOMAIN", ".kubex.world"),
+			// Se estiver em desenvolvimento, insere localhost como fallback,mas ainda permite valor vindo da variável caso preenchida
+			kbxGet.EnvOr("PUBLIC_DOMAIN", "localhost"),
 		),
 	)
 
@@ -49,14 +63,14 @@ func ResolveCookieOptions() CookieOptions {
 	case "staging", "stage", "testing", "test":
 		// homologação/testes
 		cookie.Domain = publicDomain
-		cookie.Secure = false // ajustar conforme necessário
+		cookie.Secure = false // ajustar se necessário
 		cookie.SameSite = http.SameSiteLaxMode
 		cookie.HTTPOnly = true
 		cookie.Path = "/"
 		return cookie
 	case "development", "dev", "local":
 		// local/development
-		// cookie.Domain = "localhost"
+		cookie.Domain = publicDomain
 		cookie.Secure = false
 		cookie.SameSite = http.SameSiteLaxMode
 		cookie.HTTPOnly = true
@@ -64,7 +78,8 @@ func ResolveCookieOptions() CookieOptions {
 		return cookie
 	default:
 		// produção
-		cookie.Domain = ".gnyx.kubex.world"
+		// Na produção DE VERDADE, o domínio sempre será .kubex.world
+		cookie.Domain = ".kubex.world"
 		cookie.Secure = true
 		cookie.SameSite = http.SameSiteNoneMode
 		cookie.HTTPOnly = true

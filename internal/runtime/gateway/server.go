@@ -151,7 +151,7 @@ func (s *Server) Start() error {
 	// Enable logging middleware in release mode
 	s.Use(swm.Logger(gl.GetLoggerZ("gnyx"))) //  Por ora, tudo igual
 
-	if kbxGet.ValOrType[bool](serverCfg.Basic.CORSEnabled, kbxGet.EnvOrType("KUBEX_GNYX_ENABLE_CORS", true)) {
+	if kbxGet.ValOrType(serverCfg.Basic.CORSEnabled, kbxGet.EnvOrType("KUBEX_GNYX_ENABLE_CORS", true)) {
 		if err := swm.SecureServerInit(s.Engine, srvAddr); err != nil {
 			return gl.Errorf("failed to initialize security middleware: %v", err)
 		}
@@ -162,11 +162,13 @@ func (s *Server) Start() error {
 			if origin != "" {
 				c.Header("Access-Control-Allow-Origin", origin)
 			}
+
 			c.Header("Access-Control-Allow-Credentials", "true")
-			c.Header("Access-Control-Allow-Methods", "*")
+			c.Header("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
 			c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
 			// c.Header("Content-Security-Policy", "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;")
-			c.Header("Referrer-Policy", "no-referrer")
+			// c.Header("Referrer-Policy", "no-referrer")
+			c.Header("Referrer-Policy", "strict-origin-when-cross-origin")
 
 			if c.Request.Method == "OPTIONS" {
 				c.AbortWithStatus(200)

@@ -31,6 +31,66 @@ type dependencyStatus struct {
 	Error  string `json:"error,omitempty"`
 }
 
+type healthzResponse struct {
+	Status    string `json:"status"`
+	Service   string `json:"service"`
+	Timestamp int64  `json:"timestamp"`
+	Version   string `json:"version"`
+}
+
+type providerListItem struct {
+	Name         string           `json:"name"`
+	Type         string           `json:"type"`
+	Available    bool             `json:"available"`
+	DefaultModel string           `json:"defaultModel"`
+	Health       dependencyStatus `json:"health"`
+	Error        string           `json:"error,omitempty"`
+}
+
+type providersListResponse struct {
+	Object    string                 `json:"object"`
+	Data      []providerListItem     `json:"data"`
+	HasMore   bool                   `json:"hasMore"`
+	Timestamp int64                  `json:"timestamp"`
+	Providers map[string]interface{} `json:"providers"`
+}
+
+type runtimeConfigResponse struct {
+	Server             map[string]interface{} `json:"server"`
+	Providers          map[string]interface{} `json:"providers"`
+	AvailableProviders []string               `json:"available_providers"`
+	DefaultProvider    string                 `json:"default_provider"`
+	Environment        map[string]interface{} `json:"environment"`
+	OpenAIAvailable    bool                   `json:"openai_available"`
+	DeepSeekAvailable  bool                   `json:"deepseek_available"`
+	OllamaAvailable    bool                   `json:"ollama_available"`
+	ClaudeAvailable    bool                   `json:"claude_available"`
+	GeminiAvailable    bool                   `json:"gemini_available"`
+	ChatGPTAvailable   bool                   `json:"chatgpt_available"`
+}
+
+type providerTestResponse struct {
+	Available bool   `json:"available"`
+	Message   string `json:"message"`
+}
+
+type unifiedResponse struct {
+	Response string            `json:"response"`
+	Provider string            `json:"provider"`
+	Model    string            `json:"model"`
+	Mode     string            `json:"mode"`
+	Usage    map[string]any    `json:"usage"`
+	Attempts []providerAttempt `json:"attempts"`
+}
+
+type unifiedErrorResponse struct {
+	Error      string            `json:"error"`
+	Message    string            `json:"message,omitempty"`
+	ErrorClass string            `json:"error_class,omitempty"`
+	Provider   string            `json:"provider,omitempty"`
+	Attempts   []providerAttempt `json:"attempts,omitempty"`
+}
+
 type unifiedRequest struct {
 	Lang        string             `json:"lang"`
 	Purpose     string             `json:"purpose"`
@@ -81,6 +141,13 @@ func registerRuntimeAIRoutes(
 	r.POST("/unified/stream", ctl.unifiedStream)
 }
 
+// healthz godoc
+// @Summary      Lightweight health check
+// @Description  Returns a compact liveness payload for deployment health checks.
+// @Tags         Runtime AI
+// @Produce      json
+// @Success      200  {object}  healthzResponse
+// @Router       /api/v1/healthz [get]
 func (ctl *runtimeAIController) healthz(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":    "healthy",
@@ -90,6 +157,13 @@ func (ctl *runtimeAIController) healthz(c *gin.Context) {
 	})
 }
 
+// health godoc
+// @Summary      Detailed health check
+// @Description  Returns runtime health plus provider dependency status.
+// @Tags         Runtime AI
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Router       /api/v1/health [get]
 func (ctl *runtimeAIController) health(c *gin.Context) {
 	deps := map[string]dependencyStatus{}
 	for _, providerName := range ctl.reg.ListProviders() {
@@ -112,6 +186,13 @@ func (ctl *runtimeAIController) health(c *gin.Context) {
 	})
 }
 
+// providers godoc
+// @Summary      List runtime providers
+// @Description  Returns the active provider catalog and health status for the gateway runtime.
+// @Tags         Runtime AI
+// @Produce      json
+// @Success      200  {object}  providersListResponse
+// @Router       /api/v1/providers [get]
 func (ctl *runtimeAIController) providers(c *gin.Context) {
 	availableNames := ctl.reg.ListProviders()
 	availableSet := make(map[string]struct{}, len(availableNames))
@@ -150,6 +231,13 @@ func (ctl *runtimeAIController) providers(c *gin.Context) {
 	})
 }
 
+// runtimeConfig godoc
+// @Summary      Get runtime configuration snapshot
+// @Description  Returns the public runtime configuration used by the frontend.
+// @Tags         Runtime AI
+// @Produce      json
+// @Success      200  {object}  runtimeConfigResponse
+// @Router       /api/v1/config [get]
 func (ctl *runtimeAIController) runtimeConfig(c *gin.Context) {
 	availableNames := ctl.reg.ListProviders()
 	availableSet := make(map[string]struct{}, len(availableNames))
@@ -206,6 +294,15 @@ func (ctl *runtimeAIController) runtimeConfig(c *gin.Context) {
 	})
 }
 
+// testProvider godoc
+// @Summary      Test a provider
+// @Description  Performs a lightweight availability check against a configured provider.
+// @Tags         Runtime AI
+// @Produce      json
+// @Param        provider  query     string  true  "Provider name"
+// @Success      200       {object}  providerTestResponse
+// @Failure      400       {object}  authErrorResponse
+// @Router       /api/v1/test [get]
 func (ctl *runtimeAIController) testProvider(c *gin.Context) {
 	providerName := strings.TrimSpace(c.Query("provider"))
 	if providerName == "" {
@@ -241,6 +338,17 @@ func (ctl *runtimeAIController) testProvider(c *gin.Context) {
 	})
 }
 
+// unified godoc
+// @Summary      Execute a unified AI request
+// @Description  Executes a non-streaming provider request using the active server-side provider registry.
+// @Tags         Runtime AI
+// @Accept       json
+// @Produce      json
+// @Param        payload  body      unifiedRequest       true  "Unified AI request"
+// @Success      200      {object}  unifiedResponse
+// @Failure      400      {object}  unifiedErrorResponse
+// @Failure      502      {object}  unifiedErrorResponse
+// @Router       /api/v1/unified [post]
 func (ctl *runtimeAIController) unified(c *gin.Context) {
 	req, providerName, modelCandidates, err := ctl.decodeUnifiedRequest(c)
 	if err != nil {
@@ -271,6 +379,17 @@ func (ctl *runtimeAIController) unified(c *gin.Context) {
 	})
 }
 
+// unifiedStream godoc
+// @Summary      Execute a streaming unified AI request
+// @Description  Executes a streaming provider request using Server-Sent Events.
+// @Tags         Runtime AI
+// @Accept       json
+// @Produce      text/event-stream
+// @Param        payload  body      unifiedRequest  true  "Unified streaming AI request"
+// @Success      200      {string}  string          "SSE stream"
+// @Failure      400      {object}  unifiedErrorResponse
+// @Failure      500      {object}  unifiedErrorResponse
+// @Router       /api/v1/unified/stream [post]
 func (ctl *runtimeAIController) unifiedStream(c *gin.Context) {
 	req, providerName, modelCandidates, err := ctl.decodeUnifiedRequest(c)
 	if err != nil {

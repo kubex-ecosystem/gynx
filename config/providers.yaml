@@ -75,7 +75,13 @@ development:
 
     # CORS Configuration
     cors:
-      allow_origins: ["*"] # em prod: ["https://kubex.world"]
+      allow_origins:
+        [
+          "https://gnyx.kubex.world",
+          "https://kubex.world",
+          "https://www.kubex.world",
+          "https://*.kubex.world",
+        ]
       allow_methods: ["GET", "POST", "PUT", "DELETE"]
       allow_headers: ["Content-Type", "Authorization"]
       allow_credentials: true
