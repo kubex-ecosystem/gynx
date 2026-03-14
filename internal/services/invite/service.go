@@ -153,7 +153,7 @@ func (s *Service) CreateInvite(ctx context.Context, req api.CreateInviteReq) (*a
 			existing.ExpiresAt = newExpiry
 		}
 		if err := s.sendInviteEmail(existing, existing.Token, req); err != nil {
-			return nil, err
+			gl.Warnf("invite email delivery failed for existing invite %s; preserving invite for manual handoff: %v", existing.ID, err)
 		}
 		dto := toDTO(existing)
 		dto.Token = existing.Token
@@ -201,11 +201,7 @@ func (s *Service) CreateInvite(ctx context.Context, req api.CreateInviteReq) (*a
 	}
 
 	if err := s.sendInviteEmail(inv, token, req); err != nil {
-		// rollback best-effort
-		if delErr := s.repo.Delete(ctx, inv.ID, inv.Type); delErr != nil {
-			gl.Log("error", fmt.Sprintf("failed to cleanup invite %s after mail error: %v", inv.ID, delErr))
-		}
-		return nil, err
+		gl.Warnf("invite email delivery failed for invite %s; preserving invite for manual handoff: %v", inv.ID, err)
 	}
 
 	dto := toDTO(inv)

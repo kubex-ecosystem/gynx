@@ -66,9 +66,13 @@ func NewContainer(ctx context.Context, cfg *config.Config) (*Container, error) {
 			),
 		),
 	)
-	mailSender := buildMailer(mlCfgFile)
 
-	imapSvc := buildIMAPService(mlCfgFile)
+	// ------------ SMTP ------------ //
+	smtpMailer := buildMailer(mlCfgFile)
+
+	// ------------ IMAP ------------ //
+	imapService := buildIMAPService(mlCfgFile)
+
 	invStore, err := ds.GetInviteStore(ctx)
 	if err != nil {
 		return nil, gl.Errorf("failed to create invite store: %v", err)
@@ -79,7 +83,7 @@ func NewContainer(ctx context.Context, cfg *config.Config) (*Container, error) {
 	}
 	inviteSvc, err := invitesvc.NewService(invitesvc.Config{
 		Adapter:     iAdapter,
-		Mailer:      mailSender,
+		Mailer:      buildMailer(mlCfgFile),
 		Templates:   templateLoader,
 		BaseURL:     cfg.Invite.BaseURL,
 		SenderName:  cfg.Invite.SenderName,
@@ -101,11 +105,12 @@ func NewContainer(ctx context.Context, cfg *config.Config) (*Container, error) {
 	stores["invite"] = invStore
 
 	uiSvc := ui.NewUIService()
+	// inviteSvc.Mailer
 
 	return &Container{
 		templates:  templateLoader,
-		smtpSender: mailSender,
-		imapSvc:    imapSvc,
+		smtpSender: smtpMailer,
+		imapSvc:    imapService,
 		inviteSvc:  inviteSvc,
 		uiSvc:      uiSvc,
 
