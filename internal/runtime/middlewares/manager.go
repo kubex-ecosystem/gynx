@@ -523,6 +523,7 @@ func (pm *ProductionMiddleware) ValidateExpectedHosts(fullBindAddress string, c 
 	// Ensure localhost is in the trusted local list, with and without port
 	trustedLocalList = append(trustedLocalList, "localhost")
 	trustedLocalList = append(trustedLocalList, "localhost:"+bindPort)
+	trustedLocalList = append(trustedLocalList, kbxGet.EnvOr("PUBLIC_DOMAIN", kbxGet.EnvOr("PUBLIC_URL", kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_DOMAIN", "kubex.world"))))
 
 	// Check if the host is in the trusted local lists
 	for _, trustedLocal := range trustedLocalList {

@@ -44,6 +44,8 @@ RUN apk --no-cache add \
     tzdata \
     && update-ca-certificates
 
+
+
 # Create non-root user with home directory
 RUN addgroup -g 1001 -S gnyx && \
     adduser -u 1001 -S gnyx -G gnyx -h /home/gnyx
@@ -60,7 +62,9 @@ COPY --from=builder /app/dist/gnyx_linux_amd64 ./gnyx
 COPY --chown=gnyx:gnyx config/ ./config/
 
 # Ensure binary is executable
-RUN chmod +x ./gnyx
+RUN chmod +x ./gnyx && mkdir -p /home/gnyx/.kubex && chown -R gnyx:gnyx /home/gnyx/.kubex
+
+VOLUME [ "/home/gnyx/.kubex" ]
 
 # Switch to non-root user
 USER gnyx
