@@ -29,7 +29,7 @@ timeout = "5s"
 
 [deploy.health_check.http]
 port = 5000
-path = "/healthz"
+path = "/api/v1/health"
 
 # Instance configuration
 [deploy.instance]
