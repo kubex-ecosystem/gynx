@@ -2,63 +2,56 @@ package swagger
 
 import (
 	"net/http"
+	"net/url"
+	"strings"
 
-	ar "github.com/kubex-ecosystem/gnyx/interfaces"
-	proto "github.com/kubex-ecosystem/gnyx/internal/types"
-
-	gl "github.com/kubex-ecosystem/logz"
+	"github.com/gin-gonic/gin"
+	docs "github.com/kubex-ecosystem/gnyx/docs"
+	"github.com/kubex-ecosystem/gnyx/internal/config"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-type SwaggerRoutes struct {
-	ar.IRouter
-	// h *hub.DiscordMCPHub
+// Configure updates the generated Swagger metadata to reflect the active runtime.
+func Configure(cfg *config.Config) {
+	docs.SwaggerInfo.Title = "GNyx API"
+	docs.SwaggerInfo.Version = "1.0.0"
+	docs.SwaggerInfo.BasePath = "/"
+
+	baseURL := ""
+	if cfg != nil && cfg.Invite != nil {
+		baseURL = strings.TrimSpace(cfg.Invite.BaseURL)
+	}
+	if baseURL == "" && cfg != nil && cfg.ServerConfig != nil {
+		host := strings.TrimSpace(cfg.ServerConfig.Runtime.Host)
+		if host != "" {
+			baseURL = host
+			if !strings.Contains(baseURL, "://") {
+				baseURL = "http://" + baseURL
+			}
+		}
+	}
+	if baseURL == "" {
+		docs.SwaggerInfo.Host = ""
+		return
+	}
+
+	parsed, err := url.Parse(baseURL)
+	if err != nil {
+		docs.SwaggerInfo.Host = strings.TrimPrefix(strings.TrimPrefix(baseURL, "https://"), "http://")
+		return
+	}
+	if parsed.Host != "" {
+		docs.SwaggerInfo.Host = parsed.Host
+	}
 }
 
-func NewSwaggerRoutes(rtr *ar.IRouter) map[string]ar.IRoute {
-	if rtr == nil {
-		gl.Log("error", "Router is nil for SwaggerRoute")
-		return nil
-	}
-	rtl := *rtr
-
-	dbService := rtl.GetDatabaseService()
-	if dbService == nil {
-		gl.Log("error", "Database service is nil for SwaggerRoute")
-		return nil
-	}
-
-	routesMap := make(map[string]ar.IRoute)
-
-	middlewaresMap := rtl.GetMiddlewares()
-	if len(middlewaresMap) == 0 {
-		gl.Log("error", "Middlewares map is empty for SwaggerRoute")
-		return nil
-	}
-
-	secureProperties := make(map[string]bool)
-	secureProperties["secure"] = false
-	secureProperties["validateAndSanitize"] = false
-	secureProperties["validateAndSanitizeBody"] = false
-
-	// Initialize Swagger
-	ginSwagger.WrapHandler(swaggerfiles.Handler,
-		ginSwagger.URL("http://localhost:8080/swagger/doc.json"),
-		ginSwagger.DefaultModelsExpandDepth(-1))
-
-	// Set up routes
-
-	routesMap["doc"] = proto.NewRoute(
-		http.MethodGet,
-		"/swagger/*any",
-		"application/json",
-		ginSwagger.WrapHandler(swaggerfiles.Handler),
-		nil,
-		dbService,
-		secureProperties,
-		nil,
-	)
-
-	return routesMap
+// Register mounts the Swagger UI in the active Gin runtime.
+func Register(r gin.IRoutes, cfg *config.Config) {
+	Configure(cfg)
+	url := ginSwagger.URL("/swagger/doc.json")
+	r.GET("/swagger", func(c *gin.Context) {
+		c.Redirect(http.StatusTemporaryRedirect, "/swagger/index.html")
+	})
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler, url, ginSwagger.DefaultModelsExpandDepth(-1)))
 }

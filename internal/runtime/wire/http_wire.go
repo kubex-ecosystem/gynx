@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	config "github.com/kubex-ecosystem/gnyx/internal/config"
 	"github.com/kubex-ecosystem/gnyx/internal/features/providers/registry"
+	swaggerruntime "github.com/kubex-ecosystem/gnyx/internal/features/swagger"
 	"github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 	"github.com/kubex-ecosystem/gnyx/internal/runtime/middlewares"
 	kbxGet "github.com/kubex-ecosystem/kbx/get"
@@ -173,6 +174,7 @@ func (w *HTTPWire) Wire() (*gin.Engine, error) {
 	// Register routes using the provided registrar function
 	if w.routeRegistrar != nil {
 		w.routeRegistrar(w.engine.Group("/api/v1"), w.container, w.registry, w.prodMiddleware)
+		swaggerruntime.Register(w.engine, cfg)
 	} else {
 		gl.Warn("No route registrar provided, routes not registered")
 	}

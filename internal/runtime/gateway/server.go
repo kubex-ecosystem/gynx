@@ -16,6 +16,7 @@ import (
 	"github.com/kubex-ecosystem/gnyx/internal/app"
 	"github.com/kubex-ecosystem/gnyx/internal/config"
 	"github.com/kubex-ecosystem/gnyx/internal/features/providers/registry"
+	swaggerruntime "github.com/kubex-ecosystem/gnyx/internal/features/swagger"
 	"github.com/kubex-ecosystem/gnyx/internal/features/ui"
 	"github.com/kubex-ecosystem/gnyx/internal/runtime/middlewares"
 	"github.com/kubex-ecosystem/gnyx/internal/web"
@@ -192,6 +193,7 @@ func (s *Server) Start() error {
 		c.Redirect(http.StatusTemporaryRedirect, redirectTo)
 	})
 	routes.RegisterRoutesWithProviders(s.Group("/api/v1"), s.container, s.registry, s.middleware)
+	swaggerruntime.Register(s, s.container.GetConfig())
 
 	if uiroutes, err := web.NewHandler(ui.NewUIService().GetWebFS()); err != nil {
 		gl.Log("warn", "Failed to initialize web handler for UI routes: %v", err)
