@@ -22,7 +22,7 @@ RUN go mod download && go mod verify
 COPY . .
 
 # Create dist directory for binary
-RUN mkdir -p dist
+RUN go install github.com/swaggo/swag/cmd/swag@latest && mkdir -p dist
 
 # Build the application with verbose output
 RUN export CGO_ENABLED=1 && export GOOS=linux && export GOARCH=amd64 &&\

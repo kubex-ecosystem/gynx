@@ -372,12 +372,18 @@ func (pm *ProductionMiddleware) SecureServerInit(r *gin.Engine, fullBindAddress 
 
 	r.Use(
 		func(c *gin.Context) {
+			// O método que checo os loopbacks e dou um "bypass" quando é produção...
 			if !pm.ValidateExpectedHosts(fullBindAddress, c) {
 				c.Abort()
 				return
 			} else {
+
+				// Porque se for produção, ele cai aqui! kkkk E obriga a ter o header origin
+				// Além de fazer toda a validação de headers que vem do front e configuração de cookies e cache
 				c.Header("Access-Control-Allow-Origin", c.GetHeader("Origin"))
 				c.Header("Access-Control-Allow-Credentials", "true")
+
+				// Não se assuste com a lista de headers, é só pra garantir que tudo venha certinho e porque eu estava "explorando e aprendendo mais" sobre CORS
 				c.Header("Access-Control-Allow-Headers", strings.Join([]string{
 					"Accept",
 					"Origin",
