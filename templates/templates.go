@@ -5,6 +5,7 @@ import (
 	"embed"
 	"io/fs"
 	"path/filepath"
+	"strings"
 
 	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
 	kbxGet "github.com/kubex-ecosystem/kbx/get"
@@ -43,9 +44,21 @@ func GetEmailTemplateFS(path string) *EmailTemplateFSImpl {
 }
 
 func (e *EmailTemplateFSImpl) ReadFile(name string) ([]byte, error) {
-	for _, entry := range e.DEntries {
-		if entry.Name() == name {
-			return TemplatesVarFS.ReadFile(filepath.Join(e.Path, "email", name, "content.html"))
+	if name == "" {
+		return nil, fs.ErrNotExist
+	}
+
+	candidates := []string{name}
+	if !strings.HasPrefix(name, "email/") {
+		candidates = append(candidates, filepath.Join("email", name))
+	}
+	if filepath.Ext(name) == "" {
+		candidates = append(candidates, filepath.Join("email", name+".html"))
+	}
+
+	for _, candidate := range candidates {
+		if data, err := TemplatesVarFS.ReadFile(candidate); err == nil {
+			return data, nil
 		}
 	}
 	return nil, fs.ErrNotExist
@@ -58,14 +71,8 @@ func (e *EmailTemplateFSImpl) ListTemplates() []string {
 
 // GetEmailTemplate retorna o conteúdo do template de email pelo nome.
 func GetEmailTemplate(name string) ([]byte, error) {
-	return TemplatesVarFS.ReadFile(
-		filepath.Join(
-			kbxGet.EnvOr("INVITE_TEMPLATES_DIR", "templates"),
-			"email",
-			name,
-			"content.html",
-		),
-	)
+	templateFS := GetEmailTemplateFS(kbxGet.EnvOr("INVITE_TEMPLATES_DIR", "templates"))
+	return templateFS.ReadFile(name)
 }
 
 // ListEmailTemplates lista os nomes dos templates de email disponíveis.

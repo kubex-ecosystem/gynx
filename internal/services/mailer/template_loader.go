@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	kbxMod "github.com/kubex-ecosystem/gnyx/internal/module/kbx"
@@ -60,16 +61,17 @@ func (tl *TemplateLoader) loadTemplate(name string, path string) error {
 	if name == "" {
 		return gl.Errorf("template name is empty")
 	}
+	templateName := name
+	htmlPath := filepath.Join("email", templateName+".html")
 	if path != "" {
-		name = filepath.Join(path, name)
-	} else {
-		name = filepath.Join("email", name)
+		htmlPath = filepath.Join(path, templateName+".html")
 	}
-	// fPath := filepath.Join(tl.templatesFS.Path, name+".html")
-	file, err := tl.embeddedFS.Open(name + ".html")
+
+	file, err := tl.embeddedFS.Open(htmlPath)
 	if err != nil {
-		return gl.Errorf("erro ao ler conteúdo do template '%s': %v", name, err)
+		return gl.Errorf("erro ao ler conteúdo do template '%s': %v", templateName, err)
 	}
+	defer file.Close()
 	contentBytes := make([]byte, 0)
 	buffer := make([]byte, 1024)
 	for {
@@ -81,23 +83,30 @@ func (tl *TemplateLoader) loadTemplate(name string, path string) error {
 	}
 
 	// Registra o template no renderer
-	gl.Debugf("Registrando template: %s", name)
-	if err := tl.renderer.RegisterTemplate(name, string(contentBytes)); err != nil {
+	gl.Debugf("Registrando template: %s", templateName)
+	if err := tl.renderer.RegisterTemplate(templateName, string(contentBytes)); err != nil {
 		return gl.Errorf("erro ao registrar template: %v", err)
 	}
 
-	// Lê os metadados (variables.json) do FS embed, se existir
-	metaBytes, err := tl.templatesFS.ReadFile(filepath.Join(name, "variables.json"))
+	// Lê os metadados do FS embed, se existir
+	metaPath := filepath.Join("email", templateName+".json")
+	if path != "" {
+		metaPath = filepath.Join(path, templateName+".json")
+	}
+	metaBytes, err := fs.ReadFile(tl.embeddedFS, metaPath)
 	if err == nil {
 		var metadata TemplateMetadata
 		if err := json.Unmarshal(metaBytes, &metadata); err != nil {
-			return gl.Errorf("erro ao parsear variables.json: %v", err)
+			return gl.Errorf("erro ao parsear metadata do template '%s': %v", templateName, err)
 		}
-		tl.metadata[name] = &metadata
+		if strings.TrimSpace(metadata.TemplateKey) == "" {
+			metadata.TemplateKey = templateName
+		}
+		tl.metadata[templateName] = &metadata
 	} else {
 		// Garante a listagem mesmo sem metadata explícita
-		if _, ok := tl.metadata[name]; !ok {
-			tl.metadata[name] = &TemplateMetadata{TemplateKey: name}
+		if _, ok := tl.metadata[templateName]; !ok {
+			tl.metadata[templateName] = &TemplateMetadata{TemplateKey: templateName}
 		}
 	}
 
@@ -138,6 +147,7 @@ func (tl *TemplateLoader) ListTemplates() []string {
 	for name := range tl.metadata {
 		templates = append(templates, name)
 	}
+	slices.Sort(templates)
 	return templates
 }
 
