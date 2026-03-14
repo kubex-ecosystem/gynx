@@ -79,7 +79,7 @@ LABEL version="1.0.1"
 
 # Health check with retry logic
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=5 \
-    CMD curl -f http://localhost:5000/api/v1/health || exit 1
+    CMD curl -f http://localhost:5000/api/v1/healthz || exit 1
 
 # Command to run with better error handling
 # gnyx gateway up -e ./config/.env.local -r

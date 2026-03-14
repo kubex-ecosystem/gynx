@@ -195,6 +195,7 @@ func (c *Container) Bootstrap(ctx context.Context) error {
 	if err != nil {
 		return gl.Errorf("failed to resolve active DS database: %v", err)
 	}
+	gl.Noticef("Active DS database resolved to: %s", activeDBName)
 	factory, err := c.db.NewAdapterFactory(ctx, activeDBName, c.gormDB, nil)
 	if err != nil {
 		return gl.Errorf("failed to create adapter factory: %v", err)

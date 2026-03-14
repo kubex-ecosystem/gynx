@@ -87,13 +87,16 @@ func (s *authService) Login(ctx context.Context, email, password, ua, ip string)
 	email = strings.TrimSpace(strings.ToLower(email))
 	u, err := s.users.FindByEmail(ctx, email)
 	if err != nil {
+		s.logger.Warn("login failed during user lookup", "email", email, "err", err)
 		return "", time.Time{}, "", time.Time{}, ErrInvalidCredentials
 	}
 	if !u.IsActive() {
+		s.logger.Warn("login rejected for inactive user", "email", email, "user_id", u.ID)
 		return "", time.Time{}, "", time.Time{}, ErrUserInactive
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)); err != nil {
+		s.logger.Warn("login rejected due to password mismatch", "email", email, "user_id", u.ID)
 		return "", time.Time{}, "", time.Time{}, ErrInvalidCredentials
 	}
 
