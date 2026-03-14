@@ -1,0 +1,31 @@
+{
+  "databases": [
+    {
+      "id": "supabase",
+      "name": "supabase",
+      "is_default": true,
+      "enabled": true,
+      "debug": false,
+      "type": "postgres",
+      "host": "aws-1-sa-east-1.pooler.supabase.com",
+      "port": "5432",
+      "user": "postgres.fisrtbmeeajjmyqgxxpg",
+      "pass": "DOMUS_SUPABASE_PASSWORD",
+      "tls_enabled": true,
+      "db_name": "postgres",
+      "schema": "public",
+      "dsn": "postgres://postgres.fisrtbmeeajjmyqgxxpg:${DOMUS_SUPABASE_PASSWORD}@aws-1-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=disable",
+      "health_check": "postgres://postgres.fisrtbmeeajjmyqgxxpg:${DOMUS_SUPABASE_PASSWORD}@aws-1-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=disable",
+      "backend": "remotestack",
+      "options": {
+        "pool_mode": "session"
+      },
+      "migration": {
+        "enabled": true,
+        "auto": true,
+        "bootstrap": true,
+        "dry_run": false
+      }
+    }
+  ]
+}

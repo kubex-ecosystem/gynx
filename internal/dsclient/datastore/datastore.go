@@ -91,7 +91,21 @@ func Connection(ctx context.Context) (*ds.BackendConnection, error) {
 	if err != nil {
 		return nil, gl.Errorf("failed to get DS connection: %v", err)
 	}
+	if _, err := ds.GetPGExecutor(ctx, conn); err != nil {
+		return nil, gl.Errorf("failed to get DS executor: %v", err)
+	}
 	return conn, nil
+}
+
+// ActiveDBName retorna a chave lógica efetivamente resolvida pelo runtime do DS.
+func ActiveDBName(ctx context.Context) (string, error) {
+	if _, err := Connection(ctx); err != nil {
+		return "", err
+	}
+	if strings.TrimSpace(dbKey) == "" {
+		return "", gl.Errorf("active DS database key is empty")
+	}
+	return dbKey, nil
 }
 
 // UserStore retorna o store de usuários do DS.

@@ -103,6 +103,27 @@ func cmdUp(initArgs *kbxMod.InitArgs) *cobra.Command {
 					gl.Debugf("Env file load error: %v", err)
 				}
 			}
+			if !cmd.Flags().Changed("config-file") {
+				initArgs.ConfigFile = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_CONFIG_PATH", kbxMod.DefaultGNyxConfigPath))
+			}
+			if !cmd.Flags().Changed("db-config") {
+				initArgs.DBConfigFile = os.ExpandEnv(kbxGet.EnvOr("KUBEX_DOMUS_CONFIG_PATH", kbxMod.DefaultKubexDomusConfigPath))
+			}
+			if !cmd.Flags().Changed("mail-config") {
+				initArgs.MailerConfigFile = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_MAILER_CONFIG_PATH", kbxMod.DefaultMailConfigPath))
+			}
+			if !cmd.Flags().Changed("providers-config") {
+				initArgs.ProvidersConfig = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PROVIDERS_CONFIG_PATH", kbxMod.DefaultProvidersConfig))
+			}
+			if !cmd.Flags().Changed("template-dir") {
+				initArgs.TemplatesDir = os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_TEMPLATES_DIR", kbxMod.DefaultTemplatesDir))
+			}
+			if !cmd.Flags().Changed("binding") {
+				initArgs.Bind = kbxGet.EnvOr("KUBEX_GNYX_BIND", "0.0.0.0")
+			}
+			if !cmd.Flags().Changed("port") {
+				initArgs.Port = kbxGet.EnvOr("KUBEX_GNYX_PORT", "5000")
+			}
 			if initArgs.Reference == nil {
 				initArgs.Reference = kbxMod.NewReference(Name)
 			}
@@ -169,8 +190,8 @@ func cmdUp(initArgs *kbxMod.InitArgs) *cobra.Command {
 	upCmd.Flags().StringVarP(&initArgs.LogFile, "log-file", "l", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_LOG_PATH", kbxMod.DefaultGNyxLogPath)), "Path to log file")
 	upCmd.Flags().StringVarP(&initArgs.EnvFile, "env-file", "e", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_ENV_PATH", kbxMod.DefaultGNyxEnvPath)), "Path to .env file for environment variables")
 	upCmd.Flags().StringVarP(&initArgs.ConfigFile, "config-file", "f", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_CONFIG_PATH", kbxMod.DefaultGNyxConfigPath)), "Path to gateway configuration file")
-	upCmd.Flags().StringVarP(&initArgs.DBConfigFile, "db-config", "d", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_DB_CONFIG_PATH", kbxMod.DefaultKubexDomusConfigPath)), "Path to database configuration file")
-	upCmd.Flags().StringVarP(&initArgs.MailerConfigFile, "mail-config", "m", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_MAIL_CONFIG_PATH", kbxMod.DefaultMailConfigPath)), "Path to mail configuration file")
+	upCmd.Flags().StringVarP(&initArgs.DBConfigFile, "db-config", "d", os.ExpandEnv(kbxGet.EnvOr("KUBEX_DOMUS_CONFIG_PATH", kbxMod.DefaultKubexDomusConfigPath)), "Path to database configuration file")
+	upCmd.Flags().StringVarP(&initArgs.MailerConfigFile, "mail-config", "m", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_MAILER_CONFIG_PATH", kbxMod.DefaultMailConfigPath)), "Path to mail configuration file")
 	upCmd.Flags().StringVarP(&initArgs.ProvidersConfig, "providers-config", "a", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PROVIDERS_CONFIG_PATH", kbxMod.DefaultProvidersConfig)), "Path to AI providers configuration file")
 	upCmd.Flags().StringVarP(&initArgs.TemplatesDir, "template-dir", "t", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_TEMPLATE_DIR", kbxMod.DefaultTemplatesDir)), "Path to templates directory")
 	upCmd.Flags().StringVarP(&initArgs.PubKeyPath, "pub-key-path", "P", os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_PUB_KEY_PATH", kbxMod.DefaultGNyxCAPath)), "Path to public key for JWT signing")
