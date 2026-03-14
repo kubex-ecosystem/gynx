@@ -8,7 +8,9 @@ RUN apk add --no-cache \
     tzdata \
     bash \
     curl \
-    file
+    file \
+    gcc \
+    musl-dev
 
 WORKDIR /app
 
