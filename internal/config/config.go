@@ -116,6 +116,9 @@ func LoadConfig() *Config {
 	)
 
 	glgAuthConfig := loadGoogleAuthConfig(InitArgs)
+	if glgAuthConfig == nil {
+		glgAuthConfig = &AuthOAuthClientConfig{}
+	}
 
 	authCfg := &AuthConfig{
 		AccessTokenTTL:        kbxGet.ValOrType(InitArgs.AccessTokenTTL, kbxGet.EnvOrType("KUBEX_GNYX_AUTH_ACCESS_TTL", 15*time.Minute)),
@@ -166,6 +169,9 @@ func loadGoogleAuthConfig(initArgs *kbxMod.InitArgs) *AuthOAuthClientConfig {
 	cfg, err := kbx.LoadConfigOrDefault[kbx.VendorAuthConfig](kbxGet.EnvOr("KUBEX_GNYX_GOOGLE_CREDENTIALS_PATH", os.ExpandEnv(kbxMod.DefaultGoogleAuthClientPath)), true)
 	if err != nil && cfg == nil {
 		gl.Debugf("google oauth config load failed: %v", err)
+		return nil
+	}
+	if cfg == nil {
 		return nil
 	}
 	acCfg := cfg.AuthClientConfig.Web
