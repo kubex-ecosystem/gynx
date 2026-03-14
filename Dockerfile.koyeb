@@ -23,9 +23,8 @@ COPY . .
 RUN mkdir -p dist
 
 # Build the application with verbose output
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 \
-    go build -v -ldflags="-w -s -X main.version=$(date +%Y%m%d_%H%M%S)" \
-    -o dist/gnyx_linux_amd64 cmd/main.go
+RUN export CGO_ENABLED=1 && export GOOS=linux && export GOARCH=amd64 &&\
+    go build -v -ldflags="-w -s -X main.version=$(date +%Y%m%d_%H%M%S)" -o dist/gnyx_linux_amd64 cmd/main.go
 
 # Verify and debug binary
 RUN dist/gnyx_linux_amd64 --version
