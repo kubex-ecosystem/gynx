@@ -1,12 +1,12 @@
 // Package swagger provides the Swagger documentation for the GNyx API.
 // @title       GNyx API
-// @version     0.0.1
+// @version     1.0.0
 // @description Backend modular API para o GNyx. (Powered by Kubex Ecosystem)
-// @termsOfService  https://github.com/kubex-ecosystem/gnyx/terms
+// @termsOfService  https://gnyx.kubex.world/terms
 // @contact.name   GNyx API Support
-// @contact.url    https://github.com/kubex-ecosystem/gnyx
-// @contact.email  ti@kubex.world
-// @host      localhost:8080
+// @contact.url    https://gnyx.kubex.world
+// @contact.email  contact@kubex.world
+// @host      localhost:5001
 // @BasePath  /
 // @securityDefinitions.apikey BearerAuth
 // @in header
@@ -46,8 +46,8 @@ func SwaggerMain(dbService services.Service[any], _ error) {
 		SrvConfig: kbx.SrvConfig{
 			Runtime: kbxTypes.SrvRuntimeParams{
 				Host: "localhost",
-				Port: "8080",
-				Bind: net.JoinHostPort("localhost", "8080"),
+				Port: "5001",
+				Bind: net.JoinHostPort("localhost", "5001"),
 			},
 			Files: kbxTypes.SrvFilesParams{
 				EnvFile:         os.ExpandEnv(kbxGet.EnvOr("KUBEX_GNYX_ENV_FILE", "./.env")),
@@ -76,7 +76,7 @@ func SwaggerMain(dbService services.Service[any], _ error) {
 
 	// Initialize Swagger
 	ginSwagger.WrapHandler(swaggerfiles.Handler,
-		ginSwagger.URL("http://localhost:8080/swagger/doc.json"),
+		ginSwagger.URL("http://localhost:5001/swagger/doc.json"),
 		ginSwagger.DefaultModelsExpandDepth(-1))
 
 	// Set up Swagger UI
@@ -111,10 +111,10 @@ func SwaggerMain(dbService services.Service[any], _ error) {
 
 	// Start server
 	gl.Log("info", "GNyx API Server starting...")
-	gl.Log("info", "📚 Swagger docs available at: http://localhost:8080/swagger/index.html")
-	gl.Log("info", "🔍 API endpoints at: http://localhost:8080/api/v1")
+	gl.Log("info", "📚 Swagger docs available at: http://localhost:5001/swagger/index.html")
+	gl.Log("info", "🔍 API endpoints at: http://localhost:5001/api/v1")
 
-	docs.SwaggerInfo.Host = "localhost:8080"
+	docs.SwaggerInfo.Host = "localhost:5001"
 	docs.SwaggerInfo.Title = "GNyx API"
 
 	if err := rtr.Start(); err != nil {

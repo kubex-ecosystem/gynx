@@ -175,7 +175,7 @@ func (s *Server) Start() error {
 	s.Use(gin.Recovery())
 
 	// Enable logging middleware in release mode
-	s.Use(swm.Logger(gl.GetLoggerZ("github.com/kubex-ecosystem/gnyx"))) //  Por ora, tudo igual
+	s.Use(swm.Logger(gl.GetLoggerZ("gnyx.kubex.world"))) //  Por ora, tudo igual
 
 	// Start server
 	gl.Successf("GNyx listening on %s (Enterprise features enabled)", srvAddr)

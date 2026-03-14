@@ -37,9 +37,9 @@ func ResolveCookieOptions() CookieOptions {
 	)
 	publicDomain := strings.TrimSpace(
 		kbxGet.ValueOrIf(
-			env == "production",                           // Confere se está em produção
-			kbxGet.EnvOr("PUBLIC_DOMAIN", ".kubex.world"), // Se estiver em produção, prioriza domínio oficial caso variável não esteja setada
-			kbxGet.EnvOr("PUBLIC_DOMAIN", "localhost"),    // Senão, assume localhost como padrão, caso variável não esteja setada
+			env == "production", // Confere se está em produção
+			kbxGet.EnvOr("PUBLIC_DOMAIN", ".gnyx.kubex.world"), // Se estiver em produção, prioriza domínio oficial caso variável não esteja setada
+			kbxGet.EnvOr("PUBLIC_DOMAIN", "localhost"),         // Senão, assume localhost como padrão, caso variável não esteja setada
 		),
 	)
 
@@ -64,7 +64,7 @@ func ResolveCookieOptions() CookieOptions {
 		return cookie
 	default:
 		// produção
-		cookie.Domain = ".kubex.world"
+		cookie.Domain = ".gnyx.kubex.world"
 		cookie.Secure = true
 		cookie.SameSite = http.SameSiteNoneMode
 		cookie.HTTPOnly = true

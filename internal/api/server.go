@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/kubex-ecosystem/gnyx/internal/types"
+
+	vs "github.com/kubex-ecosystem/gnyx/internal/module/version"
 	gl "github.com/kubex-ecosystem/logz"
 )
 
@@ -82,7 +84,7 @@ func (a *KubexAPI) handleScorecard(w http.ResponseWriter, r *http.Request) {
 	// Set headers
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("X-Schema-Version", "scorecard@1.0.0")
-	w.Header().Set("X-Server-Version", "github.com/kubex-ecosystem/-v1.0.0")
+	w.Header().Set("X-Server-Version", "gnyx.kubex.world@"+vs.GetVersion())
 	w.Header().Set("Cache-Control", "max-age=300") // 5 minutes cache
 
 	// Return scorecard

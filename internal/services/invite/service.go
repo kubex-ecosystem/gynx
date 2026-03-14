@@ -417,7 +417,7 @@ func (s *Service) sendInviteEmail(inv *domain.Invitation, token string, req api.
 
 func (s *Service) inviteURL(token string) string {
 	base := strings.TrimRight(s.baseURL, "/")
-	return fmt.Sprintf("%s/invite/%s", base, token)
+	return fmt.Sprintf("%s/#accept-invite?token=%s", base, strings.TrimSpace(token))
 }
 
 func (s *Service) plainTextFallback(inv *domain.Invitation, url string) string {

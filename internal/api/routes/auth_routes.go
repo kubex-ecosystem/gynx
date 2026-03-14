@@ -84,6 +84,38 @@ type accessMemberMutationResponse struct {
 	Member  accessMemberPayload `json:"member"`
 }
 
+type accessPendingRequestPayload struct {
+	ID               string  `json:"id"`
+	Email            string  `json:"email"`
+	Provider         string  `json:"provider"`
+	Name             string  `json:"name,omitempty"`
+	Company          string  `json:"company,omitempty"`
+	UseCase          string  `json:"use_case,omitempty"`
+	Source           string  `json:"source,omitempty"`
+	AvatarURL        string  `json:"avatar_url,omitempty"`
+	Status           string  `json:"status"`
+	TenantID         *string `json:"tenant_id,omitempty"`
+	RoleCode         *string `json:"role_code,omitempty"`
+	CreatedAt        string  `json:"created_at"`
+	ReviewedAt       string  `json:"reviewed_at,omitempty"`
+	UserID           string  `json:"user_id,omitempty"`
+	UserExists       bool    `json:"user_exists"`
+	HasAnyMembership bool    `json:"has_any_membership"`
+}
+
+type accessPendingListResponse struct {
+	TenantID           string                        `json:"tenant_id"`
+	CurrentUserID      string                        `json:"current_user_id"`
+	CurrentRoleCode    string                        `json:"current_role_code,omitempty"`
+	CurrentPermissions []string                      `json:"current_permissions"`
+	Requests           []accessPendingRequestPayload `json:"requests"`
+}
+
+type accessPendingReviewResponse struct {
+	Message string                      `json:"message"`
+	Request accessPendingRequestPayload `json:"request"`
+}
+
 type accessScopePayload struct {
 	HasAccess            bool                  `json:"has_access"`
 	HasPendingAccess     bool                  `json:"has_pending_access"`
@@ -105,6 +137,29 @@ type pendingAccessPayload struct {
 	RoleCode   *string `json:"role_code,omitempty"`
 	CreatedAt  string  `json:"created_at"`
 	ReviewedAt string  `json:"reviewed_at,omitempty"`
+}
+
+type publicAccessRequestPayload struct {
+	Name        string  `json:"name"`
+	Email       string  `json:"email"`
+	Company     string  `json:"company,omitempty"`
+	UseCase     string  `json:"use_case,omitempty"`
+	Source      string  `json:"source,omitempty"`
+	PageURL     string  `json:"page_url,omitempty"`
+	Language    string  `json:"language,omitempty"`
+	UTMSource   string  `json:"utm_source,omitempty"`
+	UTMMedium   string  `json:"utm_medium,omitempty"`
+	UTMCampaign string  `json:"utm_campaign,omitempty"`
+	TenantID    *string `json:"tenant_id,omitempty"`
+	RoleCode    *string `json:"role_code,omitempty"`
+}
+
+type publicAccessRequestResponse struct {
+	Status    string `json:"status"`
+	Message   string `json:"message"`
+	Email     string `json:"email"`
+	Action    string `json:"action"`
+	RequestID string `json:"request_id,omitempty"`
 }
 
 type mePayload struct {
@@ -165,10 +220,13 @@ func RegisterAuthHTTP(r *gin.RouterGroup, container types.IContainer) (gin.IRout
 		"POST /auth/sign-up":                  h.signUp,
 		"POST /auth/sign-in":                  h.signIn,
 		"POST /auth/refresh":                  h.refresh,
+		"POST /public/access-request":         h.publicAccessRequest,
 		"POST /sign-out":                      h.signOut,
 		"GET /me":                             h.me,
 		"GET /auth/me":                        h.me,
 		"GET /access/members":                 h.accessMembers,
+		"GET /access/pending":                 h.accessPending,
+		"PATCH /access/pending/:request_id":   h.reviewPendingAccess,
 		"PATCH /access/members/:user_id/role": h.updateMemberRole,
 		"GET /auth/google/start":              h.googleStart,
 		"GET /auth/v1/callback":               h.handleGoogleCallback,
@@ -221,6 +279,88 @@ func (h *authHTTP) signUp(c *gin.Context) {
 		"id":    user.ID.String(),
 		"email": user.Email,
 		"name":  user.Name,
+	})
+}
+
+func (h *authHTTP) publicAccessRequest(c *gin.Context) {
+	var req publicAccessRequestPayload
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload"})
+		return
+	}
+
+	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
+	req.Name = strings.TrimSpace(req.Name)
+	req.Company = strings.TrimSpace(req.Company)
+	req.UseCase = strings.TrimSpace(req.UseCase)
+	req.Source = firstNonEmpty(strings.TrimSpace(req.Source), "kubex.world-landing")
+	req.PageURL = strings.TrimSpace(req.PageURL)
+	req.Language = strings.TrimSpace(req.Language)
+	req.UTMSource = strings.TrimSpace(req.UTMSource)
+	req.UTMMedium = strings.TrimSpace(req.UTMMedium)
+	req.UTMCampaign = strings.TrimSpace(req.UTMCampaign)
+
+	if req.Name == "" || req.Email == "" || !strings.Contains(req.Email, "@") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "name and a valid email are required"})
+		return
+	}
+
+	if h.userRepo != nil {
+		user, err := h.userRepo.FindByEmail(c.Request.Context(), req.Email)
+		if err == nil && user != nil {
+			memberships, listErr := h.userRepo.ListMemberships(c.Request.Context(), user.ID)
+			if listErr == nil && len(memberships) > 0 {
+				writeJSON(c.Writer, http.StatusOK, publicAccessRequestResponse{
+					Status:  "already_has_access",
+					Message: "An active account already exists for this email. Use the workspace sign-in flow.",
+					Email:   req.Email,
+					Action:  "sign_in",
+				})
+				return
+			}
+		}
+	}
+
+	store, err := datastore.PendingAccessStore(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "pending access store not available"})
+		return
+	}
+
+	metadata, _ := json.Marshal(map[string]any{
+		"company":      req.Company,
+		"use_case":     req.UseCase,
+		"source":       req.Source,
+		"page_url":     req.PageURL,
+		"language":     req.Language,
+		"utm_source":   req.UTMSource,
+		"utm_medium":   req.UTMMedium,
+		"utm_campaign": req.UTMCampaign,
+	})
+
+	input := &dsclient.CreatePendingAccessRequestInput{
+		Email:              req.Email,
+		Provider:           "landing",
+		Name:               optionalString(req.Name),
+		RequesterIP:        optionalString(c.ClientIP()),
+		RequesterUserAgent: optionalString(c.Request.UserAgent()),
+		TenantID:           req.TenantID,
+		RoleCode:           req.RoleCode,
+		Metadata:           metadata,
+	}
+
+	item, err := store.Create(c.Request.Context(), input)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to register access request"})
+		return
+	}
+
+	writeJSON(c.Writer, http.StatusAccepted, publicAccessRequestResponse{
+		Status:    "pending_review",
+		Message:   "Your access request was registered and is waiting for manual review.",
+		Email:     req.Email,
+		Action:    "wait_for_review",
+		RequestID: item.ID,
 	})
 }
 
@@ -489,6 +629,177 @@ func (h *authHTTP) accessMembers(c *gin.Context) {
 	})
 }
 
+func (h *authHTTP) accessPending(c *gin.Context) {
+	claims, err := h.validateAuthHeader(c.Request)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	userID, err := uuid.Parse(claims.Sub)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	memberships, currentMembership, err := h.loadMembershipsWithPermissions(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	tenantID := strings.TrimSpace(c.Query("tenant_id"))
+	if tenantID == "" && currentMembership != nil {
+		tenantID = currentMembership.TenantID.String()
+	}
+	if tenantID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing tenant scope"})
+		return
+	}
+
+	requestedMembership := pickMembershipByTenantID(memberships, tenantID)
+	if requestedMembership == nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "tenant scope not allowed"})
+		return
+	}
+	if !hasPermission(requestedMembership.Permissions, "user.read") {
+		c.JSON(http.StatusForbidden, gin.H{"error": "insufficient permissions"})
+		return
+	}
+
+	requests, err := loadPendingAccessRequests(c.Request.Context(), h.userRepo, tenantID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to load pending access requests"})
+		return
+	}
+
+	writeJSON(c.Writer, http.StatusOK, accessPendingListResponse{
+		TenantID:           tenantID,
+		CurrentUserID:      userID.String(),
+		CurrentRoleCode:    requestedMembership.RoleCode,
+		CurrentPermissions: requestedMembership.Permissions,
+		Requests:           requests,
+	})
+}
+
+func (h *authHTTP) reviewPendingAccess(c *gin.Context) {
+	claims, err := h.validateAuthHeader(c.Request)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	actorUserID, err := uuid.Parse(claims.Sub)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	requestID := strings.TrimSpace(c.Param("request_id"))
+	if requestID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing request id"})
+		return
+	}
+
+	var req struct {
+		Action   string `json:"action"`
+		TenantID string `json:"tenant_id"`
+		RoleCode string `json:"role_code"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload"})
+		return
+	}
+
+	req.Action = strings.ToLower(strings.TrimSpace(req.Action))
+	req.TenantID = strings.TrimSpace(req.TenantID)
+	req.RoleCode = strings.TrimSpace(req.RoleCode)
+	if req.Action != "approve" && req.Action != "reject" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "action must be approve or reject"})
+		return
+	}
+	if req.TenantID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "tenant_id is required"})
+		return
+	}
+
+	memberships, _, err := h.loadMembershipsWithPermissions(c.Request.Context(), actorUserID)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	requestedMembership := pickMembershipByTenantID(memberships, req.TenantID)
+	if requestedMembership == nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "tenant scope not allowed"})
+		return
+	}
+	if !hasPermission(requestedMembership.Permissions, "user.invite") {
+		c.JSON(http.StatusForbidden, gin.H{"error": "insufficient permissions"})
+		return
+	}
+
+	store, err := datastore.PendingAccessStore(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "pending access store not available"})
+		return
+	}
+
+	item, err := store.GetByID(c.Request.Context(), requestID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to load pending access request"})
+		return
+	}
+	if item == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "pending access request not found"})
+		return
+	}
+	if string(item.Status) != "pending" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "pending access request is no longer pending"})
+		return
+	}
+
+	message := "pending access request rejected"
+	if req.Action == "approve" {
+		roleCode := firstNonEmpty(req.RoleCode, stringPtrValue(item.RoleCode), "viewer")
+		user, findErr := h.userRepo.FindByEmail(c.Request.Context(), strings.TrimSpace(item.Email))
+		if findErr != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to resolve pending access user"})
+			return
+		}
+		if user == nil {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "pending access request is not linked to a user yet; issue an invite instead"})
+			return
+		}
+		if err := ensureTenantMemberAccess(c.Request.Context(), user.ID.String(), req.TenantID, roleCode); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to grant tenant access"})
+			return
+		}
+		message = "pending access request approved"
+	}
+
+	if err := updatePendingAccessRequestReview(c.Request.Context(), item.ID, req.Action, actorUserID.String()); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update pending access request"})
+		return
+	}
+
+	item, err = store.GetByID(c.Request.Context(), requestID)
+	if err != nil || item == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "request updated but reload failed"})
+		return
+	}
+
+	payload, err := loadPendingAccessRequestPayload(c.Request.Context(), h.userRepo, item)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "request updated but payload reload failed"})
+		return
+	}
+
+	writeJSON(c.Writer, http.StatusOK, accessPendingReviewResponse{
+		Message: message,
+		Request: payload,
+	})
+}
+
 func (h *authHTTP) updateMemberRole(c *gin.Context) {
 	claims, err := h.validateAuthHeader(c.Request)
 	if err != nil {
@@ -696,6 +1007,93 @@ func loadPendingAccessByEmail(ctx context.Context, email string) (*pendingAccess
 	return payload, nil
 }
 
+func loadPendingAccessRequests(ctx context.Context, userRepo userstore.UserRepository, tenantID string) ([]accessPendingRequestPayload, error) {
+	store, err := datastore.PendingAccessStore(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := store.List(ctx, &dsclient.PendingAccessFilters{
+		Page:  1,
+		Limit: 50,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if res == nil || len(res.Data) == 0 {
+		return []accessPendingRequestPayload{}, nil
+	}
+
+	requests := make([]accessPendingRequestPayload, 0, len(res.Data))
+	for i := range res.Data {
+		item := res.Data[i]
+		if string(item.Status) != "pending" {
+			continue
+		}
+		if item.TenantID != nil && strings.TrimSpace(stringPtrValue(item.TenantID)) != "" && strings.TrimSpace(stringPtrValue(item.TenantID)) != tenantID {
+			continue
+		}
+		payload, err := loadPendingAccessRequestPayload(ctx, userRepo, &item)
+		if err != nil {
+			return nil, err
+		}
+		requests = append(requests, payload)
+	}
+
+	return requests, nil
+}
+
+func loadPendingAccessRequestPayload(ctx context.Context, userRepo userstore.UserRepository, item *dsclient.PendingAccessRequest) (accessPendingRequestPayload, error) {
+	payload := accessPendingRequestPayload{
+		ID:        item.ID,
+		Email:     item.Email,
+		Provider:  item.Provider,
+		Name:      stringPtrValue(item.Name),
+		AvatarURL: stringPtrValue(item.AvatarURL),
+		Status:    string(item.Status),
+		TenantID:  item.TenantID,
+		RoleCode:  item.RoleCode,
+		CreatedAt: item.CreatedAt.UTC().Format(time.RFC3339),
+	}
+	if item.ReviewedAt != nil {
+		payload.ReviewedAt = item.ReviewedAt.UTC().Format(time.RFC3339)
+	}
+	if len(item.Metadata) > 0 {
+		var metadata map[string]any
+		if err := json.Unmarshal(item.Metadata, &metadata); err == nil {
+			if value, ok := metadata["company"].(string); ok {
+				payload.Company = strings.TrimSpace(value)
+			}
+			if value, ok := metadata["use_case"].(string); ok {
+				payload.UseCase = strings.TrimSpace(value)
+			}
+			if value, ok := metadata["source"].(string); ok {
+				payload.Source = strings.TrimSpace(value)
+			}
+		}
+	}
+
+	if userRepo == nil {
+		return payload, nil
+	}
+
+	user, err := userRepo.FindByEmail(ctx, strings.TrimSpace(item.Email))
+	if err != nil {
+		return payload, nil
+	}
+	if user == nil {
+		return payload, nil
+	}
+
+	payload.UserID = user.ID.String()
+	payload.UserExists = true
+	memberships, err := userRepo.ListMemberships(ctx, user.ID)
+	if err == nil && len(memberships) > 0 {
+		payload.HasAnyMembership = true
+	}
+	return payload, nil
+}
+
 func loadTenantMembers(ctx context.Context, tenantID string) ([]accessMemberPayload, error) {
 	conn, err := datastore.Connection(ctx)
 	if err != nil {
@@ -845,6 +1243,72 @@ func updateTenantMemberRole(ctx context.Context, userID, tenantID, roleCode stri
 		return gl.Errorf("membership not found for user %s in tenant %s", userID, tenantID)
 	}
 	return nil
+}
+
+func ensureTenantMemberAccess(ctx context.Context, userID, tenantID, roleCode string) error {
+	conn, err := datastore.Connection(ctx)
+	if err != nil {
+		return err
+	}
+	pgExec, err := dsclient.GetPGExecutor(ctx, conn)
+	if err != nil {
+		return err
+	}
+
+	roleCode = firstNonEmpty(roleCode, "viewer")
+	var roleID string
+	if err := pgExec.QueryRow(ctx, `SELECT id FROM role WHERE code = $1`, roleCode).Scan(&roleID); err != nil {
+		if err := pgExec.QueryRow(ctx, `SELECT id FROM role WHERE code = $1`, "viewer").Scan(&roleID); err != nil {
+			return gl.Errorf("failed to resolve role '%s' and fallback 'viewer': %v", roleCode, err)
+		}
+	}
+
+	_, err = pgExec.Exec(ctx, `
+		INSERT INTO tenant_membership (user_id, tenant_id, role_id, is_active, created_at, updated_at)
+		VALUES ($1, $2, $3, true, now(), now())
+		ON CONFLICT (user_id, tenant_id)
+		DO UPDATE SET role_id = EXCLUDED.role_id, is_active = EXCLUDED.is_active, updated_at = now()
+	`, userID, tenantID, roleID)
+	return err
+}
+
+func updatePendingAccessRequestReview(ctx context.Context, requestID, action, reviewedBy string) error {
+	conn, err := datastore.Connection(ctx)
+	if err != nil {
+		return err
+	}
+	pgExec, err := dsclient.GetPGExecutor(ctx, conn)
+	if err != nil {
+		return err
+	}
+
+	status := "rejected"
+	if strings.EqualFold(strings.TrimSpace(action), "approve") {
+		status = "approved"
+	}
+
+	_, err = pgExec.Exec(ctx, `
+		UPDATE pending_access_requests
+		SET status = $1, reviewed_by = $2, reviewed_at = now(), updated_at = now()
+		WHERE id = $3
+	`, status, firstNonEmpty(reviewedBy), requestID)
+	return err
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, value := range values {
+		if strings.TrimSpace(value) != "" {
+			return strings.TrimSpace(value)
+		}
+	}
+	return ""
+}
+
+func stringPtrValue(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return strings.TrimSpace(*value)
 }
 
 // --- Helpers ----------------------------------------------------------------
@@ -1068,7 +1532,7 @@ func resolveFrontendBaseURL() string {
 		base = strings.TrimSpace(kbxGet.EnvOr("KUBEX_GNYX_PUBLIC_URL", ""))
 	}
 	if base == "" {
-		base = kbxGet.ValueOrIf(env == "production", "https://app.kubex.world", "http://localhost:5000")
+		base = kbxGet.ValueOrIf(env == "production", "https://gnyx.kubex.world", "http://localhost:5000")
 	}
 	return strings.TrimRight(base, "/")
 }

@@ -1,0 +1,4874 @@
+basePath: /
+definitions:
+  controllers.ClientResponse:
+    properties:
+      active:
+        type: boolean
+      client_id:
+        type: string
+      client_name:
+        type: string
+      redirect_uris:
+        items:
+          type: string
+        type: array
+      scopes:
+        items:
+          type: string
+        type: array
+    type: object
+  controllers.ErrorResponse:
+    properties:
+      message:
+        example: detailed error message
+        type: string
+      status:
+        example: error
+        type: string
+    type: object
+  controllers.RegisterClientRequest:
+    properties:
+      client_name:
+        type: string
+      redirect_uris:
+        items:
+          type: string
+        type: array
+      scopes:
+        items:
+          type: string
+        type: array
+    required:
+    - client_name
+    - redirect_uris
+    type: object
+  controllers.TokenResponse:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      refresh_token:
+        type: string
+      scope:
+        type: string
+      token_type:
+        type: string
+    type: object
+  gin.H:
+    additionalProperties: {}
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.AccessLogs:
+    properties:
+      action:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      ip_address:
+        type: string
+      user_agent:
+        type: string
+      user_id:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.Activities:
+    properties:
+      assigned_to:
+        type: string
+      company_id:
+        type: string
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      description:
+        type: string
+      end_time:
+        type: string
+      id:
+        type: string
+      is_recurring:
+        type: boolean
+      location:
+        type: string
+      notes:
+        type: string
+      postponed_from:
+        type: string
+      postponed_reason:
+        type: string
+      priority:
+        type: string
+      start_time:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.ActivityParticipants:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      role:
+        type: string
+      status:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.Addresses:
+    properties:
+      address_category:
+        type: string
+      address_status:
+        type: string
+      address_tags:
+        type: string
+      address_type:
+        type: string
+      city:
+        type: string
+      complement:
+        type: string
+      country:
+        type: string
+      created_at:
+        type: string
+      district:
+        type: string
+      external_code:
+        type: string
+      external_id:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      is_default:
+        type: boolean
+      is_main:
+        type: boolean
+      last_sync_at:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      notes:
+        type: string
+      number:
+        type: string
+      state:
+        type: string
+      street:
+        type: string
+      updated_at:
+        type: string
+      zip_code:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.AuditLogs:
+    properties:
+      action:
+        type: string
+      changes:
+        items:
+          type: integer
+        type: array
+      created_at:
+        type: string
+      entity_id:
+        type: string
+      entity_type:
+        type: string
+      id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.BackupStatus:
+    properties:
+      backup_type:
+        type: string
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      error_message:
+        type: string
+      file_path:
+        type: string
+      id:
+        type: string
+      started_at:
+        type: string
+      status:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.Companies:
+    properties:
+      address:
+        type: string
+      created_at:
+        type: string
+      domain:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      is_trial:
+        type: boolean
+      name:
+        type: string
+      phone:
+        type: string
+      plan_expires_at:
+        type: string
+      slug:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.CompanyMetrics:
+    properties:
+      average_deal_size:
+        type: number
+      conversion_rate:
+        type: number
+      created_at:
+        type: string
+      id:
+        type: string
+      last_calculated_at:
+        type: string
+      lost_value:
+        type: number
+      month:
+        type: string
+      total_pipeline_value:
+        type: number
+      updated_at:
+        type: string
+      won_value:
+        type: number
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.ErrorLogs:
+    properties:
+      created_at:
+        type: string
+      error_message:
+        type: string
+      id:
+        type: string
+      stack_trace:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.PaymentMethods:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      details:
+        items:
+          type: integer
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      provider:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.Permissions:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.PipelineStages:
+    properties:
+      color:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.Pipelines:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.Profiles:
+    properties:
+      avatar_url:
+        type: string
+      company:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      force_password_reset:
+        type: boolean
+      id:
+        type: string
+      last_name:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      role:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.RefreshTokens:
+    properties:
+      created_at:
+        type: string
+      expires_at:
+        type: string
+      id:
+        type: integer
+      token_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.RoleConfig:
+    properties:
+      created_at:
+        type: string
+      default_route:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      updated_at:
+        type: string
+      user_role:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.RolePermissions:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      permission_id:
+        type: string
+      role_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.Roles:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      parent_role_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.SubscriptionPlans:
+    properties:
+      billing_cycle:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      features:
+        items:
+          type: integer
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      updated_at:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.SystemLogs:
+    properties:
+      category:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      level:
+        type: string
+      message:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.SystemMetrics:
+    properties:
+      id:
+        type: string
+      metric_name:
+        type: string
+      metric_type:
+        type: string
+      metric_value:
+        type: number
+      recorded_at:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.TenantSubscriptions:
+    properties:
+      created_at:
+        type: string
+      end_date:
+        type: string
+      id:
+        type: string
+      payment_method_id:
+        type: string
+      plan_id:
+        type: string
+      start_date:
+        type: string
+      status:
+        type: string
+      tenant_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_dsclient.Tenants:
+    properties:
+      address_ids:
+        items:
+          type: string
+        type: array
+      alias:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      domain:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      tax_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_kubex-ecosystem_gnyx_internal_types.ContactForm:
+    properties:
+      email:
+        type: string
+      message:
+        type: string
+      name:
+        type: string
+      token:
+        type: string
+    type: object
+  internal_api_contacts.ErrorResponse:
+    properties:
+      message:
+        example: detailed error message
+        type: string
+      status:
+        example: error
+        type: string
+    type: object
+  internal_api_contacts.MessageResponse:
+    properties:
+      message:
+        example: operation completed
+        type: string
+      status:
+        example: ok
+        type: string
+    type: object
+  internal_api_invite.AcceptInviteReq:
+    properties:
+      last_name:
+        type: string
+      name:
+        type: string
+      password:
+        description: opcional se auth externo
+        type: string
+    type: object
+  internal_api_invite.CreateInviteReq:
+    properties:
+      company_name:
+        description: só para convites de parceiros
+        type: string
+      email:
+        type: string
+      expires_in_days:
+        description: default 7
+        type: integer
+      invited_by:
+        type: string
+      name:
+        type: string
+      role:
+        description: code ou UUID (decisão v3)
+        type: string
+      role_code:
+        description: compat
+        type: string
+      role_id:
+        description: compat
+        type: string
+      team_id:
+        type: string
+      tenant_id:
+        type: string
+      type:
+        enum:
+        - internal
+        - partner
+        type: string
+    required:
+    - email
+    - name
+    - role
+    - tenant_id
+    type: object
+  internal_api_invite.ErrorResponse:
+    properties:
+      message:
+        example: detailed error message
+        type: string
+      status:
+        example: error
+        type: string
+    type: object
+  internal_api_invite.InviteDetailsDTO:
+    properties:
+      email:
+        type: string
+      expires_at:
+        type: string
+      id:
+        type: string
+      invited_by:
+        type: string
+      name:
+        type: string
+      role:
+        type: string
+      status:
+        description: pending/accepted/revoked/expired
+        type: string
+      team_id:
+        type: string
+      tenant_id:
+        type: string
+      token:
+        description: só na criação
+        type: string
+      type:
+        type: string
+    type: object
+  internal_api_invite.MessageResponse:
+    properties:
+      message:
+        example: operation completed
+        type: string
+      status:
+        example: ok
+        type: string
+    type: object
+  internal_api_invite.UserDTO:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      name:
+        type: string
+      tenant_id:
+        type: string
+    type: object
+host: localhost:5001
+info:
+  contact:
+    email: contact@kubex.world
+    name: GNyx API Support
+    url: https://gnyx.kubex.world
+  description: Backend modular API para o GNyx. (Powered by Kubex Ecosystem)
+  termsOfService: https://gnyx.kubex.world/terms
+  title: GNyx API
+  version: 1.0.0
+paths:
+  /api/v1/accesslogs:
+    get:
+      description: Recupera a lista de logs de acesso registrados na base.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.AccessLogs'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar logs de acesso
+      tags:
+      - accesslogs
+    post:
+      consumes:
+      - application/json
+      description: Persiste um novo log de acesso com os dados enviados.
+      parameters:
+      - description: Dados do Log de Acesso
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.AccessLogs'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.AccessLogs'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar log de acesso
+      tags:
+      - accesslogs
+  /api/v1/accesslogs/{id}:
+    delete:
+      description: Exclui um log de acesso identificado pelo ID.
+      parameters:
+      - description: ID do Log de Acesso
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover log de acesso
+      tags:
+      - accesslogs
+    get:
+      description: Busca um log de acesso específico pelo ID.
+      parameters:
+      - description: ID do Log de Acesso
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.AccessLogs'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter log de acesso
+      tags:
+      - accesslogs
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um log de acesso identificado por ID.
+      parameters:
+      - description: ID do Log de Acesso
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.AccessLogs'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.AccessLogs'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar log de acesso
+      tags:
+      - accesslogs
+  /api/v1/activities:
+    get:
+      description: Recupera a lista de atividades registradas na base.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Activities'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar atividades
+      tags:
+      - activities
+    post:
+      consumes:
+      - application/json
+      description: Persiste uma nova atividade com os dados enviados.
+      parameters:
+      - description: Dados da Atividade
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Activities'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Activities'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar atividade
+      tags:
+      - activities
+  /api/v1/activities/{id}:
+    delete:
+      description: Exclui uma atividade identificada pelo ID.
+      parameters:
+      - description: ID da Atividade
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover atividade
+      tags:
+      - activities
+    get:
+      description: Busca uma atividade específica pelo ID.
+      parameters:
+      - description: ID da Atividade
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Activities'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter atividade
+      tags:
+      - activities
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de uma atividade identificada por ID.
+      parameters:
+      - description: ID da Atividade
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Activities'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Activities'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar atividade
+      tags:
+      - activities
+  /api/v1/activityparticipants:
+    get:
+      description: Recupera a lista de participantes de atividades.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.ActivityParticipants'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar participantes de atividades
+      tags:
+      - activityparticipants
+    post:
+      consumes:
+      - application/json
+      description: Adiciona um novo participante a uma atividade.
+      parameters:
+      - description: Dados do Participante
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.ActivityParticipants'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.ActivityParticipants'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar participante de atividade
+      tags:
+      - activityparticipants
+  /api/v1/activityparticipants/{id}:
+    delete:
+      description: Remove um participante de uma atividade.
+      parameters:
+      - description: ID do Participante
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover participante de atividade
+      tags:
+      - activityparticipants
+    get:
+      description: Busca um participante de atividade específico pelo ID.
+      parameters:
+      - description: ID do Participante
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.ActivityParticipants'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter participante de atividade
+      tags:
+      - activityparticipants
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um participante de atividade.
+      parameters:
+      - description: ID do Participante
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.ActivityParticipants'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.ActivityParticipants'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar participante de atividade
+      tags:
+      - activityparticipants
+  /api/v1/addresses:
+    get:
+      description: Recupera a lista de endereços.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Addresses'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar endereços
+      tags:
+      - addresses
+    post:
+      consumes:
+      - application/json
+      description: Adiciona um novo endereço.
+      parameters:
+      - description: Dados do Endereço
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Addresses'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Addresses'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar endereço
+      tags:
+      - addresses
+  /api/v1/addresses/{id}:
+    delete:
+      description: Remove um endereço.
+      parameters:
+      - description: ID do Endereço
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover endereço
+      tags:
+      - addresses
+    get:
+      description: Busca um endereço específico pelo ID.
+      parameters:
+      - description: ID do Endereço
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Addresses'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter endereço
+      tags:
+      - addresses
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um endereço.
+      parameters:
+      - description: ID do Endereço
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Addresses'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Addresses'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar endereço
+      tags:
+      - addresses
+  /api/v1/auditlogs:
+    get:
+      description: Recupera a lista de logs de auditoria.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.AuditLogs'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar logs de auditoria
+      tags:
+      - auditlogs
+    post:
+      consumes:
+      - application/json
+      description: Adiciona um novo log de auditoria.
+      parameters:
+      - description: Dados do Log de Auditoria
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.AuditLogs'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.AuditLogs'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar log de auditoria
+      tags:
+      - auditlogs
+  /api/v1/auditlogs/{id}:
+    delete:
+      description: Remove um log de auditoria.
+      parameters:
+      - description: ID do Log de Auditoria
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover log de auditoria
+      tags:
+      - auditlogs
+    get:
+      description: Busca um log de auditoria específico pelo ID.
+      parameters:
+      - description: ID do Log de Auditoria
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.AuditLogs'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter log de auditoria
+      tags:
+      - auditlogs
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um log de auditoria.
+      parameters:
+      - description: ID do Log de Auditoria
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.AuditLogs'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.AuditLogs'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar log de auditoria
+      tags:
+      - auditlogs
+  /api/v1/backupstatus:
+    get:
+      description: Recupera a lista de status de backups.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.BackupStatus'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar status de backups
+      tags:
+      - backupstatus
+    post:
+      consumes:
+      - application/json
+      description: Adiciona um novo status de backup.
+      parameters:
+      - description: Dados do Status de Backup
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.BackupStatus'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.BackupStatus'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar status de backup
+      tags:
+      - backupstatus
+  /api/v1/backupstatus/{id}:
+    delete:
+      description: Remove um status de backup.
+      parameters:
+      - description: ID do Status de Backup
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover status de backup
+      tags:
+      - backupstatus
+    get:
+      description: Busca um status de backup específico pelo ID.
+      parameters:
+      - description: ID do Status de Backup
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.BackupStatus'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter status de backup
+      tags:
+      - backupstatus
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um status de backup.
+      parameters:
+      - description: ID do Status de Backup
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.BackupStatus'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.BackupStatus'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar status de backup
+      tags:
+      - backupstatus
+  /api/v1/companies:
+    get:
+      description: Recupera a lista de empresas.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Companies'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar empresas
+      tags:
+      - companies
+    post:
+      consumes:
+      - application/json
+      description: Adiciona uma nova empresa.
+      parameters:
+      - description: Dados da Empresa
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Companies'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Companies'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar empresa
+      tags:
+      - companies
+  /api/v1/companies/{id}:
+    delete:
+      description: Remove uma empresa.
+      parameters:
+      - description: ID da Empresa
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover empresa
+      tags:
+      - companies
+    get:
+      description: Busca uma empresa específica pelo ID.
+      parameters:
+      - description: ID da Empresa
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Companies'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter empresa
+      tags:
+      - companies
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de uma empresa.
+      parameters:
+      - description: ID da Empresa
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Companies'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Companies'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar empresa
+      tags:
+      - companies
+  /api/v1/companymetrics:
+    get:
+      description: Recupera a lista de métricas de empresas.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.CompanyMetrics'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar métricas de empresas
+      tags:
+      - companymetrics
+    post:
+      consumes:
+      - application/json
+      description: Adiciona uma nova métrica de empresa.
+      parameters:
+      - description: Dados da Métrica de Empresa
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.CompanyMetrics'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.CompanyMetrics'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar métrica de empresa
+      tags:
+      - companymetrics
+  /api/v1/companymetrics/{id}:
+    delete:
+      description: Remove uma métrica de empresa.
+      parameters:
+      - description: ID da Métrica de Empresa
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover métrica de empresa
+      tags:
+      - companymetrics
+    get:
+      description: Busca uma métrica de empresa específica pelo ID.
+      parameters:
+      - description: ID da Métrica de Empresa
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.CompanyMetrics'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter métrica de empresa
+      tags:
+      - companymetrics
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de uma métrica de empresa.
+      parameters:
+      - description: ID da Métrica de Empresa
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.CompanyMetrics'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.CompanyMetrics'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar métrica de empresa
+      tags:
+      - companymetrics
+  /api/v1/contact:
+    get:
+      consumes:
+      - application/json
+      description: Executa a mesma validação e envio do fluxo principal, retornando
+        o resultado. [Em desenvolvimento]
+      parameters:
+      - description: Dados do formulário de contato
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_types.ContactForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_contacts.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Consultar contato
+      tags:
+      - contact beta
+    post:
+      consumes:
+      - application/json
+      description: Cria uma nova entrada de contato e dispara notificações conforme
+        configuração. [Em desenvolvimento]
+      parameters:
+      - description: Dados do formulário de contato
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_types.ContactForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_contacts.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Enviar contato
+      tags:
+      - contact beta
+  /api/v1/contact/form:
+    get:
+      consumes:
+      - application/json
+      description: Recupera o formulário persistido após validar token do solicitante.
+        [Em desenvolvimento]
+      parameters:
+      - description: Dados do formulário (inclui token)
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_types.ContactForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_contacts.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter formulário
+      tags:
+      - contact beta
+  /api/v1/contact/form/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retorna a submissão identificada pelo ID após validar o token.
+        [Em desenvolvimento]
+      parameters:
+      - description: ID do formulário
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados do formulário (inclui token)
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_types.ContactForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_contacts.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter formulário por ID
+      tags:
+      - contact beta
+  /api/v1/contact/handle:
+    post:
+      consumes:
+      - application/json
+      description: Valida o token secreto e dispara o fluxo de envio de mensagem.
+        [Em desenvolvimento]
+      parameters:
+      - description: Dados do formulário de contato
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_types.ContactForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_contacts.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_contacts.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Processar contato
+      tags:
+      - contact beta
+  /api/v1/errorlogs:
+    get:
+      description: Recupera a lista de logs de erro.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.ErrorLogs'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar logs de erro
+      tags:
+      - errorlogs
+    post:
+      consumes:
+      - application/json
+      description: Adiciona um novo log de erro.
+      parameters:
+      - description: Dados do Log de Erro
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.ErrorLogs'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.ErrorLogs'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar log de erro
+      tags:
+      - errorlogs
+  /api/v1/errorlogs/{id}:
+    delete:
+      description: Remove um log de erro.
+      parameters:
+      - description: ID do Log de Erro
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover log de erro
+      tags:
+      - errorlogs
+    get:
+      description: Busca um log de erro específico pelo ID.
+      parameters:
+      - description: ID do Log de Erro
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.ErrorLogs'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter log de erro
+      tags:
+      - errorlogs
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um log de erro.
+      parameters:
+      - description: ID do Log de Erro
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.ErrorLogs'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.ErrorLogs'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar log de erro
+      tags:
+      - errorlogs
+  /api/v1/invites:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new invite and sends an invitation email.
+      parameters:
+      - description: Invite Request
+        in: body
+        name: invite
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api_invite.CreateInviteReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_invite.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_invite.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_api_invite.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_api_invite.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_invite.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create an invite
+      tags:
+      - Invites
+  /api/v1/invites/{token}:
+    get:
+      consumes:
+      - application/json
+      description: Validates the invite token and retrieves associated invite details.
+      parameters:
+      - description: Invite Token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_invite.InviteDetailsDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_invite.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_api_invite.ErrorResponse'
+      summary: Validate an invite token
+      tags:
+      - Invites
+  /api/v1/invites/{token}/accept:
+    post:
+      consumes:
+      - application/json
+      description: Accepts the invite associated with the token and creates a user
+        account.
+      parameters:
+      - description: Invite Token
+        in: path
+        name: token
+        required: true
+        type: string
+      - description: Accept Invite Request
+        in: body
+        name: acceptInvite
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api_invite.AcceptInviteReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_invite.UserDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_invite.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/internal_api_invite.ErrorResponse'
+      summary: Accept an invite
+      tags:
+      - Invites
+  /api/v1/paymentmethods:
+    get:
+      description: Recupera a lista de métodos de pagamento.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.PaymentMethods'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar métodos de pagamento
+      tags:
+      - paymentmethods
+    post:
+      consumes:
+      - application/json
+      description: Adiciona um novo método de pagamento.
+      parameters:
+      - description: Dados do Método de Pagamento
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.PaymentMethods'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.PaymentMethods'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar método de pagamento
+      tags:
+      - paymentmethods
+  /api/v1/paymentmethods/{id}:
+    delete:
+      description: Remove um método de pagamento.
+      parameters:
+      - description: ID do Método de Pagamento
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover método de pagamento
+      tags:
+      - paymentmethods
+    get:
+      description: Busca um método de pagamento específico pelo ID.
+      parameters:
+      - description: ID do Método de Pagamento
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.PaymentMethods'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter método de pagamento
+      tags:
+      - paymentmethods
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um método de pagamento.
+      parameters:
+      - description: ID do Método de Pagamento
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.PaymentMethods'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.PaymentMethods'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar método de pagamento
+      tags:
+      - paymentmethods
+  /api/v1/permissions:
+    get:
+      description: Recupera a lista de permissões.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Permissions'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar permissões
+      tags:
+      - permissions
+    post:
+      consumes:
+      - application/json
+      description: Adiciona uma nova permissão.
+      parameters:
+      - description: Dados da Permissão
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Permissions'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Permissions'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar permissão
+      tags:
+      - permissions
+  /api/v1/permissions/{id}:
+    delete:
+      description: Remove uma permissão.
+      parameters:
+      - description: ID da Permissão
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover permissão
+      tags:
+      - permissions
+    get:
+      description: Busca uma permissão específica pelo ID.
+      parameters:
+      - description: ID da Permissão
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Permissions'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter permissão
+      tags:
+      - permissions
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de uma permissão.
+      parameters:
+      - description: ID da Permissão
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Permissions'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Permissions'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar permissão
+      tags:
+      - permissions
+  /api/v1/pipelines:
+    get:
+      description: Recupera a lista de pipelines.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Pipelines'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar pipelines
+      tags:
+      - pipelines
+    post:
+      consumes:
+      - application/json
+      description: Adiciona um novo pipeline.
+      parameters:
+      - description: Dados do Pipeline
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Pipelines'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Pipelines'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar pipeline
+      tags:
+      - pipelines
+  /api/v1/pipelines/{id}:
+    delete:
+      description: Remove um pipeline.
+      parameters:
+      - description: ID do Pipeline
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover pipeline
+      tags:
+      - pipelines
+    get:
+      description: Busca um pipeline específico pelo ID.
+      parameters:
+      - description: ID do Pipeline
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Pipelines'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter pipeline
+      tags:
+      - pipelines
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um pipeline.
+      parameters:
+      - description: ID do Pipeline
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Pipelines'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Pipelines'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar pipeline
+      tags:
+      - pipelines
+  /api/v1/pipelinestages:
+    get:
+      description: Recupera a lista de estágios de pipeline.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.PipelineStages'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar estágios de pipeline
+      tags:
+      - pipelinestages
+    post:
+      consumes:
+      - application/json
+      description: Adiciona um novo estágio de pipeline.
+      parameters:
+      - description: Dados do Estágio de Pipeline
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.PipelineStages'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.PipelineStages'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar estágio de pipeline
+      tags:
+      - pipelinestages
+  /api/v1/pipelinestages/{id}:
+    delete:
+      description: Remove um estágio de pipeline.
+      parameters:
+      - description: ID do Estágio de Pipeline
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover estágio de pipeline
+      tags:
+      - pipelinestages
+    get:
+      description: Busca um estágio de pipeline específico pelo ID.
+      parameters:
+      - description: ID do Estágio de Pipeline
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.PipelineStages'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter estágio de pipeline
+      tags:
+      - pipelinestages
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um estágio de pipeline.
+      parameters:
+      - description: ID do Estágio de Pipeline
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.PipelineStages'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.PipelineStages'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar estágio de pipeline
+      tags:
+      - pipelinestages
+  /api/v1/profiles:
+    get:
+      description: Recupera a lista de perfis.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Profiles'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar perfis
+      tags:
+      - profiles
+    post:
+      consumes:
+      - application/json
+      description: Adiciona um novo perfil.
+      parameters:
+      - description: Dados do Perfil
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Profiles'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Profiles'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar perfil
+      tags:
+      - profiles
+  /api/v1/profiles/{id}:
+    delete:
+      description: Remove um perfil.
+      parameters:
+      - description: ID do Perfil
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover perfil
+      tags:
+      - profiles
+    get:
+      description: Busca um perfil específico pelo ID.
+      parameters:
+      - description: ID do Perfil
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Profiles'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter perfil
+      tags:
+      - profiles
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um perfil.
+      parameters:
+      - description: ID do Perfil
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Profiles'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Profiles'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar perfil
+      tags:
+      - profiles
+  /api/v1/refreshtokens:
+    get:
+      description: Recupera a lista de refresh tokens.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RefreshTokens'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar refresh tokens
+      tags:
+      - refreshtokens
+    post:
+      consumes:
+      - application/json
+      description: Adiciona um novo refresh token.
+      parameters:
+      - description: Dados do Refresh Token
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RefreshTokens'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RefreshTokens'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar refresh token
+      tags:
+      - refreshtokens
+  /api/v1/refreshtokens/{id}:
+    delete:
+      description: Remove um refresh token.
+      parameters:
+      - description: ID do Refresh Token
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover refresh token
+      tags:
+      - refreshtokens
+    get:
+      description: Busca um refresh token específico pelo ID.
+      parameters:
+      - description: ID do Refresh Token
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RefreshTokens'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter refresh token
+      tags:
+      - refreshtokens
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um refresh token.
+      parameters:
+      - description: ID do Refresh Token
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RefreshTokens'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RefreshTokens'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar refresh token
+      tags:
+      - refreshtokens
+  /api/v1/roleconfigs:
+    get:
+      description: Recupera a lista de configurações de role.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RoleConfig'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar configurações de role
+      tags:
+      - roleconfig
+    post:
+      consumes:
+      - application/json
+      description: Adiciona uma nova configuração de role.
+      parameters:
+      - description: Dados da Configuração de Role
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RoleConfig'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RoleConfig'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar configuração de role
+      tags:
+      - roleconfig
+  /api/v1/roleconfigs/{id}:
+    delete:
+      description: Remove uma configuração de role.
+      parameters:
+      - description: ID da Configuração de Role
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover configuração de role
+      tags:
+      - roleconfig
+    get:
+      description: Busca uma configuração de role específica pelo ID.
+      parameters:
+      - description: ID da Configuração de Role
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RoleConfig'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter configuração de role
+      tags:
+      - roleconfig
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de uma configuração de role.
+      parameters:
+      - description: ID da Configuração de Role
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RoleConfig'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RoleConfig'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar configuração de role
+      tags:
+      - roleconfig
+  /api/v1/rolepermissions:
+    get:
+      description: Recupera a lista de permissões de role.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RolePermissions'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar permissões de role
+      tags:
+      - rolepermissions
+    post:
+      consumes:
+      - application/json
+      description: Adiciona uma nova permissão de role.
+      parameters:
+      - description: Dados da Permissão de Role
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RolePermissions'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RolePermissions'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar permissão de role
+      tags:
+      - rolepermissions
+  /api/v1/rolepermissions/{id}:
+    delete:
+      description: Remove uma permissão de role.
+      parameters:
+      - description: ID da Permissão de Role
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover permissão de role
+      tags:
+      - rolepermissions
+    get:
+      description: Busca uma permissão de role específica pelo ID.
+      parameters:
+      - description: ID da Permissão de Role
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RolePermissions'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter permissão de role
+      tags:
+      - rolepermissions
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de uma permissão de role.
+      parameters:
+      - description: ID da Permissão de Role
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RolePermissions'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.RolePermissions'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar permissão de role
+      tags:
+      - rolepermissions
+  /api/v1/roles:
+    get:
+      description: Recupera a lista de roles.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Roles'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar roles
+      tags:
+      - roles
+    post:
+      consumes:
+      - application/json
+      description: Adiciona um novo role.
+      parameters:
+      - description: Dados do Role
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Roles'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Roles'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar role
+      tags:
+      - roles
+  /api/v1/roles/{id}:
+    delete:
+      description: Remove um role.
+      parameters:
+      - description: ID do Role
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover role
+      tags:
+      - roles
+    get:
+      description: Busca um role específico pelo ID.
+      parameters:
+      - description: ID do Role
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Roles'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter role
+      tags:
+      - roles
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um role.
+      parameters:
+      - description: ID do Role
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Roles'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Roles'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar role
+      tags:
+      - roles
+  /api/v1/subscriptionplans:
+    get:
+      description: Recupera a lista de planos de assinatura.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SubscriptionPlans'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar planos de assinatura
+      tags:
+      - subscriptionplans
+    post:
+      consumes:
+      - application/json
+      description: Adiciona um novo plano de assinatura.
+      parameters:
+      - description: Dados do Plano de Assinatura
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SubscriptionPlans'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SubscriptionPlans'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar plano de assinatura
+      tags:
+      - subscriptionplans
+  /api/v1/subscriptionplans/{id}:
+    delete:
+      description: Remove um plano de assinatura.
+      parameters:
+      - description: ID do Plano de Assinatura
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover plano de assinatura
+      tags:
+      - subscriptionplans
+    get:
+      description: Busca um plano de assinatura específico pelo ID.
+      parameters:
+      - description: ID do Plano de Assinatura
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SubscriptionPlans'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter plano de assinatura
+      tags:
+      - subscriptionplans
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um plano de assinatura.
+      parameters:
+      - description: ID do Plano de Assinatura
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SubscriptionPlans'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SubscriptionPlans'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar plano de assinatura
+      tags:
+      - subscriptionplans
+  /api/v1/systemlogs:
+    get:
+      description: Recupera a lista de logs de sistema.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SystemLogs'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar logs de sistema
+      tags:
+      - systemlogs
+    post:
+      consumes:
+      - application/json
+      description: Adiciona um novo log de sistema.
+      parameters:
+      - description: Dados do Log de Sistema
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SystemLogs'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SystemLogs'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar log de sistema
+      tags:
+      - systemlogs
+  /api/v1/systemlogs/{id}:
+    delete:
+      description: Remove um log de sistema.
+      parameters:
+      - description: ID do Log de Sistema
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover log de sistema
+      tags:
+      - systemlogs
+    get:
+      description: Busca um log de sistema específico pelo ID.
+      parameters:
+      - description: ID do Log de Sistema
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SystemLogs'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter log de sistema
+      tags:
+      - systemlogs
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um log de sistema.
+      parameters:
+      - description: ID do Log de Sistema
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SystemLogs'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SystemLogs'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar log de sistema
+      tags:
+      - systemlogs
+  /api/v1/systemmetrics:
+    get:
+      description: Recupera a lista de métricas de sistema.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SystemMetrics'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar métricas de sistema
+      tags:
+      - systemmetrics
+    post:
+      consumes:
+      - application/json
+      description: Adiciona uma nova métrica de sistema.
+      parameters:
+      - description: Dados da Métrica de Sistema
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SystemMetrics'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SystemMetrics'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar métrica de sistema
+      tags:
+      - systemmetrics
+  /api/v1/systemmetrics/{id}:
+    delete:
+      description: Remove uma métrica de sistema.
+      parameters:
+      - description: ID da Métrica de Sistema
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover métrica de sistema
+      tags:
+      - systemmetrics
+    get:
+      description: Busca uma métrica de sistema específica pelo ID.
+      parameters:
+      - description: ID da Métrica de Sistema
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SystemMetrics'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter métrica de sistema
+      tags:
+      - systemmetrics
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de uma métrica de sistema.
+      parameters:
+      - description: ID da Métrica de Sistema
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SystemMetrics'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.SystemMetrics'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar métrica de sistema
+      tags:
+      - systemmetrics
+  /api/v1/tenants:
+    get:
+      description: Recupera a lista de tenants.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Tenants'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar tenants
+      tags:
+      - tenants
+    post:
+      consumes:
+      - application/json
+      description: Adiciona um novo tenant.
+      parameters:
+      - description: Dados do Tenant
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Tenants'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Tenants'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar tenant
+      tags:
+      - tenants
+  /api/v1/tenants/{id}:
+    delete:
+      description: Remove um tenant.
+      parameters:
+      - description: ID do Tenant
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover tenant
+      tags:
+      - tenants
+    get:
+      description: Busca um tenant específico pelo ID.
+      parameters:
+      - description: ID do Tenant
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Tenants'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter tenant
+      tags:
+      - tenants
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um tenant.
+      parameters:
+      - description: ID do Tenant
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Tenants'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.Tenants'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar tenant
+      tags:
+      - tenants
+  /api/v1/tenantsubscriptions:
+    get:
+      description: Recupera a lista de assinaturas de tenant.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.TenantSubscriptions'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Listar assinaturas de tenant
+      tags:
+      - tenantsubscriptions
+    post:
+      consumes:
+      - application/json
+      description: Adiciona uma nova assinatura de tenant.
+      parameters:
+      - description: Dados da Assinatura de Tenant
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.TenantSubscriptions'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.TenantSubscriptions'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar assinatura de tenant
+      tags:
+      - tenantsubscriptions
+  /api/v1/tenantsubscriptions/{id}:
+    delete:
+      description: Remove uma assinatura de tenant.
+      parameters:
+      - description: ID da Assinatura de Tenant
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remover assinatura de tenant
+      tags:
+      - tenantsubscriptions
+    get:
+      description: Busca uma assinatura de tenant específica pelo ID.
+      parameters:
+      - description: ID da Assinatura de Tenant
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.TenantSubscriptions'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Obter assinatura de tenant
+      tags:
+      - tenantsubscriptions
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de uma assinatura de tenant.
+      parameters:
+      - description: ID da Assinatura de Tenant
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados atualizados
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.TenantSubscriptions'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kubex-ecosystem_gnyx_internal_dsclient.TenantSubscriptions'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar assinatura de tenant
+      tags:
+      - tenantsubscriptions
+  /oauth/authorize:
+    get:
+      consumes:
+      - application/json
+      description: Initiates OAuth2 PKCE flow and generates authorization code
+      parameters:
+      - description: OAuth Client ID
+        in: query
+        name: client_id
+        required: true
+        type: string
+      - description: Redirect URI
+        in: query
+        name: redirect_uri
+        required: true
+        type: string
+      - description: PKCE Code Challenge
+        in: query
+        name: code_challenge
+        required: true
+        type: string
+      - default: S256
+        description: PKCE Method (S256 or plain)
+        in: query
+        name: code_challenge_method
+        type: string
+      - description: Requested scope
+        in: query
+        name: scope
+        type: string
+      - description: State parameter
+        in: query
+        name: state
+        type: string
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Redirect with authorization code
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      summary: OAuth2 Authorization Endpoint
+      tags:
+      - oauth
+  /oauth/clients:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new OAuth2 client application
+      parameters:
+      - description: Client registration data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.RegisterClientRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controllers.ClientResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      summary: Register OAuth2 Client
+      tags:
+      - oauth
+  /oauth/token:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Exchanges authorization code for tokens using PKCE
+      parameters:
+      - description: Grant type (authorization_code)
+        in: formData
+        name: grant_type
+        required: true
+        type: string
+      - description: Authorization code
+        in: formData
+        name: code
+        required: true
+        type: string
+      - description: PKCE code verifier
+        in: formData
+        name: code_verifier
+        required: true
+        type: string
+      - description: OAuth Client ID
+        in: formData
+        name: client_id
+        required: true
+        type: string
+      - description: Redirect URI
+        in: formData
+        name: redirect_uri
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.TokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      summary: OAuth2 Token Endpoint
+      tags:
+      - oauth
+securityDefinitions:
+  BearerAuth:
+    description: Forneça "Bearer <token>"
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
