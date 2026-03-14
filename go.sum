@@ -246,8 +246,8 @@ github.com/kubex-ecosystem/getl v1.2.0 h1:VnwBS4J/3fYIPoCt7qO/5zhJ7ReNRcOqDxpcyn
 github.com/kubex-ecosystem/getl v1.2.0/go.mod h1:sYAkero7+OeS0YegYESLJFomQoTgP0hYk9vzzGzrwBo=
 github.com/kubex-ecosystem/kbx v1.0.4 h1:/EdcAJcdv2JXnWUG14/oF9DUhM+R1e1HSncsDCwYxrg=
 github.com/kubex-ecosystem/kbx v1.0.4/go.mod h1:D4qiqBE3un7MRSJ8Qu04HrSppe0L2kam0v1LA5nOrOQ=
-github.com/kubex-ecosystem/logz v1.6.8 h1:Un+wHOSQi0TN/Q51lRoJA6VNSuw1v6uqeFOgDt1mMYc=
-github.com/kubex-ecosystem/logz v1.6.8/go.mod h1:A+Z/tfTss5Vc2BH+6SAidc/BNII02rVsrevSDKc73ao=
+github.com/kubex-ecosystem/logz v1.6.89 h1:PMoBqL1YOw6xmOROBc7s3nYy8vfuEF0nu3tST0IjvOM=
+github.com/kubex-ecosystem/logz v1.6.89/go.mod h1:KdsAw6M2LHcyxog4Iiqx6ZqTOD91EJFrEQA1Hio3ZiE=
 github.com/kubex-ecosystem/xtui v1.3.3 h1:0aGdAlbJETK8mxk7XbnmENW+ofv70vWyoF1nX9+EgaA=
 github.com/kubex-ecosystem/xtui v1.3.3/go.mod h1:oSXDEUlS8Ru8kgSt3HbDfR691fRX2iCRPVQgdoNCKws=
 github.com/leodido/go-urn v1.4.0 h1:WT9HwE9SGECu3lg4d/dIA+jxlljEa1/ffXKmRjqdmIQ=

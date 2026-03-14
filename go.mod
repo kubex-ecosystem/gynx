@@ -171,7 +171,7 @@ require (
 	github.com/hashicorp/vault/api v1.22.0
 	github.com/kubex-ecosystem/domus v1.0.0
 	github.com/kubex-ecosystem/getl v1.2.0
-	github.com/kubex-ecosystem/logz v1.6.8
+	github.com/kubex-ecosystem/logz v1.6.89
 	github.com/redis/go-redis/v9 v9.18.0
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.1
