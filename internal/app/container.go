@@ -306,6 +306,20 @@ func loadTemplates(dir string) (*mailer.TemplateLoader, error) {
 }
 
 func buildMailer(configPath string) invitesvc.MailSender {
+	configPath = strings.TrimSpace(configPath)
+	if configPath == "" {
+		gl.Debug("Mailer config path is empty. Using noop mailer.")
+		return noopMailer{}
+	}
+	if _, err := os.Stat(configPath); err != nil {
+		if os.IsNotExist(err) {
+			gl.Debugf("Mailer config not found at %s. Using noop mailer.", configPath)
+			return noopMailer{}
+		}
+		gl.Warnf("Failed to stat mailer config at %s; falling back to noop: %v", configPath, err)
+		return noopMailer{}
+	}
+
 	sender, err := mailer.NewKBXSenderFromPath(configPath)
 	if err != nil {
 		gl.Warnf("Failed to init mailer; falling back to noop: %v", err)
@@ -315,6 +329,20 @@ func buildMailer(configPath string) invitesvc.MailSender {
 }
 
 func buildIMAPService(c string) *mailer.IMAPService {
+	c = strings.TrimSpace(c)
+	if c == "" {
+		gl.Debug("IMAP config path is empty. Skipping IMAP service init.")
+		return nil
+	}
+	if _, err := os.Stat(c); err != nil {
+		if os.IsNotExist(err) {
+			gl.Debugf("IMAP config not found at %s. Skipping IMAP service init.", c)
+			return nil
+		}
+		gl.Warnf("Failed to stat IMAP config at %s: %v", c, err)
+		return nil
+	}
+
 	var i *mailer.IMAPService
 	var err error
 	mCfg, err := kbx.LoadConfigOrDefault[kbx.MailConfig](c, true)

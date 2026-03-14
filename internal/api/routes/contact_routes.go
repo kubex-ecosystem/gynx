@@ -2,6 +2,8 @@ package routes
 
 import (
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -24,12 +26,23 @@ func RegisterContactRoutes(r *gin.RouterGroup, container types.IContainer) (gin.
 		return r, fmt.Errorf("invalid config type")
 	}
 
-	smtpCfg, err := loadSMTP(cfg.MailerConfigFilePath)
+	configPath := strings.TrimSpace(cfg.MailerConfigFilePath)
+	if configPath == "" {
+		return r, nil
+	}
+	if _, err := os.Stat(configPath); err != nil {
+		if os.IsNotExist(err) {
+			return r, nil
+		}
+		return r, err
+	}
+
+	smtpCfg, err := loadSMTP(configPath)
 	if err != nil {
 		return r, err
 	}
 
-	sender, err := mailer.NewKBXSenderFromPath(cfg.MailerConfigFilePath)
+	sender, err := mailer.NewKBXSenderFromPath(configPath)
 	if err != nil {
 		return r, err
 	}

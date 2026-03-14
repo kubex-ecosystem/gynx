@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 
@@ -196,6 +197,15 @@ func (s *Server) Start() error {
 		gl.Log("warn", "Failed to initialize web handler for UI routes: %v", err)
 	} else {
 		s.NoRoute(func(c *gin.Context) {
+			if strings.HasPrefix(c.Request.URL.Path, "/api/") {
+				c.JSON(http.StatusNotFound, gin.H{
+					"error":   "route not found",
+					"path":    c.Request.URL.Path,
+					"method":  c.Request.Method,
+					"service": "gnyx-gateway",
+				})
+				return
+			}
 			uiroutes.ServeHTTP(c.Writer, c.Request)
 		})
 		gl.Info("UI routes registered successfully")

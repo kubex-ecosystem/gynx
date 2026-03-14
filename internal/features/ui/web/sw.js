@@ -1,5 +1,5 @@
 /**
- * Grompt Service Worker
+ * GNyx Workspace Service Worker
  * Provides offline functionality and caching for the PWA
  */
 
@@ -124,7 +124,7 @@ self.addEventListener('push', (event) => {
   console.log('🔔 Service Worker: Push received');
 
   const options = {
-    body: 'Novo conteúdo disponível no Grompt',
+    body: 'Novo conteúdo disponível no GNyx',
     icon: '/icons/icon-192x192.png',
     badge: '/icons/badge-72x72.png',
     vibrate: [100, 50, 100],
@@ -135,7 +135,7 @@ self.addEventListener('push', (event) => {
     actions: [
       {
         action: 'explore',
-        title: 'Abrir Grompt',
+        title: 'Abrir GNyx Workspace',
         icon: '/icons/action-explore.png'
       },
       {
@@ -147,7 +147,7 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification('Grompt', options)
+    self.registration.showNotification('GNyx Workspace', options)
   );
 });
 
@@ -350,7 +350,7 @@ function createOfflinePage() {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Grompt - Offline</title>
+      <title>GNyx Workspace - Offline</title>
       <style>
         body {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -398,7 +398,7 @@ function createOfflinePage() {
       <div class="offline-icon">🔌</div>
       <h1>Modo Offline</h1>
       <p>
-        Você está navegando offline. O Grompt continua funcionando com
+        Você está navegando offline. O GNyx Workspace continua funcionando com
         funcionalidades limitadas usando templates locais e dados em cache.
       </p>
       <button class="retry-btn" onclick="window.location.reload()">

@@ -13,4 +13,4 @@ This directory should contain the following PWA icons:
 - icon-384x384.png
 - icon-512x512.png
 
-For now, these are referenced in the manifest but will need to be generated from the actual Grompt logo.
+For now, these are referenced in the manifest but will need to be generated from the actual GNyx Workspace logo.

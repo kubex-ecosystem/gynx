@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/auth/credentials/idtoken"
@@ -166,7 +167,20 @@ func LoadConfig() *Config {
 // loadGoogleAuthConfig carrega ClientID/Secret/Redirect a partir de env ou do
 // client_secret.json padrão do OAuth da Google.
 func loadGoogleAuthConfig(initArgs *kbxMod.InitArgs) *AuthOAuthClientConfig {
-	cfg, err := kbx.LoadConfigOrDefault[kbx.VendorAuthConfig](kbxGet.EnvOr("KUBEX_GNYX_GOOGLE_CREDENTIALS_PATH", os.ExpandEnv(kbxMod.DefaultGoogleAuthClientPath)), true)
+	cfgPath := strings.TrimSpace(kbxGet.EnvOr("KUBEX_GNYX_GOOGLE_CREDENTIALS_PATH", os.ExpandEnv(kbxMod.DefaultGoogleAuthClientPath)))
+	if cfgPath == "" {
+		return nil
+	}
+	if _, err := os.Stat(cfgPath); err != nil {
+		if os.IsNotExist(err) {
+			gl.Debugf("google oauth config not found at %s; oauth will remain disabled", cfgPath)
+			return nil
+		}
+		gl.Debugf("google oauth config stat failed for %s: %v", cfgPath, err)
+		return nil
+	}
+
+	cfg, err := kbx.LoadConfigOrDefault[kbx.VendorAuthConfig](cfgPath, true)
 	if err != nil && cfg == nil {
 		gl.Debugf("google oauth config load failed: %v", err)
 		return nil

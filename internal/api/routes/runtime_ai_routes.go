@@ -73,12 +73,21 @@ func registerRuntimeAIRoutes(
 	}
 
 	r.GET("/health", ctl.health)
-	r.GET("/healthz", ctl.health)
+	r.GET("/healthz", ctl.healthz)
 	r.GET("/providers", ctl.providers)
 	r.GET("/config", ctl.runtimeConfig)
 	r.GET("/test", ctl.testProvider)
 	r.POST("/unified", ctl.unified)
 	r.POST("/unified/stream", ctl.unifiedStream)
+}
+
+func (ctl *runtimeAIController) healthz(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"status":    "healthy",
+		"service":   "gnyx-gateway",
+		"timestamp": time.Now().Unix(),
+		"version":   "v1.0.0",
+	})
 }
 
 func (ctl *runtimeAIController) health(c *gin.Context) {
@@ -215,13 +224,16 @@ func (ctl *runtimeAIController) testProvider(c *gin.Context) {
 		return
 	}
 
+	start := time.Now()
 	if err := ctl.reg.ResolveProvider(providerName).Available(); err != nil {
+		ctl.recordProviderCheck(providerName, start, err)
 		c.JSON(http.StatusOK, gin.H{
 			"available": false,
 			"message":   err.Error(),
 		})
 		return
 	}
+	ctl.recordProviderCheck(providerName, start, nil)
 
 	c.JSON(http.StatusOK, gin.H{
 		"available": true,
@@ -644,6 +656,15 @@ func (ctl *runtimeAIController) providerDependencyStatus(providerName string) de
 				if status == "unknown" {
 					return dependencyStatus{
 						Status: "unknown",
+					}
+				}
+				if status == "unhealthy" || status == "unavailable" {
+					if provider := ctl.reg.ResolveProvider(providerName); provider != nil {
+						if err := provider.Available(); err == nil {
+							return dependencyStatus{
+								Status: "healthy",
+							}
+						}
 					}
 				}
 				return dependencyStatus{

@@ -4,6 +4,7 @@ package wire
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	config "github.com/kubex-ecosystem/gnyx/internal/config"
@@ -131,6 +132,15 @@ func (w *HTTPWire) Wire() (*gin.Engine, error) {
 				c.Redirect(302, target)
 				return
 			}
+		}
+		if strings.HasPrefix(c.Request.URL.Path, "/api/") {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error":   "route not found",
+				"path":    c.Request.URL.Path,
+				"method":  c.Request.Method,
+				"service": "gnyx-gateway",
+			})
+			return
 		}
 		c.Status(http.StatusNotFound)
 	})
