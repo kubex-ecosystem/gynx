@@ -29,16 +29,18 @@ func NewKBXSenderFromPath(cfgPath string) (*KBXSender, error) {
 	if len(mailConfig.Connections) == 0 {
 		return nil, fmt.Errorf("mail config has no connections")
 	}
-	for i, conn := range mailConfig.Connections {
-		if len(conn.Provider) == 0 ||
-			len(conn.Host) == 0 ||
-			len(conn.User) == 0 ||
-			len(conn.Pass) == 0 ||
-			!strings.EqualFold(conn.Provider, "imap") {
-			conn = *types.NewMailConnection()
+
+	validSMTP := make([]types.MailConnection, 0, len(mailConfig.Connections))
+	for _, conn := range mailConfig.Connections {
+		if !isValidSMTPConnection(conn) {
+			continue
 		}
-		mailConfig.Connections[i] = conn
+		validSMTP = append(validSMTP, conn)
 	}
+	if len(validSMTP) == 0 {
+		return nil, fmt.Errorf("mail config has no valid smtp connections")
+	}
+	mailConfig.Connections = validSMTP
 	m := mailing.NewMailer(mailConfig)
 	return &KBXSender{Mailer: m}, nil
 }
@@ -62,6 +64,14 @@ func (s *KBXSender) Send(msg *EmailMessage) error {
 		Text:        msg.Text,
 		Attachments: msg.Attachments,
 	}
+	if conn := s.Mailer.GetSMTPConnection(); conn != nil {
+		if strings.TrimSpace(conn.From) != "" {
+			req.From = strings.TrimSpace(conn.From)
+		}
+		if strings.TrimSpace(req.Name) == "" && strings.TrimSpace(conn.Name) != "" {
+			req.Name = strings.TrimSpace(conn.Name)
+		}
+	}
 	return s.Mailer.Send(context.Background(), req)
 }
 
@@ -71,4 +81,26 @@ func (s *KBXSender) SendTemplate(ctx context.Context, loader templates.TemplateL
 		return fmt.Errorf("mailer not initialized")
 	}
 	return s.Mailer.SendTemplate(ctx, loader, name, data, to, subject, from)
+}
+
+func isValidSMTPConnection(conn types.MailConnection) bool {
+	if !strings.EqualFold(strings.TrimSpace(conn.Protocol), "smtp") && strings.TrimSpace(conn.Protocol) != "" {
+		return false
+	}
+	if strings.TrimSpace(conn.Provider) == "" {
+		return false
+	}
+	if strings.TrimSpace(conn.Host) == "" {
+		return false
+	}
+	if strings.TrimSpace(conn.User) == "" {
+		return false
+	}
+	if strings.TrimSpace(conn.Pass) == "" {
+		return false
+	}
+	if conn.Port <= 0 {
+		return false
+	}
+	return true
 }

@@ -314,12 +314,12 @@ func loadTemplates(dir string) (*mailer.TemplateLoader, error) {
 func buildMailer(configPath string) invitesvc.MailSender {
 	configPath = strings.TrimSpace(configPath)
 	if configPath == "" {
-		gl.Debug("Mailer config path is empty. Using noop mailer.")
+		gl.Notice("SMTP mailer not configured: empty config path. Using noop mailer.")
 		return noopMailer{}
 	}
 	if _, err := os.Stat(configPath); err != nil {
 		if os.IsNotExist(err) {
-			gl.Debugf("Mailer config not found at %s. Using noop mailer.", configPath)
+			gl.Noticef("SMTP mailer not configured: config not found at %s. Using noop mailer.", configPath)
 			return noopMailer{}
 		}
 		gl.Warnf("Failed to stat mailer config at %s; falling back to noop: %v", configPath, err)
@@ -331,18 +331,30 @@ func buildMailer(configPath string) invitesvc.MailSender {
 		gl.Warnf("Failed to init mailer; falling back to noop: %v", err)
 		return noopMailer{}
 	}
+	if smtpConn := sender.Mailer.GetSMTPConnection(); smtpConn != nil {
+		gl.Noticef(
+			"SMTP mailer initialized: provider=%s protocol=%s host=%s port=%d from=%s",
+			strings.TrimSpace(smtpConn.Provider),
+			kbxGet.ValueOrIf(strings.TrimSpace(smtpConn.Protocol) != "", strings.TrimSpace(smtpConn.Protocol), "smtp"),
+			strings.TrimSpace(smtpConn.Host),
+			smtpConn.Port,
+			strings.TrimSpace(smtpConn.From),
+		)
+	} else {
+		gl.Warnf("SMTP mailer initialized from %s but no SMTP connection was selected", configPath)
+	}
 	return sender
 }
 
 func buildIMAPService(c string) *mailer.IMAPService {
 	c = strings.TrimSpace(c)
 	if c == "" {
-		gl.Debug("IMAP config path is empty. Skipping IMAP service init.")
+		gl.Notice("IMAP service not configured: empty config path. Skipping IMAP init.")
 		return nil
 	}
 	if _, err := os.Stat(c); err != nil {
 		if os.IsNotExist(err) {
-			gl.Debugf("IMAP config not found at %s. Skipping IMAP service init.", c)
+			gl.Noticef("IMAP service not configured: config not found at %s. Skipping IMAP init.", c)
 			return nil
 		}
 		gl.Warnf("Failed to stat IMAP config at %s: %v", c, err)
@@ -375,6 +387,18 @@ func buildIMAPService(c string) *mailer.IMAPService {
 				break
 			}
 		}
+	}
+	if i != nil && i.IMAPConfig != nil {
+		gl.Noticef(
+			"IMAP service initialized: provider=%s protocol=%s host=%s port=%d mailbox=%s",
+			strings.TrimSpace(i.Provider),
+			kbxGet.ValueOrIf(strings.TrimSpace(i.Protocol) != "", strings.TrimSpace(i.Protocol), "imap"),
+			strings.TrimSpace(i.Host),
+			i.Port,
+			strings.TrimSpace(i.MailBox),
+		)
+	} else {
+		gl.Noticef("IMAP service not initialized: no default IMAP connection found in %s", c)
 	}
 	return i
 }
